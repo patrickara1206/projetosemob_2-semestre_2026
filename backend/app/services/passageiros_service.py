@@ -1,22 +1,29 @@
-from pathlib import Path
 import pandas as pd
 
+from app.core.dados_config import MESES
 from app.readers.leitor_html import ler_tabela_html
 
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+def carregar_passageiros_mes(mes):
+    config = MESES[mes]
 
-ARQUIVO_PASSAGEIROS = (
-    BASE_DIR
-    / "data"
-    / "Julho_2026"
-    / "Mensal"
-    / "Passageiros.html"
-)
+    caminho = (
+        config["pasta"]
+        / config["passageiros"]
+    )
 
+    df = ler_tabela_html(
+        caminho,
+        indice=1
+    )
 
-def tratar_passageiros():
-    df = ler_tabela_html(str(ARQUIVO_PASSAGEIROS))
+    # Mantém apenas linhas de dias.
+    # Isso evita somar "Total Mês".
+    df = df[
+        df["Dia"]
+        .astype(str)
+        .str.match(r"^\d{1,2}$")
+    ].copy()
 
     colunas_numericas = [
         "Catraca",
@@ -29,55 +36,80 @@ def tratar_passageiros():
         df[coluna] = pd.to_numeric(
             df[coluna],
             errors="coerce"
-        )
+        ).fillna(0)
+
+    df["pagantes"] = (
+        df["Catraca"]
+        + df["Antecipados"]
+    )
+
+    df["mes_referencia"] = mes
+    df["tipo_periodo"] = config["tipo"]
 
     return df
 
+def carregar_passageiros_todos_meses():
+    dataframes = []
 
-def obter_overview_passageiros():
-    df = tratar_passageiros()
+    for mes in MESES:
+        dataframes.append(
+            carregar_passageiros_mes(mes)
+        )
 
-    catraca = df["Catraca"].sum()
-    antecipados = df["Antecipados"].sum()
-    nao_pagantes = df["Não Pagantes"].sum()
-
-    pagantes = catraca + antecipados
-    total = pagantes + nao_pagantes
-
-    pct_pagantes = (
-        pagantes / total * 100
-        if total > 0
-        else 0
+    return pd.concat(
+        dataframes,
+        ignore_index=True
     )
 
-    pct_gratuidades = (
-        nao_pagantes / total * 100
-        if total > 0
-        else 0
+def resumo_passageiros_por_mes():
+    df = carregar_passageiros_todos_meses()
+
+    resumo = (
+        df.groupby("mes_referencia")
+        .agg(
+            pagantes=("pagantes", "sum"),
+            nao_pagantes=(
+                "Não Pagantes",
+                "sum"
+            ),
+            total_passageiros=(
+                "Total Passageiros",
+                "sum"
+            ),
+        )
+        .reset_index()
     )
+
+    return resumo
+
+def obter_overview_passageiros(mes="2026-08"):
+    df = carregar_passageiros_mes(mes)
+
+    pagantes = float(df["pagantes"].sum())
+    nao_pagantes = float(df["Não Pagantes"].sum())
+    total = float(df["Total Passageiros"].sum())
+
+    pct_pagantes = pagantes / total * 100 if total > 0 else 0
+    pct_gratuidades = nao_pagantes / total * 100 if total > 0 else 0
 
     return {
         "total_passageiros": {
-            "valor": float(total),
+            "valor": total,
             "variacao": None,
         },
-
         "pagantes": {
-            "percentual": float(pct_pagantes),
-            "quantidade": float(pagantes),
+            "percentual": pct_pagantes,
+            "quantidade": pagantes,
         },
-
         "gratuidades": {
-            "percentual": float(pct_gratuidades),
-            "quantidade": float(nao_pagantes),
+            "percentual": pct_gratuidades,
+            "quantidade": nao_pagantes,
         },
-
         "pico_demanda": {
             "faixa": None,
             "media_hora": None,
         },
-
         "serie": [],
-
         "categorias": [],
     }
+

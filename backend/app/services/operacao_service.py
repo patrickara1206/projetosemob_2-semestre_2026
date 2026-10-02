@@ -1,41 +1,37 @@
-from pathlib import Path
 import pandas as pd
 
+from app.core.dados_config import MESES
 from app.readers.leitor_html import ler_tabela_html
 
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+COLUNAS_OPERACAO = [
+    "data",
+    "dia_semana",
+    "veiculos",
+    "max_veiculos",
+    "viagens_programadas",
+    "viagens_realizadas",
+    "viagens_nao_realizadas",
+    "km_produtiva",
+    "km_morta",
+    "km_total",
+]
 
-ARQUIVO = (
-    BASE_DIR
-    / "data"
-    / "Julho_2026"
-    / "Mensal"
-    / "Mensal_202607.html"
-)
 
-# essa funcao carrega o arquivo HTML da pasta zipada fornecida pelo cliente e retorna o dataframe com os dados
-def carregar_operacao():
-    df = ler_tabela_html(str(ARQUIVO))
+def carregar_operacao_mes(mes):
+    config = MESES[mes]
 
-    df.columns = [
-        "data",
-        "dia_semana",
-        "veiculos",
-        "max_veiculos",
-        "viagens_programadas",
-        "viagens_realizadas",
-        "viagens_nao_realizadas",
-        "km_produtiva",
-        "km_morta",
-        "km_total",
-    ]
+    caminho = (
+        config["pasta"]
+        / config["operacao"]
+    )
 
-    return df
+    df = ler_tabela_html(
+        caminho,
+        indice=1
+    )
 
-# essa parte faz o tratamento dos dados, convertendo as colunas para o tipo correto e removendo linhas com datas inválidas
-def tratar_operacao():
-    df = carregar_operacao()
+    df.columns = COLUNAS_OPERACAO
 
     df["data"] = pd.to_datetime(
         df["data"],
@@ -62,41 +58,74 @@ def tratar_operacao():
 
     df = df.dropna(subset=["data"])
 
+    df["mes_referencia"] = mes
+    df["tipo_periodo"] = config["tipo"]
+
     return df
 
-# essa parte faz o resumo dos dados, somando colunas de interesse e retornando resultados
-def resumo_operacao():
-    df = tratar_operacao()
+def carregar_operacao_todos_meses():
+    dataframes = []
 
-    return {
-        "viagens_programadas": int(
-            df["viagens_programadas"].sum()
-        ),
-        "viagens_realizadas": int(
-            df["viagens_realizadas"].sum()
-        ),
-        "km_produtiva": float(
-            df["km_produtiva"].sum()
-        ),
-        "km_morta": float(
-            df["km_morta"].sum()
-        ),
-    }
+    for mes in MESES:
+        df = carregar_operacao_mes(mes)
+        dataframes.append(df)
 
-# essa parte vai fazer uma overview do projeto, devolvendo o JSON no formato que o flutter espera, com os dados de viagens, pontualidade, quilometragem, etc
-def obter_overview_operacao():
-    df = tratar_operacao()
+    return pd.concat(
+        dataframes,
+        ignore_index=True
+    )
 
-    realizadas = int(df["viagens_realizadas"].sum())
-    programadas = int(df["viagens_programadas"].sum())
+def resumo_operacao_por_mes():
+    df = carregar_operacao_todos_meses()
 
-    km_produtiva = float(df["km_produtiva"].sum())
-    km_morta = float(df["km_morta"].sum())
+    resumo = (
+        df.groupby("mes_referencia")
+        .agg(
+            viagens_programadas=(
+                "viagens_programadas",
+                "sum"
+            ),
+            viagens_realizadas=(
+                "viagens_realizadas",
+                "sum"
+            ),
+            km_produtiva=(
+                "km_produtiva",
+                "sum"
+            ),
+            km_morta=(
+                "km_morta",
+                "sum"
+            ),
+        )
+        .reset_index()
+    )
+
+    return resumo
+
+def obter_overview_operacao(mes="2026-08"):
+    df = carregar_operacao_mes(mes)
+
+    viagens_programadas = int(
+        df["viagens_programadas"].sum()
+    )
+
+    viagens_realizadas = int(
+        df["viagens_realizadas"].sum()
+    )
+
+    km_produtiva = float(
+        df["km_produtiva"].sum()
+    )
+
+    km_morta = float(
+        df["km_morta"].sum()
+    )
 
     return {
         "total_viagens": {
-            "realizado": realizadas,
-            "programado": programadas,
+            "realizado": viagens_realizadas,
+            "programado": viagens_programadas,
         },
 
         "pontualidade": {
@@ -112,7 +141,7 @@ def obter_overview_operacao():
 
         "km_mensal": [
             {
-                "rotulo": "Jul",
+                "rotulo": mes,
                 "produtiva": km_produtiva,
                 "morta": km_morta,
             }

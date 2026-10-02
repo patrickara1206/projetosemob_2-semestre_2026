@@ -8,6 +8,10 @@ router = APIRouter(
     tags=["Operação"]
 )
 
+
 @router.get("/overview")
-def overview_operacao(periodo: str = "mes"):
-    return obter_overview_operacao()
+def overview_operacao(
+    periodo: str = "mes",
+    mes: str = "2026-08"
+):
+    return obter_overview_operacao(mes)
