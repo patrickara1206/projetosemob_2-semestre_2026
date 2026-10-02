@@ -34,7 +34,7 @@ class HourlyChart extends StatelessWidget {
                   color: const Color(0xFFF1F3F6),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text('Média Dia Útil',
+                child: const Text('Registros produtivos',
                     style: TextStyle(fontSize: 10, color: AppColors.muted)),
               ),
             ],
@@ -107,7 +107,7 @@ class HourlyChart extends StatelessWidget {
             barWidth: 5,
             belowBarData: BarAreaData(
               show: true,
-              color: _line.withOpacity(0.06),
+              color: _line.withValues(alpha:0.06),
             ),
             dotData: FlDotData(
               show: true,

@@ -45,3 +45,9 @@ String fmtHa(DateTime? d) {
   }
   return 'Há ${diff.inDays} ${diff.inDays == 1 ? 'dia' : 'dias'}';
 }
+String fmtGrouped(num? value, {int digits=1}) {
+  if (value==null) {return '--';}
+  final parts=value.toStringAsFixed(digits).split('.');
+  final integer=parts[0].replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => '.');
+  return digits==0?integer:'$integer,${parts[1]}';
+}

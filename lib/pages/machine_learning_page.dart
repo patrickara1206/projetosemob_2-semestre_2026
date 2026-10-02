@@ -37,7 +37,7 @@ class _MachineLearningPageState extends State<MachineLearningPage> {
   Future<MlOverview> _fetch() =>
       _service.getOverview(periodo: periodoNotifier.value.api);
 
-  void _reload() => setState(() => _future = _fetch());
+  void _reload() => setState(() { _future = _fetch(); });
 
   @override
   Widget build(BuildContext context) {

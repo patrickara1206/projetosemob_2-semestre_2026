@@ -45,6 +45,7 @@ class CategoriaTarifaria {
 }
 
 class PassageirosOverview {
+  final Map<String,dynamic>? meta;
   final double? totalPassageiros;
   final double? totalVariacao; // % vs período anterior
   final double? pctPagantes; // 0 a 100
@@ -57,6 +58,7 @@ class PassageirosOverview {
   final List<CategoriaTarifaria> categorias;
 
   const PassageirosOverview({
+    this.meta,
     this.totalPassageiros,
     this.totalVariacao,
     this.pctPagantes,
@@ -78,6 +80,7 @@ class PassageirosOverview {
     final pico = j['pico_demanda'] as Map<String, dynamic>?;
 
     return PassageirosOverview(
+      meta: j['meta'] as Map<String,dynamic>?,
       totalPassageiros: (total?['valor'] as num?)?.toDouble(),
       totalVariacao: (total?['variacao'] as num?)?.toDouble(),
       pctPagantes: (pag?['percentual'] as num?)?.toDouble(),

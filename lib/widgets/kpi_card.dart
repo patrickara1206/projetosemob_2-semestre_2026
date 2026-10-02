@@ -54,12 +54,12 @@ class KpiCard extends StatelessWidget {
                     style: const TextStyle(
                         fontSize: 13, color: AppColors.navy)),
               Flexible(
-                child: Text(value,
+                child: FittedBox(fit:BoxFit.scaleDown,alignment:Alignment.centerLeft,child: Text(value,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.navy)),
+                        color: AppColors.navy))),
               ),
               if (unit != null)
                 Text(' $unit',
@@ -96,8 +96,8 @@ class _Variation extends StatelessWidget {
         Icon(up ? Icons.arrow_upward : Icons.arrow_downward,
             size: 12, color: color),
         const SizedBox(width: 2),
-        Text('${fmtPercent(v)} vs anterior',
-            style: TextStyle(fontSize: 11, color: color)),
+        Flexible(child: Text('${fmtPercent(v)} vs anterior',
+            style: TextStyle(fontSize: 11, color: color))),
       ],
     );
   }

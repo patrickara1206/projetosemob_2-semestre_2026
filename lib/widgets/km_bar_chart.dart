@@ -19,13 +19,12 @@ class KmBarChart extends StatelessWidget {
           Row(
             children: [
               const Expanded(
-                child: Text('EVOLUÇÃO DA QUILOMETRAGEM MENSAL',
+                child: Text('QUILOMETRAGEM DIÁRIA NO PERÍODO',
                     style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF374151))),
               ),
-              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
             ],
           ),
           const SizedBox(height: 8),

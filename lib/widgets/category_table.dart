@@ -38,7 +38,7 @@ class CategoryTable extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF374151))),
                       SizedBox(height: 2),
-                      Text('Estrutura preparada para expansão de perfis tarifários',
+                      Text('Categorias encontradas nos relatórios de passageiros',
                           style:
                               TextStyle(fontSize: 11, color: AppColors.muted)),
                     ],
@@ -109,7 +109,7 @@ class _Header extends StatelessWidget {
       child: Row(
         children: [
           cell('CATEGORIA', _flex[0], Alignment.centerLeft),
-          cell('VOLUME (DIA)', _flex[1], Alignment.centerRight),
+          cell('VOLUME (PERÍODO)', _flex[1], Alignment.centerRight),
           cell('% DO TOTAL', _flex[2], Alignment.centerRight),
           cell('STATUS OPERACIONAL', _flex[3], Alignment.center),
         ],

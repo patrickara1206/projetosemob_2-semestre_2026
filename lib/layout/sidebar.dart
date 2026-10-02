@@ -16,7 +16,9 @@ const _items = [
   _NavItem('Operação', Icons.directions_bus_outlined, '/operacao'),
   _NavItem('Passageiros', Icons.groups_outlined, '/passageiros'),
   _NavItem('Financeiro', Icons.payments_outlined, '/financeiro'),
-  _NavItem('Machine Learning', Icons.psychology_outlined, '/machine-learning'),
+  _NavItem('Monitoramento', Icons.rule_outlined, '/machine-learning'),
+  _NavItem('Viagens', Icons.route_outlined, '/viagens'),
+  _NavItem('Dados e Banco', Icons.storage_outlined, '/dados'),
 ];
 
 class Sidebar extends StatelessWidget {
@@ -47,7 +49,7 @@ class Sidebar extends StatelessWidget {
                         color: Colors.white, size: 20),
                   ),
                   const SizedBox(width: 12),
-                  const Column(
+                  const Expanded(child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('SEMOB-SCS',
@@ -59,7 +61,7 @@ class Sidebar extends StatelessWidget {
                           style: TextStyle(
                               color: Color(0xFFB8C4E0), fontSize: 11)),
                     ],
-                  ),
+                  )),
                 ],
               ),
             ),
@@ -97,12 +99,12 @@ class _SidebarTile extends StatelessWidget {
               children: [
                 Icon(item.icon, color: Colors.white, size: 20),
                 const SizedBox(width: 12),
-                Text(item.label,
+                Expanded(child: Text(item.label, maxLines:1, overflow:TextOverflow.ellipsis,
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 13,
                         fontWeight:
-                            selected ? FontWeight.w600 : FontWeight.w400)),
+                            selected ? FontWeight.w600 : FontWeight.w400))),
               ],
             ),
           ),

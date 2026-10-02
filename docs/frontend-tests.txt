@@ -1,0 +1,4 @@
+00:00 +0: loading C:/Users/patri/Documents/Codex/2026-10-02/https-github-com-patrickara1206-projetosemob-2/outputs/SEMOB/test/widget_test.dart
+00:00 +0: Valores monetários mantêm centavos e sinal
+00:00 +1: Dados reais, navegação e layout em desktop e celular
+00:02 +2: All tests passed!

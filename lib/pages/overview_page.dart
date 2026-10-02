@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../widgets/data_widgets.dart';
 
 import '../core/formatters.dart';
 import '../core/state.dart';
@@ -37,7 +39,7 @@ class _OverviewPageState extends State<OverviewPage> {
   Future<DashboardOverview> _fetch() =>
       _service.getOverview(periodo: periodoNotifier.value.api);
 
-  void _reload() => setState(() => _future = _fetch());
+  void _reload() => setState(() { _future = _fetch(); });
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +84,7 @@ class _Content extends StatelessWidget {
         KpiCard(
           title: 'Quilometragem',
           icon: Icons.route_outlined,
-          value: fmtInt(data.quilometragem.valor),
+          value: fmtGrouped(data.quilometragem.valor),
           unit: 'km',
           variation: data.quilometragem.variacao,
         ),
@@ -105,10 +107,10 @@ class _Content extends StatelessWidget {
           variation: data.passageirosNaoPagantes.variacao,
         ),
         KpiCard(
-          title: 'Indicador\nfinanceiro',
+          title: 'Vendas de\ncréditos',
           icon: Icons.payments_outlined,
           prefix: 'R\$',
-          value: fmtInt(data.financeiro.valor),
+          value: fmtGrouped(data.financeiro.valor,digits:2),
           variation: data.financeiro.variacao,
         ),
       ];
@@ -126,7 +128,7 @@ class _Content extends StatelessWidget {
           AnomalyPanel(
             anomalias: data.anomalias,
             onTapItem: (a) {
-              // TODO: navegar para tela de detalhes da anomalia
+              showDetails(context, a.titulo, a.observado);
             },
           ),
         ],
@@ -146,16 +148,12 @@ class _Content extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                           color: AppColors.navy)),
                 ),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: exportar relatório (endpoint do backend)
-                  },
-                  icon: const Icon(Icons.download, size: 16),
-                  label: const Text('Exportar Relatório'),
-                ),
+                const ExportButton(),
               ],
             ),
             const SizedBox(height: 20),
+            DataNotice(meta:data.meta),
+            TextButton.icon(onPressed:()=>context.go('/viagens'),icon:const Icon(Icons.route_outlined),label:const Text('Consultar registros de viagens')),
             Wrap(
               spacing: gap,
               runSpacing: gap,

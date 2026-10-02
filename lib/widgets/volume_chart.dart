@@ -22,7 +22,7 @@ class VolumeChart extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('VOLUME DE VIAGENS VS MODELO',
+                    Text('VIAGENS REALIZADAS E PROGRAMADAS',
                         style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -34,8 +34,6 @@ class VolumeChart extends StatelessWidget {
                   ],
                 ),
               ),
-              IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
-              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
             ],
           ),
           const SizedBox(height: 8),
@@ -122,7 +120,7 @@ class VolumeChart extends StatelessWidget {
             barWidth: 3,
             belowBarData: BarAreaData(
               show: true,
-              color: AppColors.navy.withOpacity(0.04),
+              color: AppColors.navy.withValues(alpha:0.04),
             ),
             dotData: FlDotData(
               show: true,
@@ -163,7 +161,7 @@ class _Legend extends StatelessWidget {
         item(Container(width: 16, height: 3, color: AppColors.navy),
             'REALIZADO'),
         item(Container(width: 16, height: 2, color: const Color(0xFFB0B7C3)),
-            'ESPERADO'),
+            'PROGRAMADO'),
         item(
             const Icon(Icons.circle, size: 8, color: AppColors.red), 'ANOMALIA'),
       ],

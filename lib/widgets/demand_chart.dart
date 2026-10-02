@@ -41,7 +41,7 @@ class DemandChart extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF374151))),
                     SizedBox(height: 2),
-                    Text('Volume por hora com detecção de anomalias (ML)',
+                    Text('Passageiros por dia · alertas por regras históricas',
                         style:
                             TextStyle(fontSize: 11, color: AppColors.muted)),
                   ],
@@ -164,7 +164,7 @@ class DemandChart extends StatelessWidget {
                   barWidth: 5,
                   belowBarData: BarAreaData(
                     show: true,
-                    color: _line.withOpacity(0.06),
+                    color: _line.withValues(alpha:0.06),
                   ),
                   dotData: FlDotData(
                     show: true,
@@ -181,7 +181,7 @@ class DemandChart extends StatelessWidget {
               ],
             ),
           ),
-          if (callout != null) callout,
+          ?callout,
         ],
       );
     });

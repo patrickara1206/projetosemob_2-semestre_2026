@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/data_widgets.dart';
 
 import '../core/formatters.dart';
 import '../core/state.dart';
@@ -36,7 +37,7 @@ class _PassageirosPageState extends State<PassageirosPage> {
   Future<PassageirosOverview> _fetch() =>
       _service.getOverview(periodo: periodoNotifier.value.api);
 
-  void _reload() => setState(() => _future = _fetch());
+  void _reload() => setState(() { _future = _fetch(); });
 
   @override
   Widget build(BuildContext context) {
@@ -100,11 +101,11 @@ class _Content extends StatelessWidget {
       final cards = [
         ValueListenableBuilder<Periodo>(
           valueListenable: periodoNotifier,
-          builder: (_, p, __) => _Kpi(
+          builder: (_, p, _) => _Kpi(
             title: 'TOTAL DE PASSAGEIROS',
             icon: Icons.more_vert,
             iconColor: AppColors.muted,
-            value: fmtCompact(data.totalPassageiros),
+            value: fmtInt(data.totalPassageiros),
             footer: _variacao(data.totalVariacao, _refAnterior(p)),
           ),
         ),
@@ -118,7 +119,7 @@ class _Content extends StatelessWidget {
           footer: _nota('${fmtCompact(data.qtdPagantes)} passagens registradas'),
         ),
         _Kpi(
-          title: '% GRATUIDADES',
+          title: '% NÃO PAGANTES',
           icon: Icons.confirmation_number_outlined,
           iconColor: AppColors.primary,
           value: data.pctGratuidades == null
@@ -127,11 +128,11 @@ class _Content extends StatelessWidget {
           footer: _nota('${fmtCompact(data.qtdGratuidades)} acessos livres'),
         ),
         _Kpi(
-          title: 'PICO DE DEMANDA',
+          title: 'DIA DE MAIOR DEMANDA',
           icon: Icons.schedule,
           iconColor: AppColors.orange,
           value: data.picoFaixa ?? '--',
-          footer: _nota('Média de ${fmtCompact(data.picoMediaHora)} p/ hora'),
+          footer: _nota('${fmtInt(data.picoMediaHora)} passageiros no dia'),
         ),
       ];
 
@@ -161,16 +162,11 @@ class _Content extends StatelessWidget {
                     ],
                   ),
                 ),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: exportar relatório (endpoint do backend)
-                  },
-                  icon: const Icon(Icons.download, size: 16),
-                  label: const Text('Exportar Relatório'),
-                ),
+                const ExportButton(),
               ],
             ),
             const SizedBox(height: 20),
+            DataNotice(meta:data.meta),
             Wrap(
               spacing: gap,
               runSpacing: gap,
@@ -197,7 +193,7 @@ class _Content extends StatelessWidget {
             CategoryTable(
               categorias: data.categorias,
               onVerRelatorio: () {
-                // TODO: abrir relatório completo de categorias
+                showDetails(context,'Categorias no período',data.categorias.map((c)=>'${c.nome}: ${fmtInt(c.volume)} (${fmtDec(c.percentual)}%)').join('\n'));
               },
             ),
           ],

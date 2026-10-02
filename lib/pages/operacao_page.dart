@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../widgets/data_widgets.dart';
 
 import '../core/formatters.dart';
 import '../core/state.dart';
@@ -36,7 +38,7 @@ class _OperacaoPageState extends State<OperacaoPage> {
   Future<OperacaoOverview> _fetch() =>
       _service.getOverview(periodo: periodoNotifier.value.api);
 
-  void _reload() => setState(() => _future = _fetch());
+  void _reload() => setState(() { _future = _fetch(); });
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +114,7 @@ class _Content extends StatelessWidget {
                       const SizedBox(height: 4),
                       ValueListenableBuilder<Periodo>(
                         valueListenable: periodoNotifier,
-                        builder: (_, p, __) => Text(
+                        builder: (_, p, _) => Text(
                           'Monitoramento de viagens, pontualidade e métricas '
                           'de frota (${p.label}).',
                           style: const TextStyle(
@@ -122,16 +124,13 @@ class _Content extends StatelessWidget {
                     ],
                   ),
                 ),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: exportar relatório (endpoint do backend)
-                  },
-                  icon: const Icon(Icons.download, size: 16),
-                  label: const Text('Exportar Relatório'),
-                ),
+                const ExportButton(),
               ],
             ),
             const SizedBox(height: 20),
+            DataNotice(meta:data.meta),
+            const Text('Pontualidade indisponível: os relatórios não incluem os horários planejados. A execução compara viagens realizadas e programadas.',style:TextStyle(fontSize:12,color:AppColors.muted)),
+            const SizedBox(height:16),
             Wrap(
               spacing: gap,
               runSpacing: gap,
@@ -158,10 +157,10 @@ class _Content extends StatelessWidget {
             AnomalyTable(
               anomalias: data.anomalias,
               onAction: (a) {
-                // TODO: investigar / notificar / ajustar (endpoint do backend)
+                showDetails(context, 'Alerta de operação', '${a.idRota}\n${a.tipo}\n\nConsulte o relatório de origem em Dados e Banco.');
               },
               onVerTodas: () {
-                // TODO: navegar para a lista completa de anomalias
+                context.go('/machine-learning');
               },
             ),
           ],
@@ -222,7 +221,8 @@ class _ViagensCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          FittedBox(fit:BoxFit.scaleDown,alignment:Alignment.centerLeft,child: Row(
+            mainAxisSize:MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
@@ -235,7 +235,7 @@ class _ViagensCard extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 12, color: AppColors.muted)),
             ],
-          ),
+          )),
           const SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),

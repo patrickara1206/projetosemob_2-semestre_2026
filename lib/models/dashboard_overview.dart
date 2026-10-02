@@ -81,6 +81,7 @@ class InteligenciaOperacional {
 }
 
 class DashboardOverview {
+  final Map<String,dynamic>? meta;
   final Kpi quilometragem;
   final Kpi viagens;
   final Kpi passageirosPagantes;
@@ -92,6 +93,7 @@ class DashboardOverview {
   final String? statusModelo; // ex.: "OK"
 
   const DashboardOverview({
+    this.meta,
     this.quilometragem = const Kpi(),
     this.viagens = const Kpi(),
     this.passageirosPagantes = const Kpi(),
@@ -108,6 +110,7 @@ class DashboardOverview {
 
   factory DashboardOverview.fromJson(Map<String, dynamic> j) =>
       DashboardOverview(
+        meta: j['meta'] as Map<String,dynamic>?,
         quilometragem: Kpi.fromJson(j['quilometragem']),
         viagens: Kpi.fromJson(j['viagens']),
         passageirosPagantes: Kpi.fromJson(j['passageiros_pagantes']),

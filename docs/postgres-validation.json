@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "migration_reentrant": true,
+  "rls_tables": 9,
+  "anonymous_access": "denied",
+  "documents_jsonb": 47,
+  "trips_archived": 107927,
+  "august_totals": {
+    "km_productive": 261886.8,
+    "km_unproductive": 13807.7,
+    "km_total": 275694.5,
+    "trips_planned": 35050.0,
+    "trips_completed": 34994.0,
+    "trips_missed": 56.0,
+    "paid": 288378.0,
+    "unpaid": 761870.0,
+    "passengers": 1050248.0,
+    "sales": 668605.71,
+    "usage": 299740.0,
+    "circulating": 368865.71,
+    "completion_rate": 99.84
+  }
+}

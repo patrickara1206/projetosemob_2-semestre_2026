@@ -53,6 +53,7 @@ class AnomaliaOp {
 }
 
 class OperacaoOverview {
+  final Map<String,dynamic>? meta;
   final int? viagensRealizadas;
   final int? viagensProgramadas;
   final double? pontualidade; // %
@@ -65,6 +66,7 @@ class OperacaoOverview {
   final List<AnomaliaOp> anomalias;
 
   const OperacaoOverview({
+    this.meta,
     this.viagensRealizadas,
     this.viagensProgramadas,
     this.pontualidade,
@@ -93,6 +95,7 @@ class OperacaoOverview {
     final km = j['quilometragem'] as Map<String, dynamic>?;
 
     return OperacaoOverview(
+      meta: j['meta'] as Map<String,dynamic>?,
       viagensRealizadas: viagens?['realizado'] as int?,
       viagensProgramadas: viagens?['programado'] as int?,
       pontualidade: (pont?['valor'] as num?)?.toDouble(),

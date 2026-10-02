@@ -10,9 +10,6 @@ class IntelligenceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final acuracia =
-        data.acuracia == null ? '--' : '${data.acuracia!.round()}%';
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: cardDecoration(),
@@ -48,13 +45,13 @@ class IntelligenceCard extends StatelessWidget {
           Row(
             children: [
               _Metric(
-                  value: acuracia,
-                  label: 'Acurácia do modelo',
+                  value: 'Regras',
+                  label: 'Método de detecção',
                   color: AppColors.primary),
               const SizedBox(width: 12),
               _Metric(
-                  value: fmtInt(data.falsosPositivos),
-                  label: 'Falsos positivos',
+                  value: 'Pendente',
+                  label: 'Validação pela SEMOB',
                   color: AppColors.primary),
             ],
           ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../core/formatters.dart';
 import '../core/theme.dart';
 import '../models/dashboard_overview.dart';
 
@@ -75,7 +74,6 @@ class AnomalyCard extends StatelessWidget {
     final alta = anomalia.severidade == 'alta';
     final accent = alta ? AppColors.red : AppColors.orange;
     final bg = alta ? const Color(0xFFFDF2F2) : const Color(0xFFFFF8E7);
-    final desvioTxt = fmtPercent(anomalia.desvio);
 
     return Container(
       decoration: BoxDecoration(
@@ -98,10 +96,10 @@ class AnomalyCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: accent.withOpacity(0.15),
+                  color: accent.withValues(alpha:0.15),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text('Score: ${anomalia.score.toStringAsFixed(2)}',
+                child: Text('Regra',
                     style: TextStyle(fontSize: 10, color: accent)),
               ),
             ],
@@ -114,7 +112,7 @@ class AnomalyCard extends StatelessWidget {
                     'Obs: ${anomalia.observado} | Esp: ${anomalia.esperado}',
                     style: const TextStyle(fontSize: 11)),
               ),
-              Text('Desvio: $desvioTxt',
+              Text(alta ? 'Alta' : 'Atenção',
                   style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
