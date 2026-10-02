@@ -33,3 +33,15 @@ String fmtCompact(num? v) {
   if (a >= 1000) return '${fmtDec(v / 1000)}K';
   return fmtInt(v);
 }
+
+/// DateTime -> "Há 4 horas". Se for nulo -> "--".
+String fmtHa(DateTime? d) {
+  if (d == null) return '--';
+  final diff = DateTime.now().difference(d);
+  if (diff.inMinutes < 1) return 'Agora há pouco';
+  if (diff.inMinutes < 60) return 'Há ${diff.inMinutes} min';
+  if (diff.inHours < 24) {
+    return 'Há ${diff.inHours} ${diff.inHours == 1 ? 'hora' : 'horas'}';
+  }
+  return 'Há ${diff.inDays} ${diff.inDays == 1 ? 'dia' : 'dias'}';
+}

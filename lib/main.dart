@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/theme.dart';
 import 'layout/app_shell.dart';
+import 'pages/machine_learning_page.dart';
 import 'pages/operacao_page.dart';
 import 'pages/overview_page.dart';
 import 'pages/passageiros_page.dart';
@@ -20,8 +21,7 @@ final _router = GoRouter(
         _route('/operacao', const OperacaoPage()),
         _route('/passageiros', const PassageirosPage()),
         _route('/financeiro', const PlaceholderPage(title: 'Financeiro')),
-        _route('/machine-learning',
-            const PlaceholderPage(title: 'Machine Learning')),
+        _route('/machine-learning', const MachineLearningPage()),
       ],
     ),
   ],
