@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+pandas
+lxml
+html5lib
+beautifulsoup4
