@@ -37,6 +37,7 @@ dependencies:
   go_router: ^17.5.0
   fl_chart: ^1.2.0
   http: ^1.6.0
+  file_picker: ^13.1.0
 
 dev_dependencies:
   flutter_test:
@@ -90,3 +91,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+file_picker: ^8.0.0
