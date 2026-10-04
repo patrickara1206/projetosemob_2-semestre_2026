@@ -2,6 +2,7 @@ import pandas as pd
 
 from app.core.dados_config import MESES
 from app.readers.leitor_html import ler_tabela_html
+from app.repositories.operacao_repository import buscar_operacao_mes
 
 
 COLUNAS_OPERACAO = [
@@ -17,8 +18,61 @@ COLUNAS_OPERACAO = [
     "km_total",
 ]
 
+def normalizar_operacao(
+    df,
+    mes,
+    tipo_periodo
+):
+    df = df.copy()
 
-def carregar_operacao_mes(mes):
+    df.columns = COLUNAS_OPERACAO
+
+    df["data"] = pd.to_datetime(
+        df["data"],
+        format="%d/%m/%Y",
+        errors="coerce"
+    )
+
+    colunas_inteiras = [
+        "veiculos",
+        "max_veiculos",
+        "viagens_programadas",
+        "viagens_realizadas",
+        "viagens_nao_realizadas",
+    ]
+
+    for coluna in colunas_inteiras:
+        df[coluna] = (
+            pd.to_numeric(
+                df[coluna],
+                errors="coerce"
+            )
+            .round()
+            .astype("Int64")
+        )
+
+    colunas_decimais = [
+        "km_produtiva",
+        "km_morta",
+        "km_total",
+    ]
+
+    for coluna in colunas_decimais:
+        df[coluna] = pd.to_numeric(
+            df[coluna],
+            errors="coerce"
+        )
+
+    df = df.dropna(
+        subset=["data"]
+    )
+
+    df["mes_referencia"] = mes
+    df["tipo_periodo"] = tipo_periodo
+
+    return df
+
+def carregar_operacao_banco(mes):
     config = MESES[mes]
 
     caminho = (
@@ -31,35 +85,28 @@ def carregar_operacao_mes(mes):
         indice=1
     )
 
-    df.columns = COLUNAS_OPERACAO
+    return normalizar_operacao(
+        df,
+        mes,
+        config["tipo"]
+    )
+
+def carregar_operacao_banco(mes):
+    registros = buscar_operacao_mes(
+        mes
+    )
+
+    if not registros:
+        return pd.DataFrame()
+
+    df = pd.DataFrame(
+        registros
+    )
 
     df["data"] = pd.to_datetime(
         df["data"],
-        format="%d/%m/%Y",
         errors="coerce"
     )
-
-    colunas_numericas = [
-        "veiculos",
-        "max_veiculos",
-        "viagens_programadas",
-        "viagens_realizadas",
-        "viagens_nao_realizadas",
-        "km_produtiva",
-        "km_morta",
-        "km_total",
-    ]
-
-    for coluna in colunas_numericas:
-        df[coluna] = pd.to_numeric(
-            df[coluna],
-            errors="coerce"
-        )
-
-    df = df.dropna(subset=["data"])
-
-    df["mes_referencia"] = mes
-    df["tipo_periodo"] = config["tipo"]
 
     return df
 
@@ -104,7 +151,7 @@ def resumo_operacao_por_mes():
     return resumo
 
 def obter_overview_operacao(mes="2026-08"):
-    df = carregar_operacao_mes(mes)
+    df = carregar_operacao_banco(mes)
 
     viagens_programadas = int(
         df["viagens_programadas"].sum()
