@@ -17,6 +17,7 @@ const _items = [
   _NavItem('Passageiros', Icons.groups_outlined, '/passageiros'),
   _NavItem('Financeiro', Icons.payments_outlined, '/financeiro'),
   _NavItem('Machine Learning', Icons.psychology_outlined, '/machine-learning'),
+  _NavItem('Importar dados',Icons.upload_file_outlined,'/importacao',),
 ];
 
 class Sidebar extends StatelessWidget {

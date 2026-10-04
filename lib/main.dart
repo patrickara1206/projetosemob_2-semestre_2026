@@ -8,6 +8,7 @@ import 'pages/operacao_page.dart';
 import 'pages/overview_page.dart';
 import 'pages/passageiros_page.dart';
 import 'pages/placeholder_page.dart';
+import 'pages/importacao_page.dart';
 
 void main() => runApp(const SemobApp());
 
@@ -22,6 +23,7 @@ final _router = GoRouter(
         _route('/passageiros', const PassageirosPage()),
         _route('/financeiro', const PlaceholderPage(title: 'Financeiro')),
         _route('/machine-learning', const MachineLearningPage()),
+        _route('/importacao', const ImportacaoPage()),
       ],
     ),
   ],
