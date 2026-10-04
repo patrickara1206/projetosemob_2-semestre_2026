@@ -35,7 +35,10 @@ class _OverviewPageState extends State<OverviewPage> {
   }
 
   Future<DashboardOverview> _fetch() =>
-      _service.getOverview(periodo: periodoNotifier.value.api);
+    _service.getOverview(
+      periodo: periodoNotifier.value.api,
+      mes: '2026-08',
+    );
 
   void _reload() => setState(() => _future = _fetch());
 
