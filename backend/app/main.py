@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes.operacao import router as operacao_router
 from app.routes.passageiros import router as passageiros_router
 from app.routes.dashboard import router as dashboard_router
+from app.routes.importacao import router as importacao_router
+
 
 app = FastAPI(
     title="SEMOB-SCS API",
@@ -24,6 +26,8 @@ app.add_middleware(
 app.include_router(operacao_router)
 app.include_router(passageiros_router)
 app.include_router(dashboard_router)
+app.include_router(importacao_router)
+
 
 @app.get("/")
 def home():
