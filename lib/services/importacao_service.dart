@@ -5,14 +5,12 @@ import 'package:http/http.dart' as http;
 
 import 'dashboard_service.dart';
 
-
 class ImportacaoService {
   Future<Map<String, dynamic>> enviarArquivo({
     required String tipo,
     required String mes,
     required String tipoPeriodo,
   }) async {
-
     final arquivo = await FilePicker.pickFile(
       type: FileType.custom,
       allowedExtensions: ['html', 'htm'],
@@ -20,14 +18,14 @@ class ImportacaoService {
 
     if (arquivo == null) {
       throw Exception(
-        'Nenhum arquivo selecionado.'
+        'Nenhum arquivo selecionado.',
       );
     }
 
     final bytes = await arquivo.readAsBytes();
 
     final uri = Uri.parse(
-      '${DashboardService.baseUrl}/importacao/$tipo'
+      '${DashboardService.baseUrl}/importacao/$tipo',
     ).replace(
       queryParameters: {
         'mes': mes,
@@ -53,10 +51,32 @@ class ImportacaoService {
     final corpo =
         await response.stream.bytesToString();
 
-    if (response.statusCode != 200) {
-      throw Exception(corpo);
+    Map<String, dynamic>? json;
+
+    try {
+      json = jsonDecode(corpo);
+    } catch (_) {
+      json = null;
     }
 
-    return jsonDecode(corpo);
+    if (response.statusCode != 200) {
+      if (json != null && json['detail'] != null) {
+        throw Exception(
+          json['detail'].toString(),
+        );
+      }
+
+      throw Exception(
+        'Erro ao importar o arquivo.',
+      );
+    }
+
+    if (json == null) {
+      throw Exception(
+        'Resposta inválida do servidor.',
+      );
+    }
+
+    return json;
   }
 }
