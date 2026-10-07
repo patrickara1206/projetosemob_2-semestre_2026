@@ -154,6 +154,24 @@ def montar_resultado(
     }
 
 
+def validar_dados(
+    df,
+    mes,
+    tipo_periodo,
+    nome_arquivo
+):
+    validar_mes_relatorio(
+        df,
+        mes
+    )
+
+    validar_periodo_relatorio(
+        df,
+        tipo_periodo,
+        nome_arquivo
+    )
+
+
 def importar_operacao(
     conteudo,
     nome_arquivo,
@@ -177,14 +195,11 @@ def importar_operacao(
         tipo_periodo
     )
 
-    validar_mes_relatorio(
+    validar_dados(
         df,
-        mes
-    )
-
-    validar_periodo_relatorio(
-        df,
-        tipo_periodo
+        mes,
+        tipo_periodo,
+        nome_arquivo
     )
 
     hash_arquivo = verificar_arquivo_duplicado(
@@ -245,14 +260,11 @@ def importar_passageiros(
         tipo_periodo
     )
 
-    validar_mes_relatorio(
+    validar_dados(
         df,
-        mes
-    )
-
-    validar_periodo_relatorio(
-        df,
-        tipo_periodo
+        mes,
+        tipo_periodo,
+        nome_arquivo
     )
 
     hash_arquivo = verificar_arquivo_duplicado(
@@ -313,14 +325,11 @@ def importar_financeiro(
         tipo_periodo
     )
 
-    validar_mes_relatorio(
+    validar_dados(
         df,
-        mes
-    )
-
-    validar_periodo_relatorio(
-        df,
-        tipo_periodo
+        mes,
+        tipo_periodo,
+        nome_arquivo
     )
 
     hash_arquivo = verificar_arquivo_duplicado(
@@ -381,14 +390,11 @@ def importar_fcv(
         tipo_periodo
     )
 
-    validar_mes_relatorio(
+    validar_dados(
         df,
-        mes
-    )
-
-    validar_periodo_relatorio(
-        df,
-        tipo_periodo
+        mes,
+        tipo_periodo,
+        nome_arquivo
     )
 
     hash_arquivo = verificar_arquivo_duplicado(
@@ -449,14 +455,11 @@ def importar_linhas(
         tipo_periodo
     )
 
-    validar_mes_relatorio(
+    validar_dados(
         df,
-        mes
-    )
-
-    validar_periodo_relatorio(
-        df,
-        tipo_periodo
+        mes,
+        tipo_periodo,
+        nome_arquivo
     )
 
     hash_arquivo = verificar_arquivo_duplicado(
@@ -517,14 +520,11 @@ def importar_resumo_faixa_horaria(
         tipo_periodo
     )
 
-    validar_mes_relatorio(
+    validar_dados(
         df,
-        mes
-    )
-
-    validar_periodo_relatorio(
-        df,
-        tipo_periodo
+        mes,
+        tipo_periodo,
+        nome_arquivo
     )
 
     hash_arquivo = verificar_arquivo_duplicado(
@@ -585,14 +585,11 @@ def importar_faixa_horaria(
         tipo_periodo
     )
 
-    validar_mes_relatorio(
+    validar_dados(
         df,
-        mes
-    )
-
-    validar_periodo_relatorio(
-        df,
-        tipo_periodo
+        mes,
+        tipo_periodo,
+        nome_arquivo
     )
 
     hash_arquivo = verificar_arquivo_duplicado(
@@ -653,14 +650,11 @@ def importar_viagens(
         tipo_periodo
     )
 
-    validar_mes_relatorio(
+    validar_dados(
         df,
-        mes
-    )
-
-    validar_periodo_relatorio(
-        df,
-        tipo_periodo
+        mes,
+        tipo_periodo,
+        nome_arquivo
     )
 
     hash_arquivo = verificar_arquivo_duplicado(
@@ -724,14 +718,11 @@ def importar_viagens_ocorrencias(
         tipo_ocorrencia
     )
 
-    validar_mes_relatorio(
+    validar_dados(
         df,
-        mes
-    )
-
-    validar_periodo_relatorio(
-        df,
-        tipo_periodo
+        mes,
+        tipo_periodo,
+        nome_arquivo
     )
 
     hash_arquivo = verificar_arquivo_duplicado(
@@ -853,7 +844,8 @@ def importar_relatorio(
 ):
     if tipo_relatorio not in RELATORIOS:
         raise ValueError(
-            f"Tipo de relatório inválido: {tipo_relatorio}"
+            f"Tipo de relatório inválido: "
+            f"{tipo_relatorio}"
         )
 
     if tipo_relatorio == "operacao":

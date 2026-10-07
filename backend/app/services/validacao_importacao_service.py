@@ -1,3 +1,4 @@
+import os
 import re
 import unicodedata
 
@@ -47,15 +48,68 @@ def normalizar_colunas(df):
     }
 
 
-def detectar_tipo_relatorio(
-    df,
-    nome_arquivo=""
-):
+def preparar_nome_arquivo(nome_arquivo):
+    nome = os.path.basename(
+        nome_arquivo
+    ).lower()
+
+    if nome.endswith(".html"):
+        nome = nome[:-5]
+
+    elif nome.endswith(".htm"):
+        nome = nome[:-4]
+
+    return nome
+
+
+def detectar_tipo_por_nome(nome_arquivo):
+    nome = preparar_nome_arquivo(
+        nome_arquivo
+    )
+
+    if "viag_ninic" in nome:
+        return "viagens_nao_iniciadas"
+
+    if "viag_nrealiz" in nome:
+        return "viagens_nao_realizadas"
+
+    if "viag_nterm" in nome:
+        return "viagens_nao_terminadas"
+
+    if "resumo_fxhr" in nome:
+        return "resumo_faixa_horaria"
+
+    if "_fxhr" in nome:
+        return "faixa_horaria"
+
+    if "_linhas" in nome:
+        return "linhas"
+
+    if "_fcv" in nome:
+        return "fcv"
+
+    if "_viagens" in nome:
+        return "viagens"
+
+    if nome.startswith("passageiros"):
+        return "passageiros"
+
+    if nome.startswith("saldos"):
+        return "financeiro"
+
+    if re.fullmatch(
+        r"(mensal|quinzenal)_\d{6}",
+        nome
+    ):
+        return "operacao"
+
+    return None
+
+
+def detectar_tipo_por_estrutura(df):
     quantidade = len(df.columns)
 
     colunas = normalizar_colunas(df)
-
-    nome = nome_arquivo.lower()
 
     if quantidade == 10:
         return "operacao"
@@ -67,43 +121,46 @@ def detectar_tipo_relatorio(
         return "viagens"
 
     if quantidade == 15:
-        if "ninic" in nome:
-            return "viagens_nao_iniciadas"
-
-        if "nrealiz" in nome:
-            return "viagens_nao_realizadas"
-
-        if "nterm" in nome:
-            return "viagens_nao_terminadas"
-
         return None
 
     if quantidade == 4:
-        if {
-            "data",
-            "linha",
-            "kmtotal",
-            "nrviagens",
-        }.issubset(colunas):
-            return "linhas"
+        segunda_coluna = df.iloc[
+            :,
+            1
+        ].astype(str)
 
-        if {
-            "data",
-            "fx_hor",
-            "nr_veiculos",
-            "nr_viagens",
-        }.issubset(colunas):
+        proporcao_faixa = (
+            segunda_coluna
+            .str.contains(
+                r"^\s*\d{1,2}\s*(?:h|hs|:00)?\s*$",
+                case=False,
+                regex=True,
+                na=False,
+            )
+            .mean()
+        )
+
+        if proporcao_faixa > 0.5:
             return "resumo_faixa_horaria"
 
+        return "linhas"
+
     if quantidade == 6:
-        if {
-            "data",
-            "linha",
-            "fx_hor",
-            "nr_veiculos",
-            "nr_viagens",
-            "partidas",
-        }.issubset(colunas):
+        primeira_coluna = df.iloc[
+            :,
+            0
+        ].astype(str)
+
+        proporcao_data = (
+            primeira_coluna
+            .str.match(
+                r"^\s*\d{1,2}/\d{1,2}/\d{4}\s*$",
+                na=False,
+            )
+            .mean()
+        )
+
+        if proporcao_data > 0.5:
             return "faixa_horaria"
 
         if (
@@ -122,6 +179,22 @@ def detectar_tipo_relatorio(
             return "financeiro"
 
     return None
+
+
+def detectar_tipo_relatorio(
+    df,
+    nome_arquivo=""
+):
+    tipo_nome = detectar_tipo_por_nome(
+        nome_arquivo
+    )
+
+    if tipo_nome is not None:
+        return tipo_nome
+
+    return detectar_tipo_por_estrutura(
+        df
+    )
 
 
 def validar_tipo_relatorio(
@@ -200,9 +273,26 @@ def validar_mes_relatorio(
         )
 
 
+def detectar_periodo_por_nome(
+    nome_arquivo
+):
+    nome = preparar_nome_arquivo(
+        nome_arquivo
+    )
+
+    if "quinzenal" in nome:
+        return "quinzenal"
+
+    if "mensal" in nome:
+        return "mensal"
+
+    return None
+
+
 def validar_periodo_relatorio(
     df,
-    tipo_periodo
+    tipo_periodo,
+    nome_arquivo=""
 ):
     if tipo_periodo not in {
         "mensal",
@@ -213,6 +303,34 @@ def validar_periodo_relatorio(
             "Selecione 'Mensal' ou "
             "'1ª Quinzena'."
         )
+
+    periodo_detectado = detectar_periodo_por_nome(
+        nome_arquivo
+    )
+
+    if periodo_detectado is not None:
+        if periodo_detectado != tipo_periodo:
+            encontrado = (
+                "Mensal"
+                if periodo_detectado == "mensal"
+                else "1ª Quinzena"
+            )
+
+            selecionado = (
+                "Mensal"
+                if tipo_periodo == "mensal"
+                else "1ª Quinzena"
+            )
+
+            raise ValueError(
+                f"O período selecionado "
+                f"('{selecionado}') não "
+                f"corresponde ao arquivo. "
+                f"O documento identificado "
+                f"é '{encontrado}'."
+            )
+
+        return
 
     if "data" not in df.columns:
         raise ValueError(
@@ -237,18 +355,7 @@ def validar_periodo_relatorio(
         and maior_dia > 15
     ):
         raise ValueError(
-            "O arquivo enviado é mensal, pois "
-            "contém dados posteriores ao dia 15. "
-            "Selecione 'Mensal' como período."
-        )
-
-    if (
-        tipo_periodo == "mensal"
-        and maior_dia <= 15
-    ):
-        raise ValueError(
-            "O arquivo enviado corresponde à "
-            "1ª Quinzena, pois contém dados "
-            "somente até o dia 15. "
-            "Selecione '1ª Quinzena' como período."
+            "O arquivo contém dados posteriores "
+            "ao dia 15 e não pode ser importado "
+            "como 1ª Quinzena."
         )
