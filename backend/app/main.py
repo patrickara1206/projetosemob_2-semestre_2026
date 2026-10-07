@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routes.auth import router as auth_router
 from app.routes.operacao import router as operacao_router
 from app.routes.passageiros import router as passageiros_router
 from app.routes.dashboard import router as dashboard_router
@@ -22,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+app.include_router(auth_router)
 app.include_router(operacao_router)
 app.include_router(passageiros_router)
 app.include_router(dashboard_router)
