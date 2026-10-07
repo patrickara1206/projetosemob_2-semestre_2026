@@ -74,18 +74,51 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
           DropdownButton<String>(
             value: tipo,
             items: const [
-              DropdownMenuItem(
-                value: 'operacao',
-                child: Text('Operação'),
-              ),
-              DropdownMenuItem(
-                value: 'passageiros',
-                child: Text('Passageiros'),
-              ),
-              DropdownMenuItem(
-                value: 'financeiro',
-                child: Text('Financeiro'),
-              ),
+            DropdownMenuItem(
+              value: 'operacao',
+              child: Text('Operação geral'),
+            ),
+            DropdownMenuItem(
+              value: 'fcv',
+              child: Text('FCV'),
+            ),
+            DropdownMenuItem(
+              value: 'faixa_horaria',
+              child: Text('Faixa horária'),
+            ),
+            DropdownMenuItem(
+              value: 'linhas',
+              child: Text('Linhas'),
+            ),
+            DropdownMenuItem(
+              value: 'resumo_faixa_horaria',
+              child: Text('Resumo por faixa horária'),
+            ),
+            DropdownMenuItem(
+              value: 'viagens',
+              child: Text('Viagens'),
+            ),
+            DropdownMenuItem(
+              value: 'viagens_nao_iniciadas',
+              child: Text('Viagens não iniciadas'),
+            ),
+            DropdownMenuItem(
+              value: 'viagens_nao_realizadas',
+              child: Text('Viagens não realizadas'),
+             ),
+            DropdownMenuItem(
+              value: 'viagens_nao_terminadas',
+              child: Text('Viagens não terminadas'),
+            ),
+            DropdownMenuItem(
+              value: 'passageiros',
+              child: Text('Passageiros'),
+           ),
+          DropdownMenuItem(
+              value: 'financeiro',
+              child: Text('Saldos / Financeiro'),
+          ),
+    
             ],
             onChanged: (valor) {
               if (valor != null) {
