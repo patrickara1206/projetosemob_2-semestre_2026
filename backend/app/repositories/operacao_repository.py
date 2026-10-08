@@ -36,4 +36,24 @@ def buscar_operacao_mes(mes):
         .execute()
     )
 
-    return resposta.data
+    registros = resposta.data or []
+
+    registros = sorted(
+        registros,
+        key=lambda registro: (
+            0 if registro.get("tipo_periodo") == "mensal" else 1
+        ),
+    )
+
+    registros_por_data = {}
+
+    for registro in registros:
+        data = str(registro["data"])[:10]
+
+        if data not in registros_por_data:
+            registros_por_data[data] = registro
+
+    return [
+        registros_por_data[data]
+        for data in sorted(registros_por_data)
+    ]
