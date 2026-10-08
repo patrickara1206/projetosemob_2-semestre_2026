@@ -5,9 +5,9 @@ class Kpi {
   const Kpi({this.valor, this.variacao});
 
   factory Kpi.fromJson(Map<String, dynamic>? j) => Kpi(
-        valor: (j?['valor'] as num?)?.toDouble(),
-        variacao: (j?['variacao'] as num?)?.toDouble(),
-      );
+    valor: (j?['valor'] as num?)?.toDouble(),
+    variacao: (j?['variacao'] as num?)?.toDouble(),
+  );
 }
 
 class SeriePonto {
@@ -24,11 +24,11 @@ class SeriePonto {
   });
 
   factory SeriePonto.fromJson(Map<String, dynamic> j) => SeriePonto(
-        rotulo: j['rotulo'] as String,
-        realizado: (j['realizado'] as num).toDouble(),
-        esperado: (j['esperado'] as num).toDouble(),
-        anomalia: j['anomalia'] as bool? ?? false,
-      );
+    rotulo: j['rotulo'] as String,
+    realizado: (j['realizado'] as num).toDouble(),
+    esperado: (j['esperado'] as num).toDouble(),
+    anomalia: j['anomalia'] as bool? ?? false,
+  );
 }
 
 class Anomalia {
@@ -49,35 +49,37 @@ class Anomalia {
   });
 
   factory Anomalia.fromJson(Map<String, dynamic> j) => Anomalia(
-        titulo: j['titulo'] as String,
-        observado: j['observado'].toString(),
-        esperado: j['esperado'].toString(),
-        desvio: (j['desvio'] as num).toDouble(),
-        score: (j['score'] as num).toDouble(),
-        severidade: j['severidade'] as String? ?? 'media',
-      );
+    titulo: j['titulo'] as String,
+    observado: j['observado'].toString(),
+    esperado: j['esperado'].toString(),
+    desvio: (j['desvio'] as num).toDouble(),
+    score: (j['score'] as num).toDouble(),
+    severidade: j['severidade'] as String? ?? 'media',
+  );
 }
 
 class InteligenciaOperacional {
-  final int? anomaliasCriticas;
-  final int? alertasAtivos;
-  final double? acuracia; // 0 a 100
-  final int? falsosPositivos;
+  final double? cumprimentoProgramacao;
+  final int? viagensNaoRealizadas;
+  final int? diasComDesvio;
+  final int? diasAnalisados;
 
   const InteligenciaOperacional({
-    this.anomaliasCriticas,
-    this.alertasAtivos,
-    this.acuracia,
-    this.falsosPositivos,
+    this.cumprimentoProgramacao,
+    this.viagensNaoRealizadas,
+    this.diasComDesvio,
+    this.diasAnalisados,
   });
 
-  factory InteligenciaOperacional.fromJson(Map<String, dynamic>? j) =>
-      InteligenciaOperacional(
-        anomaliasCriticas: j?['anomalias_criticas'] as int?,
-        alertasAtivos: j?['alertas_ativos'] as int?,
-        acuracia: (j?['acuracia'] as num?)?.toDouble(),
-        falsosPositivos: j?['falsos_positivos'] as int?,
-      );
+  factory InteligenciaOperacional.fromJson(Map<String, dynamic>? j) {
+    return InteligenciaOperacional(
+      cumprimentoProgramacao: (j?['cumprimento_programacao'] as num?)
+          ?.toDouble(),
+      viagensNaoRealizadas: (j?['viagens_nao_realizadas'] as num?)?.toInt(),
+      diasComDesvio: (j?['dias_com_desvio'] as num?)?.toInt(),
+      diasAnalisados: (j?['dias_analisados'] as num?)?.toInt(),
+    );
+  }
 }
 
 class DashboardOverview {
