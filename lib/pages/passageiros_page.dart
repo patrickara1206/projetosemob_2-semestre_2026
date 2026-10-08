@@ -100,7 +100,7 @@ class _Content extends StatelessWidget {
       final cards = [
         ValueListenableBuilder<Periodo>(
           valueListenable: periodoNotifier,
-          builder: (_, p, __) => _Kpi(
+          builder: (_, p, _) => _Kpi(
             title: 'TOTAL DE PASSAGEIROS',
             icon: Icons.more_vert,
             iconColor: AppColors.muted,

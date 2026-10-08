@@ -112,7 +112,7 @@ class _Content extends StatelessWidget {
                       const SizedBox(height: 4),
                       ValueListenableBuilder<Periodo>(
                         valueListenable: periodoNotifier,
-                        builder: (_, p, __) => Text(
+                        builder: (_, p, _) => Text(
                           'Monitoramento de viagens, pontualidade e métricas '
                           'de frota (${p.label}).',
                           style: const TextStyle(
