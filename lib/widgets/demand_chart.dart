@@ -164,7 +164,7 @@ class DemandChart extends StatelessWidget {
                   barWidth: 5,
                   belowBarData: BarAreaData(
                     show: true,
-                    color: _line.withOpacity(0.06),
+                    color: _line.withValues(alpha: 0.06),
                   ),
                   dotData: FlDotData(
                     show: true,
@@ -181,7 +181,7 @@ class DemandChart extends StatelessWidget {
               ],
             ),
           ),
-          if (callout != null) callout,
+          ?callout,
         ],
       );
     });
