@@ -6,10 +6,10 @@ import '../core/theme.dart';
 class KpiCard extends StatelessWidget {
   final String title;
   final IconData icon;
-  final String value; // já formatado (ex.: "42.500" ou "--")
-  final String? unit; // "km"
-  final String? prefix; // "R$"
-  final double? variation; // %
+  final String value;
+  final String? unit;
+  final String? prefix;
+  final double? variation;
 
   const KpiCard({
     super.key,
@@ -36,9 +36,10 @@ class KpiCard extends StatelessWidget {
                 child: Text(
                   title.toUpperCase(),
                   style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF374151)),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
                 ),
               ),
               Icon(icon, size: 20, color: AppColors.muted),
@@ -50,21 +51,26 @@ class KpiCard extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               if (prefix != null)
-                Text('$prefix ',
-                    style: const TextStyle(
-                        fontSize: 13, color: AppColors.navy)),
+                Text(
+                  '$prefix ',
+                  style: const TextStyle(fontSize: 13, color: AppColors.navy),
+                ),
               Flexible(
-                child: Text(value,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.navy)),
+                child: Text(
+                  value,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.navy,
+                  ),
+                ),
               ),
               if (unit != null)
-                Text(' $unit',
-                    style: const TextStyle(
-                        fontSize: 13, color: AppColors.navy)),
+                Text(
+                  ' $unit',
+                  style: const TextStyle(fontSize: 13, color: AppColors.navy),
+                ),
             ],
           ),
           const SizedBox(height: 6),
@@ -82,22 +88,31 @@ class _Variation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (v == null) {
-      return const Text('--',
-          style: TextStyle(fontSize: 11, color: AppColors.muted));
+      return const Text(
+        '--',
+        style: TextStyle(fontSize: 11, color: AppColors.muted),
+      );
     }
     if (v == 0) {
-      return const Text('— Estável',
-          style: TextStyle(fontSize: 11, color: AppColors.muted));
+      return const Text(
+        '— Estável',
+        style: TextStyle(fontSize: 11, color: AppColors.muted),
+      );
     }
     final up = v! > 0;
     final color = up ? AppColors.green : AppColors.red;
     return Row(
       children: [
-        Icon(up ? Icons.arrow_upward : Icons.arrow_downward,
-            size: 12, color: color),
+        Icon(
+          up ? Icons.arrow_upward : Icons.arrow_downward,
+          size: 12,
+          color: color,
+        ),
         const SizedBox(width: 2),
-        Text('${fmtPercent(v)} vs anterior',
-            style: TextStyle(fontSize: 11, color: color)),
+        Text(
+          '${fmtPercent(v)} vs anterior',
+          style: TextStyle(fontSize: 11, color: color),
+        ),
       ],
     );
   }

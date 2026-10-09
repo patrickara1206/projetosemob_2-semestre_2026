@@ -56,7 +56,9 @@ class _OperacaoPageState extends State<OperacaoPage> {
                 Text('${snap.error}'),
                 const SizedBox(height: 12),
                 FilledButton(
-                    onPressed: _reload, child: const Text('Tentar novamente')),
+                  onPressed: _reload,
+                  child: const Text('Tentar novamente'),
+                ),
               ],
             ),
           );
@@ -73,112 +75,114 @@ class _Content extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, box) {
-      final w = box.maxWidth;
-      final pad = w < 700 ? 16.0 : 24.0;
-      const gap = 16.0;
-      final cols = w >= 900 ? 3 : (w >= 600 ? 2 : 1);
-      final itemW = (w - pad * 2 - gap * (cols - 1)) / cols;
-      final wide = w >= 900;
+    return LayoutBuilder(
+      builder: (context, box) {
+        final w = box.maxWidth;
+        final pad = w < 700 ? 16.0 : 24.0;
+        const gap = 16.0;
+        final cols = w >= 900 ? 3 : (w >= 600 ? 2 : 1);
+        final itemW = (w - pad * 2 - gap * (cols - 1)) / cols;
+        final wide = w >= 900;
 
-      final cards = [
-        _ViagensCard(data: data),
-        _PontualidadeCard(data: data),
-        _QuilometragemCard(data: data),
-      ];
+        final cards = [
+          _ViagensCard(data: data),
+          _PontualidadeCard(data: data),
+          _QuilometragemCard(data: data),
+        ];
 
-      final charts = [
-        KmBarChart(dados: data.kmMensal),
-        HourlyChart(dados: data.viagensHora),
-      ];
+        final charts = [
+          KmBarChart(dados: data.kmMensal),
+          HourlyChart(dados: data.viagensHora),
+        ];
 
-      return SingleChildScrollView(
-        padding: EdgeInsets.all(pad),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Desempenho da Operação',
-                          style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.navy)),
-                      const SizedBox(height: 4),
-                      ValueListenableBuilder<Periodo>(
-                        valueListenable: periodoNotifier,
-                        builder: (_, p, _) => Text(
-                          'Monitoramento de viagens, pontualidade e métricas '
-                          'de frota (${p.label}).',
-                          style: const TextStyle(
-                              fontSize: 12, color: AppColors.muted),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: exportar relatório (endpoint do backend)
-                  },
-                  icon: const Icon(Icons.download, size: 16),
-                  label: const Text('Exportar Relatório'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: gap,
-              runSpacing: gap,
-              children: [
-                for (final c in cards) SizedBox(width: itemW, child: c),
-              ],
-            ),
-            const SizedBox(height: 20),
-            if (wide)
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(pad),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: charts[0]),
-                  const SizedBox(width: 20),
-                  Expanded(child: charts[1]),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Desempenho da Operação',
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.navy,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        ValueListenableBuilder<Periodo>(
+                          valueListenable: periodoNotifier,
+                          builder: (_, p, _) => Text(
+                            'Monitoramento de viagens, pontualidade e métricas '
+                            'de frota (${p.label}).',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.muted,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.download, size: 16),
+                    label: const Text('Exportar Relatório'),
+                  ),
                 ],
-              )
-            else ...[
-              charts[0],
-              const SizedBox(height: 16),
-              charts[1],
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children: [
+                  for (final c in cards) SizedBox(width: itemW, child: c),
+                ],
+              ),
+              const SizedBox(height: 20),
+              if (wide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: charts[0]),
+                    const SizedBox(width: 20),
+                    Expanded(child: charts[1]),
+                  ],
+                )
+              else ...[
+                charts[0],
+                const SizedBox(height: 16),
+                charts[1],
+              ],
+              const SizedBox(height: 20),
+              AnomalyTable(
+                anomalias: data.anomalias,
+                onAction: (a) {},
+                onVerTodas: () {},
+              ),
             ],
-            const SizedBox(height: 20),
-            AnomalyTable(
-              anomalias: data.anomalias,
-              onAction: (a) {
-                // TODO: investigar / notificar / ajustar (endpoint do backend)
-              },
-              onVerTodas: () {
-                // TODO: navegar para a lista completa de anomalias
-              },
-            ),
-          ],
-        ),
-      );
-    });
+          ),
+        );
+      },
+    );
   }
 }
-
-// ---------- Cards de indicadores ----------
 
 class _CardBase extends StatelessWidget {
   final String title;
   final IconData icon;
   final Widget child;
-  const _CardBase(
-      {required this.title, required this.icon, required this.child});
+  const _CardBase({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -191,11 +195,14 @@ class _CardBase extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(title,
-                    style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
+                ),
               ),
               Icon(icon, size: 20, color: AppColors.muted),
             ],
@@ -226,14 +233,18 @@ class _ViagensCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(fmtInt(data.viagensRealizadas),
-                  style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.navy)),
-              Text(' / ${fmtInt(data.viagensProgramadas)} prog.',
-                  style: const TextStyle(
-                      fontSize: 12, color: AppColors.muted)),
+              Text(
+                fmtInt(data.viagensRealizadas),
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.navy,
+                ),
+              ),
+              Text(
+                ' / ${fmtInt(data.viagensProgramadas)} prog.',
+                style: const TextStyle(fontSize: 12, color: AppColors.muted),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -252,9 +263,7 @@ class _ViagensCard extends StatelessWidget {
               const Icon(Icons.arrow_upward, size: 12, color: AppColors.green),
               const SizedBox(width: 2),
               Text(
-                exec == null
-                    ? '--'
-                    : '${fmtDec(exec * 100)}% Executado',
+                exec == null ? '--' : '${fmtDec(exec * 100)}% Executado',
                 style: const TextStyle(fontSize: 11, color: AppColors.green),
               ),
             ],
@@ -289,11 +298,14 @@ class _PontualidadeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(p == null ? '--' : '${fmtDec(p)}%',
-              style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.navy)),
+          Text(
+            p == null ? '--' : '${fmtDec(p)}%',
+            style: const TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              color: AppColors.navy,
+            ),
+          ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -301,8 +313,7 @@ class _PontualidadeCard extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: negativo ? AppColors.orangeSoft : AppColors.greenSoft,
                   borderRadius: BorderRadius.circular(6),
@@ -311,24 +322,30 @@ class _PontualidadeCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (v != null)
-                      Icon(negativo ? Icons.arrow_downward : Icons.arrow_upward,
-                          size: 12,
-                          color: negativo
-                              ? const Color(0xFFB7791F)
-                              : AppColors.green),
+                      Icon(
+                        negativo ? Icons.arrow_downward : Icons.arrow_upward,
+                        size: 12,
+                        color: negativo
+                            ? const Color(0xFFB7791F)
+                            : AppColors.green,
+                      ),
                     const SizedBox(width: 2),
-                    Text(v == null ? '--' : '${fmtPercent(v)} vs mês ant.',
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: negativo
-                                ? const Color(0xFFB7791F)
-                                : AppColors.green)),
+                    Text(
+                      v == null ? '--' : '${fmtPercent(v)} vs mês ant.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: negativo
+                            ? const Color(0xFFB7791F)
+                            : AppColors.green,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Text(metaTxt,
-                  style:
-                      const TextStyle(fontSize: 11, color: AppColors.muted)),
+              Text(
+                metaTxt,
+                style: const TextStyle(fontSize: 11, color: AppColors.muted),
+              ),
             ],
           ),
         ],
@@ -396,17 +413,23 @@ class _KmRow extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(label,
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: strong ? FontWeight.w600 : FontWeight.w400,
-                      color: strong ? AppColors.text : AppColors.muted)),
-            ),
-            Text('${fmtInt(value)} km',
+              child: Text(
+                label,
                 style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: strong ? FontWeight.w800 : FontWeight.w400,
-                    color: strong ? AppColors.navy : AppColors.muted)),
+                  fontSize: 12,
+                  fontWeight: strong ? FontWeight.w600 : FontWeight.w400,
+                  color: strong ? AppColors.text : AppColors.muted,
+                ),
+              ),
+            ),
+            Text(
+              '${fmtInt(value)} km',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: strong ? FontWeight.w800 : FontWeight.w400,
+                color: strong ? AppColors.navy : AppColors.muted,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),

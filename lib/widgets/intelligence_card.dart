@@ -7,10 +7,7 @@ import '../models/dashboard_overview.dart';
 class IntelligenceCard extends StatelessWidget {
   final InteligenciaOperacional data;
 
-  const IntelligenceCard({
-    super.key,
-    required this.data,
-  });
+  const IntelligenceCard({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +23,7 @@ class IntelligenceCard extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(
-                Icons.auto_awesome,
-                color: AppColors.primary,
-                size: 18,
-              ),
+              Icon(Icons.auto_awesome, color: AppColors.primary, size: 18),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -80,10 +73,7 @@ class IntelligenceCard extends StatelessWidget {
           const Text(
             'Indicadores calculados por comparação entre '
             'viagens realizadas e programadas.',
-            style: TextStyle(
-              fontSize: 11,
-              color: AppColors.muted,
-            ),
+            style: TextStyle(fontSize: 11, color: AppColors.muted),
           ),
         ],
       ),
@@ -106,10 +96,7 @@ class _Metric extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 16,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         decoration: BoxDecoration(
           color: const Color(0xFFF3F6FB),
           borderRadius: BorderRadius.circular(10),
@@ -134,10 +121,7 @@ class _Metric extends StatelessWidget {
                 child: Text(
                   label,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.muted,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: AppColors.muted, fontSize: 11),
                 ),
               ),
             ),

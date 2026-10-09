@@ -57,7 +57,9 @@ class _MachineLearningPageState extends State<MachineLearningPage> {
                 Text('${snap.error}'),
                 const SizedBox(height: 12),
                 FilledButton(
-                    onPressed: _reload, child: const Text('Tentar novamente')),
+                  onPressed: _reload,
+                  child: const Text('Tentar novamente'),
+                ),
               ],
             ),
           );
@@ -74,149 +76,155 @@ class _Content extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, box) {
-      final w = box.maxWidth;
-      final pad = w < 700 ? 16.0 : 24.0;
-      const gap = 16.0;
-      final cols = w >= 1000 ? 4 : (w >= 500 ? 2 : 1);
-      final itemW = (w - pad * 2 - gap * (cols - 1)) / cols;
-      final wide = w >= 1000;
+    return LayoutBuilder(
+      builder: (context, box) {
+        final w = box.maxWidth;
+        final pad = w < 700 ? 16.0 : 24.0;
+        const gap = 16.0;
+        final cols = w >= 1000 ? 4 : (w >= 500 ? 2 : 1);
+        final itemW = (w - pad * 2 - gap * (cols - 1)) / cols;
+        final wide = w >= 1000;
 
-      final cards = [
-        _Kpi(
-          title: 'PREVISÕES REALIZADAS',
-          icon: Icons.bar_chart,
-          iconColor: AppColors.primary,
-          value: fmtCompact(data.previsoes),
-          footer: _variacao(data.previsoesVariacao),
-        ),
-        _Kpi(
-          title: 'ANOMALIAS IDENTIFICADAS',
-          icon: Icons.warning_amber_rounded,
-          iconColor: AppColors.red,
-          value: fmtInt(data.anomalias24h),
-          footer: _nota('Nas últimas 24 horas'),
-        ),
-        _Kpi(
-          title: 'SCORE MÉDIO CONFIANÇA',
-          icon: Icons.verified_outlined,
-          iconColor: AppColors.primary,
-          value: fmtDec(data.scoreMedio, digits: 2),
-          footer: _nota(data.scoreMeta == null
-              ? '--'
-              : 'Target: > ${fmtDec(data.scoreMeta, digits: 2)}'),
-        ),
-        _Kpi(
-          title: 'ÚLTIMO TREINAMENTO',
-          icon: Icons.sync,
-          iconColor: AppColors.primary,
-          value: fmtHa(data.ultimoTreinamento),
-          footer: _StatusChip(status: data.statusModelo),
-          tinted: true,
-        ),
-      ];
+        final cards = [
+          _Kpi(
+            title: 'PREVISÕES REALIZADAS',
+            icon: Icons.bar_chart,
+            iconColor: AppColors.primary,
+            value: fmtCompact(data.previsoes),
+            footer: _variacao(data.previsoesVariacao),
+          ),
+          _Kpi(
+            title: 'ANOMALIAS IDENTIFICADAS',
+            icon: Icons.warning_amber_rounded,
+            iconColor: AppColors.red,
+            value: fmtInt(data.anomalias24h),
+            footer: _nota('Nas últimas 24 horas'),
+          ),
+          _Kpi(
+            title: 'SCORE MÉDIO CONFIANÇA',
+            icon: Icons.verified_outlined,
+            iconColor: AppColors.primary,
+            value: fmtDec(data.scoreMedio, digits: 2),
+            footer: _nota(
+              data.scoreMeta == null
+                  ? '--'
+                  : 'Target: > ${fmtDec(data.scoreMeta, digits: 2)}',
+            ),
+          ),
+          _Kpi(
+            title: 'ÚLTIMO TREINAMENTO',
+            icon: Icons.sync,
+            iconColor: AppColors.primary,
+            value: fmtHa(data.ultimoTreinamento),
+            footer: _StatusChip(status: data.statusModelo),
+            tinted: true,
+          ),
+        ];
 
-      final flow = const SizedBox(height: 320, child: MlFlowCard());
-      final stability =
-          SizedBox(height: 320, child: ScoreStabilityChart(serie: data.scoreSerie));
-      final table = FeatureImportanceTable(features: data.features);
-      final logs = AiLogsPanel(logs: data.logs);
+        final flow = const SizedBox(height: 320, child: MlFlowCard());
+        final stability = SizedBox(
+          height: 320,
+          child: ScoreStabilityChart(serie: data.scoreSerie),
+        );
+        final table = FeatureImportanceTable(features: data.features);
+        final logs = AiLogsPanel(logs: data.logs);
 
-      return SingleChildScrollView(
-        padding: EdgeInsets.all(pad),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              runSpacing: 12,
-              spacing: 12,
-              children: [
-                const Column(
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(pad),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                runSpacing: 12,
+                spacing: 12,
+                children: [
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Status do Motor de Inferência',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.navy,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Monitoramento contínuo do pipeline de Machine Learning '
+                        'e saúde dos modelos preditivos.',
+                        style: TextStyle(fontSize: 12, color: AppColors.muted),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.history, size: 16),
+                        label: const Text('Histórico'),
+                      ),
+                      const SizedBox(width: 10),
+                      FilledButton.icon(
+                        onPressed: () {},
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                        ),
+                        icon: const Icon(Icons.play_arrow, size: 16),
+                        label: const Text('Re-treinar Modelo'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children: [
+                  for (final c in cards) SizedBox(width: itemW, child: c),
+                ],
+              ),
+              const SizedBox(height: 20),
+              if (wide)
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Status do Motor de Inferência',
-                        style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.navy)),
-                    SizedBox(height: 4),
-                    Text(
-                      'Monitoramento contínuo do pipeline de Machine Learning '
-                      'e saúde dos modelos preditivos.',
-                      style: TextStyle(fontSize: 12, color: AppColors.muted),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        // TODO: abrir histórico de treinamentos
-                      },
-                      icon: const Icon(Icons.history, size: 16),
-                      label: const Text('Histórico'),
-                    ),
-                    const SizedBox(width: 10),
-                    FilledButton.icon(
-                      onPressed: () {
-                        // TODO: chamar endpoint de re-treino (back end)
-                      },
-                      style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.primary),
-                      icon: const Icon(Icons.play_arrow, size: 16),
-                      label: const Text('Re-treinar Modelo'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: gap,
-              runSpacing: gap,
-              children: [
-                for (final c in cards) SizedBox(width: itemW, child: c),
-              ],
-            ),
-            const SizedBox(height: 20),
-            if (wide)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: flow),
-                  const SizedBox(width: 20),
-                  Expanded(child: stability),
-                ],
-              )
-            else ...[
-              flow,
-              const SizedBox(height: 16),
-              stability,
-            ],
-            const SizedBox(height: 20),
-            if (wide)
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(flex: 3, child: table),
+                    Expanded(child: flow),
                     const SizedBox(width: 20),
-                    Expanded(flex: 2, child: logs),
+                    Expanded(child: stability),
                   ],
-                ),
-              )
-            else ...[
-              table,
-              const SizedBox(height: 16),
-              logs,
+                )
+              else ...[
+                flow,
+                const SizedBox(height: 16),
+                stability,
+              ],
+              const SizedBox(height: 20),
+              if (wide)
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(flex: 3, child: table),
+                      const SizedBox(width: 20),
+                      Expanded(flex: 2, child: logs),
+                    ],
+                  ),
+                )
+              else ...[
+                table,
+                const SizedBox(height: 16),
+                logs,
+              ],
             ],
-          ],
-        ),
-      );
-    });
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -229,12 +237,17 @@ Widget _variacao(double? v) {
   final color = up ? AppColors.green : AppColors.red;
   return Row(
     children: [
-      Icon(up ? Icons.trending_up : Icons.trending_down,
-          size: 14, color: color),
+      Icon(
+        up ? Icons.trending_up : Icons.trending_down,
+        size: 14,
+        color: color,
+      ),
       const SizedBox(width: 4),
       Flexible(
-        child: Text('${fmtPercent(v)} vs semana anterior',
-            style: TextStyle(fontSize: 11, color: color)),
+        child: Text(
+          '${fmtPercent(v)} vs semana anterior',
+          style: TextStyle(fontSize: 11, color: color),
+        ),
       ),
     ],
   );
@@ -319,11 +332,14 @@ class _Kpi extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(title,
-                    style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
+                ),
               ),
               Icon(icon, size: 20, color: iconColor),
             ],
@@ -332,11 +348,14 @@ class _Kpi extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(value,
-                style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.navy)),
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: AppColors.navy,
+              ),
+            ),
           ),
           const SizedBox(height: 8),
           footer,

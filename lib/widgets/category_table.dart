@@ -32,52 +32,63 @@ class CategoryTable extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Detalhamento de Categorias',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF374151))),
+                      Text(
+                        'Detalhamento de Categorias',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF374151),
+                        ),
+                      ),
                       SizedBox(height: 2),
-                      Text('Estrutura preparada para expansão de perfis tarifários',
-                          style:
-                              TextStyle(fontSize: 11, color: AppColors.muted)),
+                      Text(
+                        'Estrutura preparada para expansão de perfis tarifários',
+                        style: TextStyle(fontSize: 11, color: AppColors.muted),
+                      ),
                     ],
                   ),
                 ),
                 TextButton(
                   onPressed: onVerRelatorio,
-                  child: const Text('VER RELATÓRIO COMPLETO →',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.navy)),
+                  child: const Text(
+                    'VER RELATÓRIO COMPLETO →',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.navy,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          LayoutBuilder(builder: (context, box) {
-            final width = math.max(box.maxWidth, 600.0);
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: width,
-                child: Column(
-                  children: [
-                    const _Header(),
-                    if (categorias.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text('Nenhuma categoria no período',
-                            style: TextStyle(color: AppColors.muted)),
-                      )
-                    else
-                      for (var i = 0; i < categorias.length; i++)
-                        _DataRow(item: categorias[i], zebra: i.isOdd),
-                  ],
+          LayoutBuilder(
+            builder: (context, box) {
+              final width = math.max(box.maxWidth, 600.0);
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: width,
+                  child: Column(
+                    children: [
+                      const _Header(),
+                      if (categorias.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Text(
+                            'Nenhuma categoria no período',
+                            style: TextStyle(color: AppColors.muted),
+                          ),
+                        )
+                      else
+                        for (var i = 0; i < categorias.length; i++)
+                          _DataRow(item: categorias[i], zebra: i.isOdd),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -92,16 +103,19 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget cell(String t, int flex, Alignment a) => Expanded(
-          flex: flex,
-          child: Align(
-            alignment: a,
-            child: Text(t,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700)),
+      flex: flex,
+      child: Align(
+        alignment: a,
+        child: Text(
+          t,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
           ),
-        );
+        ),
+      ),
+    );
 
     return Container(
       color: AppColors.navy,
@@ -134,28 +148,33 @@ class _DataRow extends StatelessWidget {
         children: [
           Expanded(
             flex: _flex[0],
-            child: Text(item.nome,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.navy)),
+            child: Text(
+              item.nome,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.navy,
+              ),
+            ),
           ),
           Expanded(
             flex: _flex[1],
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text(fmtInt(item.volume),
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.text)),
+              child: Text(
+                fmtInt(item.volume),
+                style: const TextStyle(fontSize: 12, color: AppColors.text),
+              ),
             ),
           ),
           Expanded(
             flex: _flex[2],
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text('${fmtDec(item.percentual)}%',
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.text)),
+              child: Text(
+                '${fmtDec(item.percentual)}%',
+                style: const TextStyle(fontSize: 12, color: AppColors.text),
+              ),
             ),
           ),
           Expanded(
@@ -163,17 +182,22 @@ class _DataRow extends StatelessWidget {
             child: Align(
               alignment: Alignment.center,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: ativo ? AppColors.greenSoft : AppColors.border,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(ativo ? 'ATIVO' : 'INATIVO',
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: ativo ? AppColors.green : AppColors.muted)),
+                child: Text(
+                  ativo ? 'ATIVO' : 'INATIVO',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: ativo ? AppColors.green : AppColors.muted,
+                  ),
+                ),
               ),
             ),
           ),

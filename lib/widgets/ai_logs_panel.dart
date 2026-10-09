@@ -22,11 +22,14 @@ class AiLogsPanel extends StatelessWidget {
           const Row(
             children: [
               Expanded(
-                child: Text('LOGS DE IA EM TEMPO REAL',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white)),
+                child: Text(
+                  'LOGS DE IA EM TEMPO REAL',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
               ),
               Icon(Icons.circle, size: 9, color: Color(0xFF2196F3)),
             ],
@@ -36,8 +39,10 @@ class AiLogsPanel extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(
-                child: Text('Sem logs no momento',
-                    style: TextStyle(color: Color(0xFF7F8FA9), fontSize: 12)),
+                child: Text(
+                  'Sem logs no momento',
+                  style: TextStyle(color: Color(0xFF7F8FA9), fontSize: 12),
+                ),
               ),
             )
           else
@@ -81,15 +86,23 @@ class _LogLine extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(log.hora,
-                style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 10,
-                    color: Color(0xFF7F8FA9))),
+            Text(
+              log.hora,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 10,
+                color: Color(0xFF7F8FA9),
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(log.mensagem,
-                style: TextStyle(
-                    fontFamily: 'monospace', fontSize: 11, color: text)),
+            Text(
+              log.mensagem,
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 11,
+                color: text,
+              ),
+            ),
           ],
         ),
       ),
@@ -97,7 +110,6 @@ class _LogLine extends StatelessWidget {
   }
 }
 
-/// Cores de alerta usadas só neste painel (fundo escuro).
 class AppColorsLog {
   static const orange = Color(0xFFFFA726);
   static const red = Color(0xFFEF5350);

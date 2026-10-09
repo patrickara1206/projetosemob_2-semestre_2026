@@ -4,12 +4,14 @@ import '../core/formatters.dart';
 import '../core/theme.dart';
 import '../models/dashboard_overview.dart';
 
-/// Painel "Anomalias Detectadas" com a lista de anomalias.
 class AnomalyPanel extends StatelessWidget {
   final List<Anomalia> anomalias;
   final void Function(Anomalia) onTapItem;
-  const AnomalyPanel(
-      {super.key, required this.anomalias, required this.onTapItem});
+  const AnomalyPanel({
+    super.key,
+    required this.anomalias,
+    required this.onTapItem,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,25 +23,32 @@ class AnomalyPanel extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded,
-                  color: AppColors.orange, size: 20),
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.orange,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               const Expanded(
-                child: Text('ANOMALIAS DETECTADAS',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                child: Text(
+                  'ANOMALIAS DETECTADAS',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
+                ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFDECEC),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text('Recentes',
-                    style: TextStyle(fontSize: 10, color: AppColors.red)),
+                child: const Text(
+                  'Recentes',
+                  style: TextStyle(fontSize: 10, color: AppColors.red),
+                ),
               ),
             ],
           ),
@@ -48,8 +57,10 @@ class AnomalyPanel extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(
-                child: Text('Nenhuma anomalia no período',
-                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                child: Text(
+                  'Nenhuma anomalia no período',
+                  style: TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
               ),
             )
           else
@@ -67,8 +78,11 @@ class AnomalyPanel extends StatelessWidget {
 class AnomalyCard extends StatelessWidget {
   final Anomalia anomalia;
   final VoidCallback onPressed;
-  const AnomalyCard(
-      {super.key, required this.anomalia, required this.onPressed});
+  const AnomalyCard({
+    super.key,
+    required this.anomalia,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -90,19 +104,24 @@ class AnomalyCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(anomalia.titulo,
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w700)),
+                child: Text(
+                  anomalia.titulo,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: accent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text('Score: ${anomalia.score.toStringAsFixed(2)}',
-                    style: TextStyle(fontSize: 10, color: accent)),
+                child: Text(
+                  'Score: ${anomalia.score.toStringAsFixed(2)}',
+                  style: TextStyle(fontSize: 10, color: accent),
+                ),
               ),
             ],
           ),
@@ -111,14 +130,18 @@ class AnomalyCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                    'Obs: ${anomalia.observado} | Esp: ${anomalia.esperado}',
-                    style: const TextStyle(fontSize: 11)),
+                  'Obs: ${anomalia.observado} | Esp: ${anomalia.esperado}',
+                  style: const TextStyle(fontSize: 11),
+                ),
               ),
-              Text('Desvio: $desvioTxt',
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: accent)),
+              Text(
+                'Desvio: $desvioTxt',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: accent,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),

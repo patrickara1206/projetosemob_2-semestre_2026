@@ -4,22 +4,13 @@ from app.database.supabase_client import supabase
 def inserir_financeiro(df):
     dados = df.copy()
 
-    dados["data"] = (
-        dados["data"]
-        .dt.strftime("%Y-%m-%d")
-    )
+    dados["data"] = dados["data"].dt.strftime("%Y-%m-%d")
 
-    registros = dados.to_dict(
-        orient="records"
-    )
+    registros = dados.to_dict(orient="records")
 
     resposta = (
-        supabase
-        .table("financeiro")
-        .upsert(
-            registros,
-            on_conflict="data,tipo_periodo"
-        )
+        supabase.table("financeiro")
+        .upsert(registros, on_conflict="data,tipo_periodo")
         .execute()
     )
 
@@ -28,8 +19,7 @@ def inserir_financeiro(df):
 
 def buscar_financeiro_mes(mes):
     resposta = (
-        supabase
-        .table("financeiro")
+        supabase.table("financeiro")
         .select("*")
         .eq("mes_referencia", mes)
         .order("data")
@@ -38,13 +28,9 @@ def buscar_financeiro_mes(mes):
 
     registros = resposta.data or []
 
-    # Prioriza o relatório mensal para evitar
-    # contar novamente os mesmos dias do trimestral.
     registros = sorted(
         registros,
-        key=lambda registro: (
-            0 if registro.get("tipo_periodo") == "mensal" else 1
-        ),
+        key=lambda registro: (0 if registro.get("tipo_periodo") == "mensal" else 1),
     )
 
     registros_por_data = {}
@@ -55,7 +41,4 @@ def buscar_financeiro_mes(mes):
         if data not in registros_por_data:
             registros_por_data[data] = registro
 
-    return [
-        registros_por_data[data]
-        for data in sorted(registros_por_data)
-    ]
+    return [registros_por_data[data] for data in sorted(registros_por_data)]

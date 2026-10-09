@@ -7,20 +7,19 @@ import '../models/dashboard_overview.dart';
 class VolumeChart extends StatelessWidget {
   final List<SeriePonto> serie;
 
-  const VolumeChart({
-    super.key,
-    required this.serie,
-  });
+  const VolumeChart({super.key, required this.serie});
 
   static const azul = Color(0xFF2563EB);
   static const laranja = Color(0xFFEA580C);
   static const texto = Color(0xFF64748B);
 
   String _numero(double valor) {
-    return valor.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (match) => '${match[1]}.',
-    );
+    return valor
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]}.',
+        );
   }
 
   Widget _legenda(Color cor, String titulo) {
@@ -36,13 +35,7 @@ class VolumeChart extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 6),
-        Text(
-          titulo,
-          style: const TextStyle(
-            fontSize: 12,
-            color: texto,
-          ),
-        ),
+        Text(titulo, style: const TextStyle(fontSize: 12, color: texto)),
       ],
     );
   }
@@ -76,10 +69,7 @@ class VolumeChart extends StatelessWidget {
           const SizedBox(height: 6),
           const Text(
             'Quantidade de viagens por dia',
-            style: TextStyle(
-              fontSize: 12,
-              color: texto,
-            ),
+            style: TextStyle(fontSize: 12, color: texto),
           ),
           if (serie.isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -126,10 +116,7 @@ class VolumeChart extends StatelessWidget {
           const Text(
             'Passe o mouse ou toque em um dia para ver os valores.'
             ' Linhas sobrepostas indicam valores iguais ou próximos.',
-            style: TextStyle(
-              fontSize: 11,
-              color: texto,
-            ),
+            style: TextStyle(fontSize: 11, color: texto),
           ),
         ],
       ),
@@ -144,13 +131,9 @@ class VolumeChart extends StatelessWidget {
     for (var i = 0; i < serie.length; i++) {
       final ponto = serie[i];
 
-      realizados.add(
-        FlSpot(i.toDouble(), ponto.realizado),
-      );
+      realizados.add(FlSpot(i.toDouble(), ponto.realizado));
 
-      programados.add(
-        FlSpot(i.toDouble(), ponto.esperado),
-      );
+      programados.add(FlSpot(i.toDouble(), ponto.esperado));
 
       if (ponto.realizado > maiorValor) {
         maiorValor = ponto.realizado;
@@ -164,15 +147,14 @@ class VolumeChart extends StatelessWidget {
     final intervaloY = maiorValor <= 10
         ? 2.0
         : maiorValor <= 100
-            ? 20.0
-            : maiorValor <= 500
-                ? 100.0
-                : (maiorValor / 5 / 100).ceil() * 100.0;
+        ? 20.0
+        : maiorValor <= 500
+        ? 100.0
+        : (maiorValor / 5 / 100).ceil() * 100.0;
 
     final maxY = maiorValor == 0
         ? intervaloY * 5
-        : (maiorValor / intervaloY).ceil() * intervaloY
-            + intervaloY;
+        : (maiorValor / intervaloY).ceil() * intervaloY + intervaloY;
 
     final intervaloX = serie.length <= 6
         ? 1.0
@@ -181,9 +163,7 @@ class VolumeChart extends StatelessWidget {
     return LineChart(
       LineChartData(
         minX: 0,
-        maxX: serie.length == 1
-            ? 1.0
-            : (serie.length - 1).toDouble(),
+        maxX: serie.length == 1 ? 1.0 : (serie.length - 1).toDouble(),
         minY: 0,
         maxY: maxY,
         borderData: FlBorderData(show: false),
@@ -212,10 +192,7 @@ class VolumeChart extends StatelessWidget {
               getTitlesWidget: (valor, meta) {
                 return Text(
                   _numero(valor),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: texto,
-                  ),
+                  style: const TextStyle(fontSize: 11, color: texto),
                 );
               },
             ),
@@ -238,10 +215,7 @@ class VolumeChart extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(
                     serie[indice].rotulo,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: texto,
-                    ),
+                    style: const TextStyle(fontSize: 11, color: texto),
                   ),
                 );
               },
@@ -283,7 +257,7 @@ class VolumeChart extends StatelessWidget {
             barWidth: 3,
             belowBarData: BarAreaData(
               show: true,
-              color: azul.withOpacity(0.07),
+              color: azul.withValues(alpha: 0.07),
             ),
             dotData: FlDotData(
               show: true,
@@ -297,8 +271,7 @@ class VolumeChart extends StatelessWidget {
               },
             ),
           ),
-          // Desenhada por cima para continuar visível
-          // quando os valores coincidem com os realizados.
+
           LineChartBarData(
             spots: programados,
             isCurved: false,

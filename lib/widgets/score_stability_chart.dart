@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../models/ml_overview.dart';
 
-/// Estabilidade do score (7 dias). Deve receber altura definida pelo pai.
 class ScoreStabilityChart extends StatelessWidget {
   final List<ScoreDia> serie;
   const ScoreStabilityChart({super.key, required this.serie});
@@ -22,11 +21,14 @@ class ScoreStabilityChart extends StatelessWidget {
           const Row(
             children: [
               Expanded(
-                child: Text('ESTABILIDADE DO SCORE (7 DIAS)',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                child: Text(
+                  'ESTABILIDADE DO SCORE (7 DIAS)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
+                ),
               ),
               Icon(Icons.more_vert, size: 18, color: AppColors.muted),
             ],
@@ -35,8 +37,11 @@ class ScoreStabilityChart extends StatelessWidget {
           Expanded(
             child: serie.isEmpty
                 ? const Center(
-                    child: Text('Sem dados para o período selecionado',
-                        style: TextStyle(color: AppColors.muted)))
+                    child: Text(
+                      'Sem dados para o período selecionado',
+                      style: TextStyle(color: AppColors.muted),
+                    ),
+                  )
                 : _chart(),
           ),
         ],
@@ -61,17 +66,21 @@ class ScoreStabilityChart extends StatelessWidget {
               const FlLine(color: AppColors.border, strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 32,
               interval: 0.2,
-              getTitlesWidget: (v, meta) => Text(v.toStringAsFixed(1),
-                  style: const TextStyle(fontSize: 10, color: AppColors.muted)),
+              getTitlesWidget: (v, meta) => Text(
+                v.toStringAsFixed(1),
+                style: const TextStyle(fontSize: 10, color: AppColors.muted),
+              ),
             ),
           ),
           bottomTitles: AxisTitles(
@@ -83,9 +92,13 @@ class ScoreStabilityChart extends StatelessWidget {
                 if (i < 0 || i >= n) return const SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(serie[i].rotulo,
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.muted)),
+                  child: Text(
+                    serie[i].rotulo,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.muted,
+                    ),
+                  ),
                 );
               },
             ),
@@ -94,7 +107,7 @@ class ScoreStabilityChart extends StatelessWidget {
         lineBarsData: [
           LineChartBarData(
             spots: [
-              for (var i = 0; i < n; i++) FlSpot(i.toDouble(), serie[i].score)
+              for (var i = 0; i < n; i++) FlSpot(i.toDouble(), serie[i].score),
             ],
             isCurved: false,
             color: _line,

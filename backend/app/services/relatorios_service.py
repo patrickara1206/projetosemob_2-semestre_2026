@@ -1,11 +1,7 @@
 import pandas as pd
 
 
-def normalizar_fcv(
-    df,
-    mes,
-    tipo_periodo
-):
+def normalizar_fcv(df, mes, tipo_periodo):
     df = df.copy()
 
     colunas = [
@@ -53,11 +49,7 @@ def normalizar_fcv(
     return df
 
 
-def normalizar_linhas(
-    df,
-    mes,
-    tipo_periodo
-):
+def normalizar_linhas(df, mes, tipo_periodo):
     df = df.copy()
 
     colunas = [
@@ -106,11 +98,7 @@ def normalizar_linhas(
     return df
 
 
-def normalizar_resumo_faixa_horaria(
-    df,
-    mes,
-    tipo_periodo
-):
+def normalizar_resumo_faixa_horaria(df, mes, tipo_periodo):
     df = df.copy()
 
     colunas = [
@@ -156,11 +144,7 @@ def normalizar_resumo_faixa_horaria(
     return df
 
 
-def normalizar_faixa_horaria(
-    df,
-    mes,
-    tipo_periodo
-):
+def normalizar_faixa_horaria(df, mes, tipo_periodo):
     df = df.copy()
 
     colunas = [
@@ -210,11 +194,7 @@ def normalizar_faixa_horaria(
     return df
 
 
-def normalizar_viagens(
-    df,
-    mes,
-    tipo_periodo
-):
+def normalizar_viagens(df, mes, tipo_periodo):
     df = df.copy()
 
     colunas = [
@@ -273,12 +253,7 @@ def normalizar_viagens(
     return df
 
 
-def normalizar_viagens_ocorrencias(
-    df,
-    mes,
-    tipo_periodo,
-    tipo_ocorrencia
-):
+def normalizar_viagens_ocorrencias(df, mes, tipo_periodo, tipo_ocorrencia):
     df = df.copy()
 
     colunas = [

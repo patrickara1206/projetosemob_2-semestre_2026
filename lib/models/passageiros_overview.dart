@@ -1,9 +1,9 @@
 class DemandaPonto {
-  final String rotulo; // ex.: "08h"
+  final String rotulo;
   final double volume;
   final bool anomalia;
-  final String? titulo; // ex.: "Queda Brusca"
-  final String? detalhe; // ex.: "11:30 - Queda de 40% vs média móvel..."
+  final String? titulo;
+  final String? detalhe;
 
   const DemandaPonto({
     required this.rotulo,
@@ -14,19 +14,19 @@ class DemandaPonto {
   });
 
   factory DemandaPonto.fromJson(Map<String, dynamic> j) => DemandaPonto(
-        rotulo: j['rotulo'] as String,
-        volume: (j['volume'] as num).toDouble(),
-        anomalia: j['anomalia'] as bool? ?? false,
-        titulo: j['titulo'] as String?,
-        detalhe: j['detalhe'] as String?,
-      );
+    rotulo: j['rotulo'] as String,
+    volume: (j['volume'] as num).toDouble(),
+    anomalia: j['anomalia'] as bool? ?? false,
+    titulo: j['titulo'] as String?,
+    detalhe: j['detalhe'] as String?,
+  );
 }
 
 class CategoriaTarifaria {
-  final String nome; // "Comum (Integral)"
+  final String nome;
   final double volume;
-  final double percentual; // 0 a 100
-  final String status; // 'ativo' | 'inativo'
+  final double percentual;
+  final String status;
 
   const CategoriaTarifaria({
     required this.nome,
@@ -46,12 +46,12 @@ class CategoriaTarifaria {
 
 class PassageirosOverview {
   final double? totalPassageiros;
-  final double? totalVariacao; // % vs período anterior
-  final double? pctPagantes; // 0 a 100
+  final double? totalVariacao;
+  final double? pctPagantes;
   final double? qtdPagantes;
-  final double? pctGratuidades; // 0 a 100
+  final double? pctGratuidades;
   final double? qtdGratuidades;
-  final String? picoFaixa; // "07:00 - 08:30"
+  final String? picoFaixa;
   final double? picoMediaHora;
   final List<DemandaPonto> serie;
   final List<CategoriaTarifaria> categorias;

@@ -28,10 +28,11 @@ class TopBar extends StatelessWidget {
           const Text(
             'Dashboard\nOperacional',
             style: TextStyle(
-                color: AppColors.navy,
-                fontWeight: FontWeight.w800,
-                fontSize: 18,
-                height: 1.1),
+              color: AppColors.navy,
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+              height: 1.1,
+            ),
           ),
           const Spacer(),
           const _PeriodTabs(),
@@ -41,17 +42,25 @@ class TopBar extends StatelessWidget {
             const SizedBox(width: 16),
             const Icon(Icons.calendar_today_outlined, size: 20),
             const SizedBox(width: 8),
-            Text(fmtDateTime(DateTime.now()),
-                style: const TextStyle(fontSize: 12)),
+            Text(
+              fmtDateTime(DateTime.now()),
+              style: const TextStyle(fontSize: 12),
+            ),
             const SizedBox(width: 16),
-            IconButton(icon: const Icon(Icons.refresh), onPressed: () {
-              // Força recarregar: reemite o período atual
-              periodoNotifier.notifyListeners();
-            }),
             IconButton(
-                icon: const Icon(Icons.notifications_none), onPressed: () {}),
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                periodoNotifier.atualizar();
+              },
+            ),
             IconButton(
-                icon: const Icon(Icons.settings_outlined), onPressed: () {}),
+              icon: const Icon(Icons.notifications_none),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () {},
+            ),
             const SizedBox(width: 8),
             const CircleAvatar(radius: 18, child: Icon(Icons.person)),
           ],
@@ -80,7 +89,9 @@ class _PeriodTabs extends StatelessWidget {
                     onTap: () => periodoNotifier.value = p,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
@@ -95,9 +106,12 @@ class _PeriodTabs extends StatelessWidget {
                         p.label,
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight:
-                              p == atual ? FontWeight.bold : FontWeight.w400,
-                          color: p == atual ? AppColors.primary : Colors.black87,
+                          fontWeight: p == atual
+                              ? FontWeight.bold
+                              : FontWeight.w400,
+                          color: p == atual
+                              ? AppColors.primary
+                              : Colors.black87,
                         ),
                       ),
                     ),
@@ -116,7 +130,6 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: ligar ao statusModelo vindo do backend
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -129,8 +142,10 @@ class _StatusChip extends StatelessWidget {
         children: [
           Icon(Icons.circle, size: 8, color: AppColors.green),
           SizedBox(width: 6),
-          Text('Processamento do\nModelo: OK',
-              style: TextStyle(fontSize: 10, color: AppColors.green)),
+          Text(
+            'Processamento do\nModelo: OK',
+            style: TextStyle(fontSize: 10, color: AppColors.green),
+          ),
         ],
       ),
     );

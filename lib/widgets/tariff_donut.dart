@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import '../core/formatters.dart';
 import '../core/theme.dart';
 
-/// Perfil tarifário (rosca). Deve receber altura definida pelo pai.
 class TariffDonut extends StatelessWidget {
-  final double? pctPagantes; // 0 a 100
+  final double? pctPagantes;
 
   const TariffDonut({super.key, required this.pctPagantes});
 
@@ -27,11 +26,14 @@ class TariffDonut extends StatelessWidget {
           const Row(
             children: [
               Expanded(
-                child: Text('PERFIL TARIFÁRIO',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                child: Text(
+                  'PERFIL TARIFÁRIO',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
+                ),
               ),
               Icon(Icons.more_vert, size: 18, color: AppColors.muted),
             ],
@@ -80,14 +82,21 @@ class TariffDonut extends StatelessWidget {
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(p == null ? '--' : '${p.round()}%',
-                                style: const TextStyle(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.navy)),
-                            const Text('PAGANTES',
-                                style: TextStyle(
-                                    fontSize: 10, color: AppColors.muted)),
+                            Text(
+                              p == null ? '--' : '${p.round()}%',
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.navy,
+                              ),
+                            ),
+                            const Text(
+                              'PAGANTES',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: AppColors.muted,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -119,8 +128,11 @@ class _LegendRow extends StatelessWidget {
   final Color color;
   final String label;
   final String value;
-  const _LegendRow(
-      {required this.color, required this.label, required this.value});
+  const _LegendRow({
+    required this.color,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -131,15 +143,19 @@ class _LegendRow extends StatelessWidget {
           Icon(Icons.circle, size: 10, color: color),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(label,
-                style:
-                    const TextStyle(fontSize: 12, color: Color(0xFF374151))),
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF374151)),
+            ),
           ),
-          Text(value,
-              style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.navy)),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppColors.navy,
+            ),
+          ),
         ],
       ),
     );

@@ -9,7 +9,6 @@ from app.services.importacao_service import (
     importar_relatorio,
 )
 
-
 router = APIRouter(
     prefix="/importacao",
     tags=["Importação"],
@@ -25,9 +24,7 @@ async def importar_arquivo(
 ):
     nome_arquivo = arquivo.filename or ""
 
-    if not nome_arquivo.lower().endswith(
-        (".html", ".htm")
-    ):
+    if not nome_arquivo.lower().endswith((".html", ".htm")):
         raise HTTPException(
             status_code=400,
             detail="O arquivo deve ser HTML.",

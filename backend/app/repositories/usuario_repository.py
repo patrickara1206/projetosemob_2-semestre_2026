@@ -3,8 +3,7 @@ from app.database.supabase_client import supabase
 
 def buscar_usuario_por_email(email):
     resposta = (
-        supabase
-        .table("usuarios")
+        supabase.table("usuarios")
         .select("*")
         .eq("email", email)
         .eq("ativo", True)

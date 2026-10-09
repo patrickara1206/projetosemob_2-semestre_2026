@@ -1,6 +1,6 @@
 class Kpi {
   final double? valor;
-  final double? variacao; // % vs período anterior
+  final double? variacao;
 
   const Kpi({this.valor, this.variacao});
 
@@ -11,7 +11,7 @@ class Kpi {
 }
 
 class SeriePonto {
-  final String rotulo; // ex.: "06:00"
+  final String rotulo;
   final double realizado;
   final double esperado;
   final bool anomalia;
@@ -35,9 +35,9 @@ class Anomalia {
   final String titulo;
   final String observado;
   final String esperado;
-  final double desvio; // %
+  final double desvio;
   final double score;
-  final String severidade; // 'alta' | 'media'
+  final String severidade;
 
   const Anomalia({
     required this.titulo,
@@ -91,7 +91,7 @@ class DashboardOverview {
   final List<SeriePonto> serie;
   final List<Anomalia> anomalias;
   final InteligenciaOperacional inteligencia;
-  final String? statusModelo; // ex.: "OK"
+  final String? statusModelo;
 
   const DashboardOverview({
     this.quilometragem = const Kpi(),
@@ -105,7 +105,6 @@ class DashboardOverview {
     this.statusModelo,
   });
 
-  /// Tudo vazio: a tela mostra "--" nos números.
   factory DashboardOverview.empty() => const DashboardOverview();
 
   factory DashboardOverview.fromJson(Map<String, dynamic> j) =>
