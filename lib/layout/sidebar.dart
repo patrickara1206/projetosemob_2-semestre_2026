@@ -36,18 +36,12 @@ class Sidebar extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 28),
               child: Row(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.sidebarLogo,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.directions_bus,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                  Image.asset(
+                    'assets/images/brasao_sao_caetano.png',
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.contain,
+                    semanticLabel: 'Brasão de São Caetano do Sul',
                   ),
                   const SizedBox(width: 12),
                   const Column(
