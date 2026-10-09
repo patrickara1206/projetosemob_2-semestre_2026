@@ -8,8 +8,7 @@ class DashboardService {
   /// Emulador Android: http://10.0.2.2:8000
   static const String baseUrl = 'http://localhost:8000';
 
-  /// Enquanto o backend não existe, deixe true (tela mostra "--").
-  /// Quando o FastAPI estiver pronto, troque para false.
+  
   static const bool usarVazio = false;
 
   Future<DashboardOverview> getOverview({
