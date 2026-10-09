@@ -1,29 +1,6 @@
 import pandas as pd
 
-from app.core.dados_config import MESES
-from app.readers.leitor_html import ler_tabela_html
 from app.repositories.financeiro_repository import buscar_financeiro_mes
-
-
-def carregar_financeiro_mes(mes):
-    config = MESES[mes]
-
-    caminho = (
-        config["pasta"]
-        / config["financeiro"]
-    )
-
-    df = ler_tabela_html(
-        caminho,
-        indice=2
-    )
-
-    return normalizar_financeiro(
-        df,
-        mes,
-        config["tipo"]
-    )
-
 
 def obter_overview_financeiro(mes="2026-08"):
     df = carregar_financeiro_banco(mes)
