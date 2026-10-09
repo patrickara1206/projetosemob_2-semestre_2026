@@ -1,62 +1,6 @@
 import pandas as pd
 
-from app.core.dados_config import MESES
-from app.readers.leitor_html import ler_tabela_html
 from app.repositories.passageiros_repository import buscar_passageiros_mes
-
-
-def carregar_passageiros_mes(mes):
-    config = MESES[mes]
-
-    caminho = config["pasta"] / config["passageiros"]
-
-    df = ler_tabela_html(caminho, indice=1)
-
-    df = df[df["Dia"].astype(str).str.match(r"^\d{1,2}$")].copy()
-
-    colunas_numericas = [
-        "Catraca",
-        "Antecipados",
-        "Não Pagantes",
-        "Total Passageiros",
-    ]
-
-    for coluna in colunas_numericas:
-        df[coluna] = pd.to_numeric(df[coluna], errors="coerce").fillna(0)
-
-    df["pagantes"] = df["Catraca"] + df["Antecipados"]
-
-    df["mes_referencia"] = mes
-    df["tipo_periodo"] = config["tipo"]
-
-    return df
-
-
-def carregar_passageiros_mes(mes):
-    config = MESES[mes]
-
-    caminho = config["pasta"] / config["passageiros"]
-
-    df = ler_tabela_html(caminho, indice=1)
-
-    return normalizar_passageiros(df, mes, config["tipo"])
-
-
-def resumo_passageiros_por_mes():
-    df = carregar_passageiros_todos_meses()
-
-    resumo = (
-        df.groupby("mes_referencia")
-        .agg(
-            pagantes=("pagantes", "sum"),
-            nao_pagantes=("Não Pagantes", "sum"),
-            total_passageiros=("Total Passageiros", "sum"),
-        )
-        .reset_index()
-    )
-
-    return resumo
-
 
 def obter_overview_passageiros(mes="2026-08"):
     df = carregar_passageiros_banco(mes)
