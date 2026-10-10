@@ -1,22 +1,22 @@
 class FinPonto {
   final String rotulo; // "MAI"
-  final double receita;
-  final double subsidio;
+  final double vendas;
+  final double utilizacao;
   final bool atual;
 
   const FinPonto({
     required this.rotulo,
-    required this.receita,
-    required this.subsidio,
+    required this.vendas,
+    required this.utilizacao,
     this.atual = false,
   });
 
   factory FinPonto.fromJson(Map<String, dynamic> j) => FinPonto(
-        rotulo: j['rotulo'] as String,
-        receita: (j['receita'] as num).toDouble(),
-        subsidio: (j['subsidio'] as num).toDouble(),
-        atual: j['atual'] as bool? ?? false,
-      );
+    rotulo: j['rotulo'] as String,
+    vendas: (j['vendas'] as num).toDouble(),
+    utilizacao: (j['utilizacao'] as num).toDouble(),
+    atual: j['atual'] as bool? ?? false,
+  );
 }
 
 class CustoItem {
@@ -24,14 +24,17 @@ class CustoItem {
   final double percentual; // 0 a 100
   final double valor;
 
-  const CustoItem(
-      {required this.nome, required this.percentual, required this.valor});
+  const CustoItem({
+    required this.nome,
+    required this.percentual,
+    required this.valor,
+  });
 
   factory CustoItem.fromJson(Map<String, dynamic> j) => CustoItem(
-        nome: j['nome'] as String,
-        percentual: (j['percentual'] as num).toDouble(),
-        valor: (j['valor'] as num).toDouble(),
-      );
+    nome: j['nome'] as String,
+    percentual: (j['percentual'] as num).toDouble(),
+    valor: (j['valor'] as num).toDouble(),
+  );
 }
 
 class RepasseLinha {
@@ -54,14 +57,14 @@ class RepasseLinha {
   });
 
   factory RepasseLinha.fromJson(Map<String, dynamic> j) => RepasseLinha(
-        linha: j['linha'] as String,
-        operador: j['operador'] as String? ?? '',
-        passageiros: (j['passageiros'] as num).toDouble(),
-        custoOperacional: (j['custo_operacional'] as num).toDouble(),
-        glosa: (j['glosa'] as num?)?.toDouble() ?? 0,
-        valorLiquido: (j['valor_liquido'] as num).toDouble(),
-        status: j['status'] as String? ?? 'liquidado',
-      );
+    linha: j['linha'] as String,
+    operador: j['operador'] as String? ?? '',
+    passageiros: (j['passageiros'] as num).toDouble(),
+    custoOperacional: (j['custo_operacional'] as num).toDouble(),
+    glosa: (j['glosa'] as num?)?.toDouble() ?? 0,
+    valorLiquido: (j['valor_liquido'] as num).toDouble(),
+    status: j['status'] as String? ?? 'liquidado',
+  );
 }
 
 class FinanceiroOverview {
@@ -111,8 +114,9 @@ class FinanceiroOverview {
       saldoLiquido: (saldo?['valor'] as num?)?.toDouble(),
       saldoPctLiquidado: (saldo?['percentual_liquidado'] as num?)?.toDouble(),
       conciliacao: (j['conciliacao'] as num?)?.toDouble(),
-      concessionarias:
-          ((j['concessionarias'] as List?) ?? []).map((e) => '$e').toList(),
+      concessionarias: ((j['concessionarias'] as List?) ?? [])
+          .map((e) => '$e')
+          .toList(),
       evolucao: ((j['evolucao'] as List?) ?? [])
           .map((e) => FinPonto.fromJson(e))
           .toList(),
@@ -125,6 +129,67 @@ class FinanceiroOverview {
           .toList(),
       pagina: rep?['pagina'] as int? ?? 1,
       totalPaginas: rep?['total_paginas'] as int? ?? 1,
+    );
+  }
+}
+
+class MovimentoFinanceiro {
+  final String data;
+  final double vendas, utilizacao, creditoCirculante;
+  const MovimentoFinanceiro({
+    required this.data,
+    required this.vendas,
+    required this.utilizacao,
+    required this.creditoCirculante,
+  });
+  factory MovimentoFinanceiro.fromJson(Map<String, dynamic> j) =>
+      MovimentoFinanceiro(
+        data: j['data'] as String,
+        vendas: (j['vendas'] as num).toDouble(),
+        utilizacao: (j['utilizacao'] as num).toDouble(),
+        creditoCirculante: (j['credito_circulante'] as num).toDouble(),
+      );
+}
+
+class FinanceiroDashboard {
+  final double? vendas, utilizacao, creditoCirculante;
+  final String? inicio, fim;
+  final int dias, pagina, totalPaginas, totalRegistros;
+  final List<FinPonto> evolucao;
+  final List<MovimentoFinanceiro> movimentos;
+  const FinanceiroDashboard({
+    this.vendas,
+    this.utilizacao,
+    this.creditoCirculante,
+    this.inicio,
+    this.fim,
+    this.dias = 0,
+    this.pagina = 1,
+    this.totalPaginas = 1,
+    this.totalRegistros = 0,
+    this.evolucao = const [],
+    this.movimentos = const [],
+  });
+  factory FinanceiroDashboard.fromJson(Map<String, dynamic> j) {
+    final rows = j['movimentos'] as Map<String, dynamic>;
+    return FinanceiroDashboard(
+      vendas: (j['total_vendas'] as num?)?.toDouble(),
+      utilizacao: (j['total_utilizacao'] as num?)?.toDouble(),
+      creditoCirculante: (j['credito_circulante'] as num?)?.toDouble(),
+      inicio: j['inicio'] as String?,
+      fim: j['fim'] as String?,
+      dias: j['dias'] as int,
+      pagina: rows['pagina'] as int,
+      totalPaginas: rows['total_paginas'] as int,
+      totalRegistros: rows['total_registros'] as int,
+      evolucao: (j['evolucao'] as List)
+          .map((e) => FinPonto.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
+      movimentos: (rows['itens'] as List)
+          .map(
+            (e) => MovimentoFinanceiro.fromJson(Map<String, dynamic>.from(e)),
+          )
+          .toList(),
     );
   }
 }

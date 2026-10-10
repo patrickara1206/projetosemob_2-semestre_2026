@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
+import 'chart_summary.dart';
+import '../core/formatters.dart';
 import '../models/operacao_overview.dart';
 
 class KmBarChart extends StatelessWidget {
@@ -10,6 +12,9 @@ class KmBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final productive = dados.fold<double>(0, (sum, p) => sum + p.produtiva);
+    final dead = dados.fold<double>(0, (sum, p) => sum + p.morta);
+    final total = productive + dead;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: cardDecoration(),
@@ -19,22 +24,33 @@ class KmBarChart extends StatelessWidget {
           Row(
             children: [
               const Expanded(
-                child: Text('EVOLUÇÃO DA QUILOMETRAGEM MENSAL',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                child: Text(
+                  'EVOLUÇÃO DA QUILOMETRAGEM MENSAL',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
+                ),
               ),
-              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
             ],
           ),
+          if (dados.isNotEmpty)
+            ChartSummary(items: [
+              (label: 'Total • km', value: fmtCompact(total)),
+              (label: 'Produtiva • km', value: fmtCompact(productive)),
+              (label: 'Morta / total', value: total > 0 ? '${fmtDec(dead / total * 100)}%' : '—'),
+            ]),
           const SizedBox(height: 8),
           SizedBox(
-            height: 260,
+            height: 220,
             child: dados.isEmpty
                 ? const Center(
-                    child: Text('Sem dados para o período selecionado',
-                        style: TextStyle(color: AppColors.muted)))
+                    child: Text(
+                      'Sem dados para o período selecionado',
+                      style: TextStyle(color: AppColors.muted),
+                    ),
+                  )
                 : _chart(),
           ),
           const SizedBox(height: 12),
@@ -61,23 +77,39 @@ class KmBarChart extends StatelessWidget {
         maxY: maxTotal == 0 ? 1 : maxTotal * 1.15,
         alignment: BarChartAlignment.spaceAround,
         borderData: FlBorderData(show: false),
-        barTouchData: BarTouchData(enabled: true),
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            fitInsideHorizontally: true,
+            fitInsideVertically: true,
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final item = dados[group.x];
+              return BarTooltipItem(
+                '${item.rotulo}\nProdutiva: ${fmtDec(item.produtiva)} km\nMorta: ${fmtDec(item.morta)} km\nTotal: ${fmtDec(item.produtiva + item.morta)} km',
+                const TextStyle(color: Colors.white, fontSize: 12),
+              );
+            },
+          ),
+        ),
         gridData: FlGridData(
           drawVerticalLine: false,
           getDrawingHorizontalLine: (_) =>
               const FlLine(color: AppColors.border, strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 44,
+              reservedSize: 64,
+              maxIncluded: false,
               getTitlesWidget: (v, meta) => Text(
-                v >= 1000 ? '${(v / 1000).round()}k' : '${v.toInt()}',
+                '${fmtCompact(v)} km',
                 style: const TextStyle(fontSize: 10, color: AppColors.muted),
               ),
             ),
@@ -90,9 +122,13 @@ class KmBarChart extends StatelessWidget {
                 if (i < 0 || i >= dados.length) return const SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(dados[i].rotulo,
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.muted)),
+                  child: Text(
+                    dados[i].rotulo,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.muted,
+                    ),
+                  ),
                 );
               },
             ),
@@ -106,13 +142,16 @@ class KmBarChart extends StatelessWidget {
                 BarChartRodData(
                   toY: dados[i].produtiva + dados[i].morta,
                   width: 26,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(3)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(3),
+                  ),
                   rodStackItems: [
+                    BarChartRodStackItem(0, dados[i].produtiva, AppColors.navy),
                     BarChartRodStackItem(
-                        0, dados[i].produtiva, AppColors.navy),
-                    BarChartRodStackItem(dados[i].produtiva,
-                        dados[i].produtiva + dados[i].morta, AppColors.cyan),
+                      dados[i].produtiva,
+                      dados[i].produtiva + dados[i].morta,
+                      AppColors.cyan,
+                    ),
                   ],
                 ),
               ],
@@ -134,8 +173,10 @@ class _Dot extends StatelessWidget {
       children: [
         Icon(Icons.circle, size: 8, color: color),
         const SizedBox(width: 6),
-        Text(label,
-            style: const TextStyle(fontSize: 11, color: Color(0xFF374151))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Color(0xFF374151)),
+        ),
       ],
     );
   }

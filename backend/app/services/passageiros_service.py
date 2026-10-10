@@ -3,6 +3,7 @@ import pandas as pd
 from app.core.dados_config import MESES
 from app.readers.leitor_html import ler_tabela_html
 from app.repositories.passageiros_repository import buscar_passageiros_mes
+from app.services.registros_diarios_service import selecionar_registros_diarios
 
 
 def carregar_passageiros_mes(mes):
@@ -91,6 +92,21 @@ def resumo_passageiros_por_mes():
 
 def obter_overview_passageiros(mes="2026-08"):
     df = carregar_passageiros_banco(mes)
+    df = selecionar_registros_diarios(df, mes)
+
+    if df.empty:
+        return {
+            "total_passageiros": {"valor": None, "variacao": None},
+            "pagantes": {"percentual": None, "quantidade": None},
+            "gratuidades": {"percentual": None, "quantidade": None},
+            "pico_demanda": {"faixa": None, "media_hora": None},
+            "serie": [], "categorias": [],
+        }
+    diario = df.dropna(subset=["data"]).groupby("data", sort=True)["total_passageiros"].sum()
+    serie = [
+        {"rotulo": data.strftime("%d/%m"), "volume": float(volume), "anomalia": False}
+        for data, volume in diario.items()
+    ]
 
     pagantes = float(
         df["pagantes"].sum()
@@ -137,7 +153,7 @@ def obter_overview_passageiros(mes="2026-08"):
             "media_hora": None,
         },
 
-        "serie": [],
+        "serie": serie,
 
         "categorias": [],
     }

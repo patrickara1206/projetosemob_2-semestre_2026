@@ -26,19 +26,11 @@ def carregar_financeiro_mes(mes):
 
 
 def obter_overview_financeiro(mes="2026-08"):
-    df = carregar_financeiro_banco(mes)
+    from app.services.financeiro_dashboard_service import obter_dashboard_financeiro
 
-    return {
-        "total_vendas": float(
-            df["total_vendas"].sum()
-        ),
-        "total_utilizacao": float(
-            df["total_utilizacao"].sum()
-        ),
-        "credito_circulante": float(
-            df["credito_circulante"].sum()
-        ),
-    }
+    dados = obter_dashboard_financeiro(mes)
+    return {chave: dados[chave] for chave in
+            ("total_vendas", "total_utilizacao", "credito_circulante")}
 
 def normalizar_financeiro(
     df,

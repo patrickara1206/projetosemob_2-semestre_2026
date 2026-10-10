@@ -6,7 +6,9 @@ import '../models/dashboard_overview.dart';
 class DashboardService {
   /// Web/desktop: http://localhost:8000
   /// Emulador Android: http://10.0.2.2:8000
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = String.fromEnvironment(
+    'API_URL', defaultValue: 'http://127.0.0.1:8000',
+  );
 
   
   static const bool usarVazio = false;

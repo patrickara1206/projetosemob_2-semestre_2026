@@ -3,10 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:semob_dashboard/main.dart';
 
 void main() {
-  testWidgets('App abre e mostra a Visão Geral', (WidgetTester tester) async {
+  testWidgets('App inicia no login antes da autenticação', (WidgetTester tester) async {
     await tester.pumpWidget(const SemobApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Visão Geral da Operação'), findsOneWidget);
+    expect(find.text('E-mail'), findsOneWidget);
+    expect(find.text('Senha'), findsOneWidget);
+    expect(find.text('Entrar'), findsOneWidget);
   });
 }
