@@ -6,13 +6,14 @@ import 'core/theme.dart';
 
 import 'layout/app_shell.dart';
 
+import 'pages/configuracoes_page.dart';
+import 'pages/financeiro_page.dart';
+import 'pages/importacao_page.dart';
 import 'pages/login_page.dart';
 import 'pages/machine_learning_page.dart';
 import 'pages/operacao_page.dart';
 import 'pages/overview_page.dart';
 import 'pages/passageiros_page.dart';
-import 'pages/placeholder_page.dart';
-import 'pages/importacao_page.dart';
 
 
 void main() {
@@ -96,9 +97,7 @@ final _router = GoRouter(
 
         _route(
           '/financeiro',
-          const PlaceholderPage(
-            title: 'Financeiro',
-          ),
+          const FinanceiroPage(),
         ),
 
         _route(
@@ -109,6 +108,11 @@ final _router = GoRouter(
         _route(
           '/importacao',
           const ImportacaoPage(),
+        ),
+
+        _route(
+          '/configuracoes',
+          const ConfiguracoesPage(),
         ),
       ],
     ),
