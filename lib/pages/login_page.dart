@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/auth_state.dart';
+import '../core/login_splash.dart';
 import '../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,6 +17,26 @@ class _LoginPageState extends State<LoginPage> {
   final senhaController = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
+  final _logoKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await precacheImage(
+        const AssetImage('assets/images/brasao_sao_caetano.png'), context,
+      );
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final box = _logoKey.currentContext?.findRenderObject() as RenderBox?;
+        if (box == null || !box.hasSize) return;
+        final position = box.localToGlobal(Offset.zero);
+        notifyLoginReady(position.dx, position.dy, box.size.width, box.size.height);
+      });
+      WidgetsBinding.instance.scheduleFrame();
+    });
+  }
 
   bool carregando = false;
   bool ocultarSenha = true;
@@ -107,6 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SizedBox(
+                    key: _logoKey,
                     height: 130,
                     child: Image.asset(
                       'assets/images/brasao_sao_caetano.png',

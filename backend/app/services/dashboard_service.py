@@ -18,7 +18,7 @@ def obter_dashboard_overview(mes="2026-08"):
 
     return {
         "quilometragem": {
-            "valor": km_produtiva + km_morta,
+            "valor": (km_produtiva + km_morta) if operacao["quilometragem"]["produtiva"] is not None else None,
             "variacao": None,
         },
 
@@ -42,7 +42,7 @@ def obter_dashboard_overview(mes="2026-08"):
             "variacao": None,
         },
 
-        "serie": [],
+        "serie": operacao["serie_viagens"],
 
         "anomalias": [],
 
@@ -53,5 +53,5 @@ def obter_dashboard_overview(mes="2026-08"):
             "falsos_positivos": None,
         },
 
-        "status_modelo": "OK",
+        "status_modelo": "Não disponível",
     }

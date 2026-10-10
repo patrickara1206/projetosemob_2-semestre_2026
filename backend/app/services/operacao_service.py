@@ -3,6 +3,7 @@ import pandas as pd
 from app.core.dados_config import MESES
 from app.readers.leitor_html import ler_tabela_html
 from app.repositories.operacao_repository import buscar_operacao_mes
+from app.services.registros_diarios_service import selecionar_registros_diarios
 
 
 COLUNAS_OPERACAO = [
@@ -152,6 +153,27 @@ def resumo_operacao_por_mes():
 
 def obter_overview_operacao(mes="2026-08"):
     df = carregar_operacao_banco(mes)
+    df = selecionar_registros_diarios(df, mes)
+
+    if df.empty:
+        return {
+            "total_viagens": {"realizado": None, "programado": None},
+            "pontualidade": {"valor": None, "variacao": None, "meta": 95},
+            "quilometragem": {"produtiva": None, "morta": None},
+            "km_mensal": [], "viagens_por_hora": [], "anomalias": [],
+            "serie_viagens": [],
+        }
+
+    diario = df.dropna(subset=["data"]).groupby("data", sort=True)[
+        ["viagens_realizadas", "viagens_programadas"]
+    ].sum()
+    serie = [
+        {"rotulo": data.strftime("%d/%m"),
+         "realizado": float(row["viagens_realizadas"]),
+         "esperado": float(row["viagens_programadas"]),
+         "anomalia": False}
+        for data, row in diario.iterrows()
+    ]
 
     viagens_programadas = int(
         df["viagens_programadas"].sum()
@@ -194,6 +216,7 @@ def obter_overview_operacao(mes="2026-08"):
             }
         ],
 
+        "serie_viagens": serie,
         "viagens_por_hora": [],
 
         "anomalias": [],
