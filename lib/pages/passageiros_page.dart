@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/formatters.dart';
 import '../core/state.dart';
 import '../core/theme.dart';
+import '../core/exportacao.dart';
 import '../models/passageiros_overview.dart';
 import '../services/passageiros_service.dart';
 import '../widgets/category_table.dart';
@@ -163,7 +164,15 @@ class _Content extends StatelessWidget {
                 ),
                 OutlinedButton.icon(
                   onPressed: () {
-                    // TODO: exportar relatório (endpoint do backend)
+                    exportarRelatorio(context, 'semob-passageiros.csv', [
+                      ['Mês', periodoNotifier.mesReferencia, 'Período', periodoNotifier.value.label],
+                      ['Indicador', 'Valor'],
+                      ['Total passageiros', data.totalPassageiros],
+                      ['Pagantes', data.qtdPagantes],
+                      ['Não pagantes', data.qtdGratuidades],
+                      [], ['Data', 'Passageiros'],
+                      for (final ponto in data.serie) [ponto.rotulo, ponto.volume],
+                    ]);
                   },
                   icon: const Icon(Icons.download, size: 16),
                   label: const Text('Exportar Relatório'),

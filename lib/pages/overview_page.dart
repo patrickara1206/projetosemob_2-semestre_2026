@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/formatters.dart';
 import '../core/state.dart';
 import '../core/theme.dart';
+import '../core/exportacao.dart';
 import '../models/dashboard_overview.dart';
 import '../services/dashboard_service.dart';
 import '../widgets/anomaly_card.dart';
@@ -37,7 +38,7 @@ class _OverviewPageState extends State<OverviewPage> {
   Future<DashboardOverview> _fetch() =>
     _service.getOverview(
       periodo: periodoNotifier.value.api,
-      mes: '2026-08',
+      mes: periodoNotifier.mesReferencia,
     );
 
   void _reload() => setState(() => _future = _fetch());
@@ -151,7 +152,17 @@ class _Content extends StatelessWidget {
                 ),
                 OutlinedButton.icon(
                   onPressed: () {
-                    // TODO: exportar relatório (endpoint do backend)
+                    exportarRelatorio(context, 'semob-visao-geral.csv', [
+                      ['Mês', periodoNotifier.mesReferencia, 'Período', periodoNotifier.value.label],
+                      ['Indicador', 'Valor'],
+                      ['Quilometragem (km)', data.quilometragem.valor],
+                      ['Viagens realizadas', data.viagens.valor],
+                      ['Passageiros pagantes', data.passageirosPagantes.valor],
+                      ['Passageiros não pagantes', data.passageirosNaoPagantes.valor],
+                      [r'Vendas de créditos (R$)', data.financeiro.valor],
+                      [], ['Data', 'Viagens realizadas', 'Viagens programadas'],
+                      for (final ponto in data.serie) [ponto.rotulo, ponto.realizado, ponto.esperado],
+                    ]);
                   },
                   icon: const Icon(Icons.download, size: 16),
                   label: const Text('Exportar Relatório'),

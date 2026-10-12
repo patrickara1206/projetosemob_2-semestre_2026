@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../core/state.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/passageiros_overview.dart';
@@ -13,8 +14,8 @@ class PassageirosService {
     }
 
     final uri = Uri.parse('${DashboardService.baseUrl}/passageiros/overview')
-        .replace(queryParameters: {'periodo': periodo});
-    final res = await http.get(uri);
+        .replace(queryParameters: {...periodoNotifier.parametros, 'periodo': periodo});
+    final res = await http.get(uri).timeout(const Duration(seconds: 20));
 
     if (res.statusCode != 200) {
       throw Exception('Erro ao carregar dados (${res.statusCode})');

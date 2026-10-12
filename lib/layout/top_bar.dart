@@ -10,6 +10,7 @@ class TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final filtroGlobal = const ['/', '/operacao', '/passageiros'].contains(GoRouterState.of(context).uri.path);
     return Container(
       height: 72,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -35,7 +36,7 @@ class TopBar extends StatelessWidget {
                 height: 1.1),
           ),
           const Spacer(),
-          const _PeriodTabs(),
+          if (filtroGlobal) const _PeriodTabs(),
           if (!compact) ...[
             const SizedBox(width: 16),
             const _StatusChip(),
@@ -47,12 +48,20 @@ class TopBar extends StatelessWidget {
             const SizedBox(width: 16),
             IconButton(icon: const Icon(Icons.refresh), onPressed: () {
               // Força recarregar: reemite o período atual
-              periodoNotifier.notifyListeners();
+              periodoNotifier.recarregar();
             }),
             IconButton(
-                icon: const Icon(Icons.notifications_none), onPressed: () {}),
+                tooltip: 'Notificações',
+                icon: const Icon(Icons.notifications_none), onPressed: () {
+                  showDialog<void>(context: context, builder: (context) => AlertDialog(
+                    title: const Text('Notificações'),
+                    content: const Text('Não há notificações para exibir.'),
+                    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fechar'))],
+                  ));
+                }),
             IconButton(
-                icon: const Icon(Icons.settings_outlined), onPressed: () {}),
+                tooltip: 'Configurações',
+                icon: const Icon(Icons.settings_outlined), onPressed: () => context.go('/configuracoes')),
             const SizedBox(width: 8),
             const CircleAvatar(radius: 18, child: Icon(Icons.person)),
           ],
@@ -78,7 +87,25 @@ class _PeriodTabs extends StatelessWidget {
               children: [
                 for (final p in Periodo.values)
                   InkWell(
-                    onTap: () => periodoNotifier.value = p,
+                    onTap: () async {
+                      if (p != Periodo.personalizado) {
+                        periodoNotifier.value = p;
+                        return;
+                      }
+                      final mes = DateTime.parse('${periodoNotifier.mesReferencia}-01');
+                      final intervalo = await showDateRangePicker(
+                        context: context,
+                        helpText: 'Selecione o intervalo do mês de referência',
+                        firstDate: mes,
+                        lastDate: DateTime(mes.year, mes.month + 1, 0),
+                        initialDateRange: periodoNotifier.inicio == null ? null : DateTimeRange(
+                          start: periodoNotifier.inicio!, end: periodoNotifier.fim!,
+                        ),
+                      );
+                      if (intervalo != null) {
+                        periodoNotifier.selecionarIntervalo(intervalo.start, intervalo.end);
+                      }
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
@@ -130,7 +157,7 @@ class _StatusChip extends StatelessWidget {
         children: [
           Icon(Icons.circle, size: 8, color: AppColors.green),
           SizedBox(width: 6),
-          Text('Processamento do\nModelo: OK',
+          Text('Machine Learning\nNão disponível',
               style: TextStyle(fontSize: 10, color: AppColors.green)),
         ],
       ),

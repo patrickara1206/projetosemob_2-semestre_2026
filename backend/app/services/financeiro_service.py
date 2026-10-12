@@ -25,10 +25,10 @@ def carregar_financeiro_mes(mes):
     )
 
 
-def obter_overview_financeiro(mes="2026-08"):
+def obter_overview_financeiro(mes="2026-08", periodo="mes", inicio=None, fim=None):
     from app.services.financeiro_dashboard_service import obter_dashboard_financeiro
 
-    dados = obter_dashboard_financeiro(mes)
+    dados = obter_dashboard_financeiro(mes, periodo=periodo, inicio=inicio, fim=fim)
     return {chave: dados[chave] for chave in
             ("total_vendas", "total_utilizacao", "credito_circulante")}
 

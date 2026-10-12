@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/formatters.dart';
 import '../core/state.dart';
 import '../core/theme.dart';
+import '../core/exportacao.dart';
 import '../models/operacao_overview.dart';
 import '../services/operacao_service.dart';
 import '../widgets/anomaly_table.dart';
@@ -124,7 +125,16 @@ class _Content extends StatelessWidget {
                 ),
                 OutlinedButton.icon(
                   onPressed: () {
-                    // TODO: exportar relatório (endpoint do backend)
+                    exportarRelatorio(context, 'semob-operacao.csv', [
+                      ['Mês', periodoNotifier.mesReferencia, 'Período', periodoNotifier.value.label],
+                      ['Indicador', 'Valor'],
+                      ['Viagens realizadas', data.viagensRealizadas],
+                      ['Viagens programadas', data.viagensProgramadas],
+                      ['Km produtiva', data.kmProdutiva],
+                      ['Km morta', data.kmMorta],
+                      [], ['Referência', 'Km produtiva', 'Km morta'],
+                      for (final ponto in data.kmMensal) [ponto.rotulo, ponto.produtiva, ponto.morta],
+                    ]);
                   },
                   icon: const Icon(Icons.download, size: 16),
                   label: const Text('Exportar Relatório'),

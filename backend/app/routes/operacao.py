@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from app.routes.filtros import filtros_overview
 
 from app.services.operacao_service import obter_overview_operacao
 
@@ -11,7 +12,6 @@ router = APIRouter(
 
 @router.get("/overview")
 def overview_operacao(
-    periodo: str = "mes",
-    mes: str = "2026-08"
+    filtros: dict = Depends(filtros_overview),
 ):
-    return obter_overview_operacao(mes)
+    return obter_overview_operacao(**filtros)

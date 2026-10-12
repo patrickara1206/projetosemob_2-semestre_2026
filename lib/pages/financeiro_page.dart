@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../core/formatters.dart';
 import '../core/theme.dart';
+import '../core/state.dart';
+import '../core/exportacao.dart';
 import '../models/financeiro_overview.dart';
 import '../services/financeiro_service.dart';
 import '../widgets/revenue_subsidy_chart.dart';
@@ -14,23 +16,26 @@ class FinanceiroPage extends StatefulWidget {
 
 class _FinanceiroPageState extends State<FinanceiroPage> {
   final _service = FinanceiroService();
-  final _mesCtrl = TextEditingController(text: '2026-08');
+  final _mesCtrl = TextEditingController(text: periodoNotifier.mesReferencia);
   final _buscaCtrl = TextEditingController();
   FinanceiroDashboard? _data;
-  String _mes = '2026-08', _periodo = 'mes', _busca = '';
+  String _mes = periodoNotifier.mesReferencia, _periodo = 'mes', _busca = '';
   int _pagina = 1, _request = 0;
   bool _loading = true;
+  bool _exportando = false;
   String? _error;
   Timer? _debounce;
   @override
   void initState() {
     super.initState();
     _load();
+    periodoNotifier.addListener(_refresh);
   }
 
   @override
   void dispose() {
     _debounce?.cancel();
+    periodoNotifier.removeListener(_refresh);
     _mesCtrl.dispose();
     _buscaCtrl.dispose();
     super.dispose();
@@ -66,6 +71,37 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
     }
   }
 
+  void _refresh() => _load();
+
+  Future<void> _exportar() async {
+    final mes = _mes, periodo = _periodo, busca = _busca;
+    setState(() => _exportando = true);
+    try {
+      final primeiro = await _service.getOverview(mes: mes, periodo: periodo, busca: busca);
+      final itens = [...primeiro.movimentos];
+      for (var pagina = 2; pagina <= primeiro.totalPaginas; pagina++) {
+        final dados = await _service.getOverview(mes: mes, periodo: periodo, busca: busca, pagina: pagina);
+        itens.addAll(dados.movimentos);
+      }
+      if (!mounted) return;
+      exportarRelatorio(context, 'semob-financeiro-$mes.csv', [
+        ['Mês', mes, 'Período', periodo, 'Busca', busca],
+        ['Indicador', r'Valor (R$)'],
+        ['Vendas no período', primeiro.vendas],
+        ['Utilização no período', primeiro.utilizacao],
+        ['Crédito circulante no período', primeiro.creditoCirculante],
+        [], ['Data', r'Vendas (R$)', r'Utilização (R$)', r'Crédito circulante (R$)'],
+        for (final item in itens) [_date(item.data), item.vendas, item.utilizacao, item.creditoCirculante],
+      ]);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))));
+      }
+    } finally {
+      if (mounted) setState(() => _exportando = false);
+    }
+  }
+
   void _applyMonth() {
     final month = _mesCtrl.text.trim();
     if (!RegExp(r'^\d{4}-(0[1-9]|1[0-2])$').hasMatch(month)) {
@@ -81,29 +117,41 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
 
   String _date(String? raw) {
     if (raw == null) return '—';
-    final d = DateTime.parse(raw);
+    final d = DateTime.tryParse(raw);
+    if (d == null) return 'Data indisponível';
     return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
   }
 
   @override
   Widget build(BuildContext context) {
     final d = _data;
-    if (d == null && _loading)
-      return const Center(child: CircularProgressIndicator());
-    if (d == null)
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(_error ?? 'Não foi possível carregar os dados.'),
-            const SizedBox(height: 12),
-            FilledButton(
-              onPressed: _load,
-              child: const Text('Tentar novamente'),
-            ),
-          ],
-        ),
+    if (d == null) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('Gestão Financeira', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.navy)),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(32),
+            decoration: cardDecoration(),
+            child: Column(children: [
+              if (_loading) ...[
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                const Text('Carregando os dados financeiros...'),
+              ] else ...[
+                const Icon(Icons.error_outline, color: AppColors.red),
+                const SizedBox(height: 12),
+                Text(_error ?? 'Não foi possível carregar os dados.', textAlign: TextAlign.center),
+                const SizedBox(height: 12),
+                FilledButton(onPressed: _load, child: const Text('Tentar novamente')),
+              ],
+            ]),
+          ),
+        ]),
       );
+    }
     return LayoutBuilder(
       builder: (context, box) {
         final wide = box.maxWidth >= 1000;
@@ -191,6 +239,11 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
                   runSpacing: 12,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
+                    OutlinedButton.icon(
+                      onPressed: _loading || _exportando ? null : _exportar,
+                      icon: const Icon(Icons.download, size: 16),
+                      label: Text(_exportando ? 'Gerando relatório...' : 'Exportar Relatório'),
+                    ),
                     SizedBox(
                       width: 150,
                       child: TextField(

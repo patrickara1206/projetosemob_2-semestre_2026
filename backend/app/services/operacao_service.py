@@ -3,7 +3,7 @@ import pandas as pd
 from app.core.dados_config import MESES
 from app.readers.leitor_html import ler_tabela_html
 from app.repositories.operacao_repository import buscar_operacao_mes
-from app.services.registros_diarios_service import selecionar_registros_diarios
+from app.services.registros_diarios_service import selecionar_registros_diarios, filtrar_periodo
 
 
 COLUNAS_OPERACAO = [
@@ -151,9 +151,9 @@ def resumo_operacao_por_mes():
 
     return resumo
 
-def obter_overview_operacao(mes="2026-08"):
+def obter_overview_operacao(mes="2026-08", periodo="mes", inicio=None, fim=None):
     df = carregar_operacao_banco(mes)
-    df = selecionar_registros_diarios(df, mes)
+    df = filtrar_periodo(selecionar_registros_diarios(df, mes), periodo, inicio, fim)
 
     if df.empty:
         return {

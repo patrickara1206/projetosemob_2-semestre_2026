@@ -7,7 +7,7 @@ def _money(value):
     return Decimal(str(value or 0)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-def obter_dashboard_financeiro(mes="2026-08", periodo="mes", busca="", pagina=1):
+def obter_dashboard_financeiro(mes="2026-08", periodo="mes", busca="", pagina=1, inicio=None, fim=None):
     # Monthly records take precedence over overlapping fortnightly reports.
     daily = {}
     rows = buscar_financeiro_mes(mes)
@@ -25,6 +25,10 @@ def obter_dashboard_financeiro(mes="2026-08", periodo="mes", busca="", pagina=1)
     reference = max(daily) if daily else None
     start = (reference - timedelta(days=6)) if reference and periodo == "semana" else reference if periodo == "hoje" else None
     selected = [(day, row) for day, row in sorted(daily.items()) if start is None or day >= start]
+    if periodo == "personalizado":
+        if inicio is None or fim is None:
+            raise ValueError("Informe início e fim do período personalizado.")
+        selected = [(day, row) for day, row in selected if inicio <= day <= fim]
     totals = {key: float(sum((_money(row.get(key)) for _, row in selected), Decimal(0))) if selected else None
               for key in ("total_vendas", "total_utilizacao", "credito_circulante")}
     movements = [{"data": day.isoformat(), "vendas": float(_money(row.get("total_vendas"))),

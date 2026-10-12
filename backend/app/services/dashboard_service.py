@@ -3,10 +3,10 @@ from app.services.passageiros_service import obter_overview_passageiros
 from app.services.financeiro_service import obter_overview_financeiro
 
 
-def obter_dashboard_overview(mes="2026-08"):
-    operacao = obter_overview_operacao(mes)
-    passageiros = obter_overview_passageiros(mes)
-    financeiro = obter_overview_financeiro(mes)
+def obter_dashboard_overview(mes="2026-08", periodo="mes", inicio=None, fim=None):
+    operacao = obter_overview_operacao(mes, periodo, inicio, fim)
+    passageiros = obter_overview_passageiros(mes, periodo, inicio, fim)
+    financeiro = obter_overview_financeiro(mes, periodo, inicio, fim)
 
     km_produtiva = (
         operacao["quilometragem"]["produtiva"] or 0

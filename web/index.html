@@ -46,6 +46,16 @@
     <div id="semob-loading-logo"><img src="assets/assets/images/brasao_sao_caetano.png" alt="Brasão de São Caetano do Sul"></div>
   </div>
   <script>
+    window.semobDownloadCsv = function(nome, conteudo) {
+      const url = URL.createObjectURL(new Blob([conteudo], { type: 'text/csv;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nome;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    };
     window.semobLoginReady = function(left, top, width, height) {
       const overlay = document.getElementById('semob-loading');
       const logo = document.getElementById('semob-loading-logo');
@@ -67,6 +77,6 @@
       });
     };
   </script>
-  <script src="flutter_bootstrap.js" async></script>
+  <script src="flutter_bootstrap.js?semob=20261012" async></script>
 </body>
 </html>

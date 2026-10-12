@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../core/state.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/dashboard_overview.dart';
@@ -29,12 +30,13 @@ class DashboardService {
       '$baseUrl/dashboard/overview',
     ).replace(
       queryParameters: {
+        ...periodoNotifier.parametros,
         'periodo': periodo,
         'mes': mes,
       },
     );
 
-    final res = await http.get(uri);
+    final res = await http.get(uri).timeout(const Duration(seconds: 20));
 
     if (res.statusCode != 200) {
       throw Exception(

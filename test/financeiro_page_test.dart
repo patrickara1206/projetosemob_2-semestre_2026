@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,6 +37,40 @@ Map<String, dynamic> _response({bool empty = false}) => {
 };
 
 void main() {
+  testWidgets('Loading and incompatible server keep the financial screen visible', (tester) async {
+    final pending = Completer<http.Response>();
+    final client = MockClient((request) => pending.future);
+    await http.runWithClient(() async {
+      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: FinanceiroPage())));
+      await tester.pump();
+      expect(find.text('Gestão Financeira'), findsOneWidget);
+      expect(find.text('Carregando os dados financeiros...'), findsOneWidget);
+      pending.complete(http.Response('{}', 404));
+      await tester.pumpAndSettle();
+      expect(find.text('Gestão Financeira'), findsOneWidget);
+      expect(find.textContaining('versão do servidor não possui o Financeiro'), findsOneWidget);
+      expect(find.text('Tentar novamente'), findsOneWidget);
+    }, () => client);
+  });
+
+  testWidgets('Unavailable server and malformed response show errors instead of blank screen', (tester) async {
+    var calls = 0;
+    final client = MockClient((request) async {
+      if (++calls == 1) throw http.ClientException('Offline');
+      return http.Response('{}', 200);
+    });
+    await http.runWithClient(() async {
+      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: FinanceiroPage())));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Não foi possível conectar ao servidor'), findsOneWidget);
+      await tester.tap(find.text('Tentar novamente'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('dados do Financeiro são incompatíveis'), findsOneWidget);
+      expect(find.text('Gestão Financeira'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }, () => client);
+  });
+
   testWidgets('Failed period change clears previous data and allows retry', (
     tester,
   ) async {
