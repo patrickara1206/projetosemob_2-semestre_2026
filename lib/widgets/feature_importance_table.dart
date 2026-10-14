@@ -27,45 +27,55 @@ class FeatureImportanceTable extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('EXPLICAÇÃO GLOBAL (FEATURE IMPORTANCE)',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF374151))),
+                  child: Text(
+                    'EXPLICAÇÃO GLOBAL (FEATURE IMPORTANCE)',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF374151),
+                    ),
+                  ),
                 ),
-                Text('Top 5 Fatores',
-                    style: TextStyle(fontSize: 11, color: AppColors.muted)),
+                Text(
+                  'Top 5 Fatores',
+                  style: TextStyle(fontSize: 11, color: AppColors.muted),
+                ),
               ],
             ),
           ),
-          LayoutBuilder(builder: (context, box) {
-            final width = math.max(box.maxWidth, 560.0);
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: width,
-                child: Column(
-                  children: [
-                    const _Header(),
-                    if (features.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text('Sem dados do modelo',
-                            style: TextStyle(color: AppColors.muted)),
-                      )
-                    else
-                      for (var i = 0; i < features.length; i++)
-                        _DataRow(
-                          item: features[i],
-                          maxPeso: maxPeso,
-                          color: _barColors[math.min(i, _barColors.length - 1)],
-                          zebra: i.isOdd,
-                        ),
-                  ],
+          LayoutBuilder(
+            builder: (context, box) {
+              final width = math.max(box.maxWidth, 560.0);
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: width,
+                  child: Column(
+                    children: [
+                      const _Header(),
+                      if (features.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Text(
+                            'Sem dados do modelo',
+                            style: TextStyle(color: AppColors.muted),
+                          ),
+                        )
+                      else
+                        for (var i = 0; i < features.length; i++)
+                          _DataRow(
+                            item: features[i],
+                            maxPeso: maxPeso,
+                            color:
+                                _barColors[math.min(i, _barColors.length - 1)],
+                            zebra: i.isOdd,
+                          ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -88,16 +98,19 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget cell(String t, int flex, Alignment a) => Expanded(
-          flex: flex,
-          child: Align(
-            alignment: a,
-            child: Text(t,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700)),
+      flex: flex,
+      child: Align(
+        alignment: a,
+        child: Text(
+          t,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
           ),
-        );
+        ),
+      ),
+    );
 
     return Container(
       color: AppColors.navy,
@@ -106,7 +119,11 @@ class _Header extends StatelessWidget {
         children: [
           cell('Feature', _flex[0], Alignment.centerLeft),
           cell('Categoria', _flex[1], Alignment.centerLeft),
-          cell('Impacto no Modelo (SHAP Value)', _flex[2], Alignment.centerLeft),
+          cell(
+            'Impacto no Modelo (SHAP Value)',
+            _flex[2],
+            Alignment.centerLeft,
+          ),
           cell('Peso', _flex[3], Alignment.centerRight),
         ],
       ),
@@ -136,26 +153,29 @@ class _DataRow extends StatelessWidget {
         children: [
           Expanded(
             flex: _flex[0],
-            child: Text(item.nome,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.navy)),
+            child: Text(
+              item.nome,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.navy,
+              ),
+            ),
           ),
           Expanded(
             flex: _flex[1],
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F3F6),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text(item.categoria,
-                    style: const TextStyle(
-                        fontSize: 10, color: AppColors.muted)),
+                child: Text(
+                  item.categoria,
+                  style: const TextStyle(fontSize: 10, color: AppColors.muted),
+                ),
               ),
             ),
           ),
@@ -178,9 +198,10 @@ class _DataRow extends StatelessWidget {
             flex: _flex[3],
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text(fmtDec(item.peso, digits: 2),
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.text)),
+              child: Text(
+                fmtDec(item.peso, digits: 2),
+                style: const TextStyle(fontSize: 12, color: AppColors.text),
+              ),
             ),
           ),
         ],

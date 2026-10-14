@@ -19,11 +19,14 @@ class KmBarChart extends StatelessWidget {
           Row(
             children: [
               const Expanded(
-                child: Text('EVOLUÇÃO DA QUILOMETRAGEM MENSAL',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                child: Text(
+                  'EVOLUÇÃO DA QUILOMETRAGEM MENSAL',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
+                ),
               ),
               IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
             ],
@@ -33,8 +36,11 @@ class KmBarChart extends StatelessWidget {
             height: 260,
             child: dados.isEmpty
                 ? const Center(
-                    child: Text('Sem dados para o período selecionado',
-                        style: TextStyle(color: AppColors.muted)))
+                    child: Text(
+                      'Sem dados para o período selecionado',
+                      style: TextStyle(color: AppColors.muted),
+                    ),
+                  )
                 : _chart(),
           ),
           const SizedBox(height: 12),
@@ -68,10 +74,12 @@ class KmBarChart extends StatelessWidget {
               const FlLine(color: AppColors.border, strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -90,9 +98,13 @@ class KmBarChart extends StatelessWidget {
                 if (i < 0 || i >= dados.length) return const SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(dados[i].rotulo,
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.muted)),
+                  child: Text(
+                    dados[i].rotulo,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.muted,
+                    ),
+                  ),
                 );
               },
             ),
@@ -106,13 +118,16 @@ class KmBarChart extends StatelessWidget {
                 BarChartRodData(
                   toY: dados[i].produtiva + dados[i].morta,
                   width: 26,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(3)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(3),
+                  ),
                   rodStackItems: [
+                    BarChartRodStackItem(0, dados[i].produtiva, AppColors.navy),
                     BarChartRodStackItem(
-                        0, dados[i].produtiva, AppColors.navy),
-                    BarChartRodStackItem(dados[i].produtiva,
-                        dados[i].produtiva + dados[i].morta, AppColors.cyan),
+                      dados[i].produtiva,
+                      dados[i].produtiva + dados[i].morta,
+                      AppColors.cyan,
+                    ),
                   ],
                 ),
               ],
@@ -134,8 +149,10 @@ class _Dot extends StatelessWidget {
       children: [
         Icon(Icons.circle, size: 8, color: color),
         const SizedBox(width: 6),
-        Text(label,
-            style: const TextStyle(fontSize: 11, color: Color(0xFF374151))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Color(0xFF374151)),
+        ),
       ],
     );
   }

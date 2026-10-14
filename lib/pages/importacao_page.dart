@@ -6,12 +6,10 @@ class ImportacaoPage extends StatefulWidget {
   const ImportacaoPage({super.key});
 
   @override
-  State<ImportacaoPage> createState() =>
-      _ImportacaoPageState();
+  State<ImportacaoPage> createState() => _ImportacaoPageState();
 }
 
-class _ImportacaoPageState
-    extends State<ImportacaoPage> {
+class _ImportacaoPageState extends State<ImportacaoPage> {
   String tipo = 'operacao';
   String mes = '2026-08';
   String tipoPeriodo = 'mensal';
@@ -29,8 +27,7 @@ class _ImportacaoPageState
     });
 
     try {
-      final resultado =
-          await ImportacaoService().enviarArquivo(
+      final resultado = await ImportacaoService().enviarArquivo(
         tipo: tipo,
         mes: mes,
         tipoPeriodo: tipoPeriodo,
@@ -53,10 +50,7 @@ class _ImportacaoPageState
 
       var texto = erro.toString();
 
-      texto = texto.replaceFirst(
-        'Exception: ',
-        '',
-      );
+      texto = texto.replaceFirst('Exception: ', '');
 
       setState(() {
         sucesso = false;
@@ -76,15 +70,11 @@ class _ImportacaoPageState
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Importar dados',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 8),
@@ -97,9 +87,7 @@ class _ImportacaoPageState
 
           const SizedBox(height: 32),
 
-          const Text(
-            'Tipo de relatório',
-          ),
+          const Text('Tipo de relatório'),
 
           const SizedBox(height: 8),
 
@@ -108,73 +96,38 @@ class _ImportacaoPageState
             items: const [
               DropdownMenuItem(
                 value: 'operacao',
-                child: Text(
-                  'Operação geral',
-                ),
+                child: Text('Operação geral'),
               ),
-              DropdownMenuItem(
-                value: 'fcv',
-                child: Text(
-                  'FCV',
-                ),
-              ),
+              DropdownMenuItem(value: 'fcv', child: Text('FCV')),
               DropdownMenuItem(
                 value: 'faixa_horaria',
-                child: Text(
-                  'Faixa horária',
-                ),
+                child: Text('Faixa horária'),
+              ),
+              DropdownMenuItem(value: 'linhas', child: Text('Linhas')),
+              DropdownMenuItem(
+                value: 'resumo_faixa_horaria',
+                child: Text('Resumo por faixa horária'),
+              ),
+              DropdownMenuItem(value: 'viagens', child: Text('Viagens')),
+              DropdownMenuItem(
+                value: 'viagens_nao_iniciadas',
+                child: Text('Viagens não iniciadas'),
               ),
               DropdownMenuItem(
-                value: 'linhas',
-                child: Text(
-                  'Linhas',
-                ),
+                value: 'viagens_nao_realizadas',
+                child: Text('Viagens não realizadas'),
               ),
               DropdownMenuItem(
-                value:
-                    'resumo_faixa_horaria',
-                child: Text(
-                  'Resumo por faixa horária',
-                ),
-              ),
-              DropdownMenuItem(
-                value: 'viagens',
-                child: Text(
-                  'Viagens',
-                ),
-              ),
-              DropdownMenuItem(
-                value:
-                    'viagens_nao_iniciadas',
-                child: Text(
-                  'Viagens não iniciadas',
-                ),
-              ),
-              DropdownMenuItem(
-                value:
-                    'viagens_nao_realizadas',
-                child: Text(
-                  'Viagens não realizadas',
-                ),
-              ),
-              DropdownMenuItem(
-                value:
-                    'viagens_nao_terminadas',
-                child: Text(
-                  'Viagens não terminadas',
-                ),
+                value: 'viagens_nao_terminadas',
+                child: Text('Viagens não terminadas'),
               ),
               DropdownMenuItem(
                 value: 'passageiros',
-                child: Text(
-                  'Passageiros',
-                ),
+                child: Text('Passageiros'),
               ),
               DropdownMenuItem(
                 value: 'financeiro',
-                child: Text(
-                  'Saldos / Financeiro',
-                ),
+                child: Text('Saldos / Financeiro'),
               ),
             ],
             onChanged: carregando
@@ -191,33 +144,16 @@ class _ImportacaoPageState
 
           const SizedBox(height: 24),
 
-          const Text(
-            'Mês',
-          ),
+          const Text('Mês'),
 
           const SizedBox(height: 8),
 
           DropdownButton<String>(
             value: mes,
             items: const [
-              DropdownMenuItem(
-                value: '2026-07',
-                child: Text(
-                  'Julho/2026',
-                ),
-              ),
-              DropdownMenuItem(
-                value: '2026-08',
-                child: Text(
-                  'Agosto/2026',
-                ),
-              ),
-              DropdownMenuItem(
-                value: '2026-09',
-                child: Text(
-                  'Setembro/2026',
-                ),
-              ),
+              DropdownMenuItem(value: '2026-07', child: Text('Julho/2026')),
+              DropdownMenuItem(value: '2026-08', child: Text('Agosto/2026')),
+              DropdownMenuItem(value: '2026-09', child: Text('Setembro/2026')),
             ],
             onChanged: carregando
                 ? null
@@ -233,27 +169,15 @@ class _ImportacaoPageState
 
           const SizedBox(height: 24),
 
-          const Text(
-            'Período do relatório',
-          ),
+          const Text('Período do relatório'),
 
           const SizedBox(height: 8),
 
           DropdownButton<String>(
             value: tipoPeriodo,
             items: const [
-              DropdownMenuItem(
-                value: 'mensal',
-                child: Text(
-                  'Mensal',
-                ),
-              ),
-              DropdownMenuItem(
-                value: 'quinzenal',
-                child: Text(
-                  '1ª Quinzena',
-                ),
-              ),
+              DropdownMenuItem(value: 'mensal', child: Text('Mensal')),
+              DropdownMenuItem(value: 'quinzenal', child: Text('1ª Quinzena')),
             ],
             onChanged: carregando
                 ? null
@@ -270,24 +194,16 @@ class _ImportacaoPageState
           const SizedBox(height: 32),
 
           ElevatedButton.icon(
-            onPressed:
-                carregando ? null : importar,
+            onPressed: carregando ? null : importar,
             icon: carregando
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child:
-                        CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(
-                    Icons.upload_file,
-                  ),
+                : const Icon(Icons.upload_file),
             label: Text(
-              carregando
-                  ? 'Importando...'
-                  : 'Selecionar e importar HTML',
+              carregando ? 'Importando...' : 'Selecionar e importar HTML',
             ),
           ),
 
@@ -296,31 +212,20 @@ class _ImportacaoPageState
           if (mensagem != null)
             Container(
               width: double.infinity,
-              padding:
-                  const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                borderRadius:
-                    BorderRadius.circular(8),
-                color: sucesso
-                    ? Colors.green.shade50
-                    : Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
+                color: sucesso ? Colors.green.shade50 : Colors.red.shade50,
                 border: Border.all(
-                  color: sucesso
-                      ? Colors.green.shade300
-                      : Colors.red.shade300,
+                  color: sucesso ? Colors.green.shade300 : Colors.red.shade300,
                 ),
               ),
               child: Row(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    sucesso
-                        ? Icons.check_circle
-                        : Icons.error_outline,
-                    color: sucesso
-                        ? Colors.green
-                        : Colors.red,
+                    sucesso ? Icons.check_circle : Icons.error_outline,
+                    color: sucesso ? Colors.green : Colors.red,
                   ),
 
                   const SizedBox(width: 12),

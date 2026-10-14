@@ -7,10 +7,14 @@ enum Periodo {
   personalizado('Personalizado', 'personalizado');
 
   final String label;
-  final String api; // valor enviado ao backend
+  final String api;
   const Periodo(this.label, this.api);
 }
 
-/// Período selecionado na barra superior. As telas escutam este notifier
-/// e recarregam os dados quando ele muda.
-final ValueNotifier<Periodo> periodoNotifier = ValueNotifier(Periodo.hoje);
+class PeriodoNotifier extends ValueNotifier<Periodo> {
+  PeriodoNotifier() : super(Periodo.hoje);
+
+  void atualizar() => notifyListeners();
+}
+
+final periodoNotifier = PeriodoNotifier();

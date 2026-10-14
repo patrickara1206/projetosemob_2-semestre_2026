@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
 
-/// Fluxo de dados & inferência. Deve receber altura definida pelo pai.
 class MlFlowCard extends StatelessWidget {
   const MlFlowCard({super.key});
 
@@ -19,11 +18,14 @@ class MlFlowCard extends StatelessWidget {
           const Row(
             children: [
               Expanded(
-                child: Text('FLUXO DE DADOS & INFERÊNCIA',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                child: Text(
+                  'FLUXO DE DADOS & INFERÊNCIA',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
+                ),
               ),
               Icon(Icons.fullscreen, size: 18, color: AppColors.muted),
             ],
@@ -154,12 +156,15 @@ class _Node extends StatelessWidget {
         children: [
           SizedBox(height: 64, child: shape),
           const SizedBox(height: 6),
-          Text(label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
-                  color: bold ? AppColors.navy : AppColors.muted)),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+              color: bold ? AppColors.navy : AppColors.muted,
+            ),
+          ),
         ],
       ),
     );
@@ -174,9 +179,7 @@ class _Link extends StatelessWidget {
     return SizedBox(
       width: 24,
       height: 64,
-      child: Center(
-        child: Container(height: 1.5, color: AppColors.border),
-      ),
+      child: Center(child: Container(height: 1.5, color: AppColors.border)),
     );
   }
 }

@@ -27,11 +27,10 @@ ThemeData buildTheme() {
   );
 }
 
-/// Estilo padrão dos cards brancos.
 BoxDecoration cardDecoration() => BoxDecoration(
-      color: AppColors.card,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: const [
-        BoxShadow(color: Color(0x0F000000), blurRadius: 8, offset: Offset(0, 2)),
-      ],
-    );
+  color: AppColors.card,
+  borderRadius: BorderRadius.circular(12),
+  boxShadow: const [
+    BoxShadow(color: Color(0x0F000000), blurRadius: 8, offset: Offset(0, 2)),
+  ],
+);

@@ -1,39 +1,45 @@
 class KmMes {
-  final String rotulo; // ex.: "Set"
+  final String rotulo;
   final double produtiva;
   final double morta;
 
-  const KmMes(
-      {required this.rotulo, required this.produtiva, required this.morta});
+  const KmMes({
+    required this.rotulo,
+    required this.produtiva,
+    required this.morta,
+  });
 
   factory KmMes.fromJson(Map<String, dynamic> j) => KmMes(
-        rotulo: j['rotulo'] as String,
-        produtiva: (j['produtiva'] as num).toDouble(),
-        morta: (j['morta'] as num).toDouble(),
-      );
+    rotulo: j['rotulo'] as String,
+    produtiva: (j['produtiva'] as num).toDouble(),
+    morta: (j['morta'] as num).toDouble(),
+  );
 }
 
 class ViagensHora {
-  final String rotulo; // ex.: "08:00"
+  final String rotulo;
   final double viagens;
   final bool pico;
 
-  const ViagensHora(
-      {required this.rotulo, required this.viagens, this.pico = false});
+  const ViagensHora({
+    required this.rotulo,
+    required this.viagens,
+    this.pico = false,
+  });
 
   factory ViagensHora.fromJson(Map<String, dynamic> j) => ViagensHora(
-        rotulo: j['rotulo'] as String,
-        viagens: (j['viagens'] as num).toDouble(),
-        pico: j['pico'] as bool? ?? false,
-      );
+    rotulo: j['rotulo'] as String,
+    viagens: (j['viagens'] as num).toDouble(),
+    pico: j['pico'] as bool? ?? false,
+  );
 }
 
 class AnomaliaOp {
-  final String idRota; // "L-102 (Norte)"
-  final String tipo; // "Viagem não iniciada (Atraso > 15m)"
-  final String veiculo; // "BR-4452" ou "Múltiplos"
-  final String severidade; // 'alta' | 'media'
-  final String acao; // 'investigar' | 'notificar' | 'ajustar'
+  final String idRota;
+  final String tipo;
+  final String veiculo;
+  final String severidade;
+  final String acao;
 
   const AnomaliaOp({
     required this.idRota,
@@ -44,20 +50,20 @@ class AnomaliaOp {
   });
 
   factory AnomaliaOp.fromJson(Map<String, dynamic> j) => AnomaliaOp(
-        idRota: j['id_rota'] as String,
-        tipo: j['tipo'] as String,
-        veiculo: j['veiculo'] as String,
-        severidade: j['severidade'] as String? ?? 'media',
-        acao: j['acao'] as String? ?? 'investigar',
-      );
+    idRota: j['id_rota'] as String,
+    tipo: j['tipo'] as String,
+    veiculo: j['veiculo'] as String,
+    severidade: j['severidade'] as String? ?? 'media',
+    acao: j['acao'] as String? ?? 'investigar',
+  );
 }
 
 class OperacaoOverview {
   final int? viagensRealizadas;
   final int? viagensProgramadas;
-  final double? pontualidade; // %
-  final double? pontualidadeVariacao; // % vs mês anterior
-  final double? metaPontualidade; // %
+  final double? pontualidade;
+  final double? pontualidadeVariacao;
+  final double? metaPontualidade;
   final double? kmProdutiva;
   final double? kmMorta;
   final List<KmMes> kmMensal;
@@ -79,7 +85,6 @@ class OperacaoOverview {
 
   factory OperacaoOverview.empty() => const OperacaoOverview();
 
-  /// 0 a 1. Nulo se não houver dados.
   double? get execucao {
     final r = viagensRealizadas;
     final p = viagensProgramadas;

@@ -5,7 +5,6 @@ from app.services.auth_service import (
     autenticar_usuario,
 )
 
-
 router = APIRouter(
     prefix="/auth",
     tags=["Autenticação"],
@@ -20,10 +19,7 @@ class LoginRequest(BaseModel):
 @router.post("/login")
 def login(dados: LoginRequest):
     try:
-        usuario = autenticar_usuario(
-            dados.email,
-            dados.senha
-        )
+        usuario = autenticar_usuario(dados.email, dados.senha)
 
         return {
             "status": "sucesso",

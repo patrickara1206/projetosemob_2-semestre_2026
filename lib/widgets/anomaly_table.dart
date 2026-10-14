@@ -29,54 +29,72 @@ class AnomalyTable extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                const Icon(Icons.warning_amber_rounded,
-                    color: AppColors.red, size: 22),
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  color: AppColors.red,
+                  size: 22,
+                ),
                 const SizedBox(width: 8),
                 const Expanded(
-                  child: Text('Anomalias Operacionais Detectadas (ML)',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.navy)),
+                  child: Text(
+                    'Anomalias Operacionais Detectadas (ML)',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.navy,
+                    ),
+                  ),
                 ),
                 TextButton(
                   onPressed: onVerTodas,
-                  child: const Text('Ver Todas',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                  child: const Text(
+                    'Ver Todas',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ],
             ),
           ),
-          LayoutBuilder(builder: (context, box) {
-            final width = math.max(box.maxWidth, 720.0);
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: width,
-                child: Column(
-                  children: [
-                    const _Row(
-                      header: true,
-                      cells: ['ID ROTA', 'TIPO DE DESVIO', 'VEÍCULO', 'SEVERIDADE', 'AÇÃO'],
-                    ),
-                    if (anomalias.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text('Nenhuma anomalia no período',
-                            style: TextStyle(color: AppColors.muted)),
-                      )
-                    else
-                      for (var i = 0; i < anomalias.length; i++)
-                        _DataRow(
-                          anomalia: anomalias[i],
-                          zebra: i.isOdd,
-                          onAction: () => onAction(anomalias[i]),
-                        ),
-                  ],
+          LayoutBuilder(
+            builder: (context, box) {
+              final width = math.max(box.maxWidth, 720.0);
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: width,
+                  child: Column(
+                    children: [
+                      const _Row(
+                        header: true,
+                        cells: [
+                          'ID ROTA',
+                          'TIPO DE DESVIO',
+                          'VEÍCULO',
+                          'SEVERIDADE',
+                          'AÇÃO',
+                        ],
+                      ),
+                      if (anomalias.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Text(
+                            'Nenhuma anomalia no período',
+                            style: TextStyle(color: AppColors.muted),
+                          ),
+                        )
+                      else
+                        for (var i = 0; i < anomalias.length; i++)
+                          _DataRow(
+                            anomalia: anomalias[i],
+                            zebra: i.isOdd,
+                            onAction: () => onAction(anomalias[i]),
+                          ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -101,13 +119,17 @@ class _Row extends StatelessWidget {
             Expanded(
               flex: _flex[i],
               child: Align(
-                alignment:
-                    i == 4 ? Alignment.centerRight : Alignment.centerLeft,
-                child: Text(cells[i],
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700)),
+                alignment: i == 4
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Text(
+                  cells[i],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
         ],
@@ -120,8 +142,11 @@ class _DataRow extends StatelessWidget {
   final AnomaliaOp anomalia;
   final bool zebra;
   final VoidCallback onAction;
-  const _DataRow(
-      {required this.anomalia, required this.zebra, required this.onAction});
+  const _DataRow({
+    required this.anomalia,
+    required this.zebra,
+    required this.onAction,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -134,40 +159,50 @@ class _DataRow extends StatelessWidget {
         children: [
           Expanded(
             flex: _flex[0],
-            child: Text(anomalia.idRota,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.navy)),
+            child: Text(
+              anomalia.idRota,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.navy,
+              ),
+            ),
           ),
           Expanded(
             flex: _flex[1],
-            child: Text(anomalia.tipo,
-                style: const TextStyle(fontSize: 12, color: AppColors.text)),
+            child: Text(
+              anomalia.tipo,
+              style: const TextStyle(fontSize: 12, color: AppColors.text),
+            ),
           ),
           Expanded(
             flex: _flex[2],
-            child: Text(anomalia.veiculo,
-                style: const TextStyle(fontSize: 12, color: AppColors.text)),
+            child: Text(
+              anomalia.veiculo,
+              style: const TextStyle(fontSize: 12, color: AppColors.text),
+            ),
           ),
           Expanded(
             flex: _flex[3],
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: alta ? AppColors.redSoft : AppColors.orangeSoft,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(alta ? 'Alta' : 'Média',
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: alta
-                            ? AppColors.red
-                            : const Color(0xFFB7791F))),
+                child: Text(
+                  alta ? 'Alta' : 'Média',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: alta ? AppColors.red : const Color(0xFFB7791F),
+                  ),
+                ),
               ),
             ),
           ),

@@ -7,7 +7,6 @@ from app.routes.passageiros import router as passageiros_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.importacao import router as importacao_router
 
-
 app = FastAPI(
     title="SEMOB-SCS API",
     description="Backend do Dashboard de Operação de Transporte",
@@ -42,6 +41,4 @@ def home():
 
 @app.get("/health")
 def health():
-    return {
-        "status": "ok"
-    }
+    return {"status": "ok"}

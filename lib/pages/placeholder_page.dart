@@ -10,11 +10,14 @@ class PlaceholderPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(24),
-      child: Text(title,
-          style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: AppColors.navy)),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 26,
+          fontWeight: FontWeight.w800,
+          color: AppColors.navy,
+        ),
+      ),
     );
   }
 }

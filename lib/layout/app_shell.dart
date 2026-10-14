@@ -10,34 +10,36 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, box) {
-      final compact = box.maxWidth < 900;
+    return LayoutBuilder(
+      builder: (context, box) {
+        final compact = box.maxWidth < 900;
 
-      final content = Column(
-        children: [
-          TopBar(compact: compact),
-          Expanded(child: child),
-          const _Footer(),
-        ],
-      );
+        final content = Column(
+          children: [
+            TopBar(compact: compact),
+            Expanded(child: child),
+            const _Footer(),
+          ],
+        );
 
-      return Scaffold(
-        drawer: compact
-            ? const Drawer(
-                backgroundColor: AppColors.sidebar,
-                child: Sidebar(),
-              )
-            : null,
-        body: compact
-            ? content
-            : Row(
-                children: [
-                  const SizedBox(width: 220, child: Sidebar()),
-                  Expanded(child: content),
-                ],
-              ),
-      );
-    });
+        return Scaffold(
+          drawer: compact
+              ? const Drawer(
+                  backgroundColor: AppColors.sidebar,
+                  child: Sidebar(),
+                )
+              : null,
+          body: compact
+              ? content
+              : Row(
+                  children: [
+                    const SizedBox(width: 220, child: Sidebar()),
+                    Expanded(child: content),
+                  ],
+                ),
+        );
+      },
+    );
   }
 }
 
@@ -60,8 +62,10 @@ class _Footer extends StatelessWidget {
               style: const TextStyle(fontSize: 12, color: AppColors.muted),
             ),
           ),
-          const Text('Suporte Técnico',
-              style: TextStyle(fontSize: 12, color: AppColors.muted)),
+          const Text(
+            'Suporte Técnico',
+            style: TextStyle(fontSize: 12, color: AppColors.muted),
+          ),
         ],
       ),
     );
