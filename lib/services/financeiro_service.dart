@@ -7,6 +7,7 @@ import 'dashboard_service.dart';
 class FinanceiroService {
   Future<FinanceiroOverview> getOverview({
     required String periodo,
+    String mes = '2026-08',
     String? concessionaria,
     String busca = '',
     int pagina = 1,
@@ -20,6 +21,7 @@ class FinanceiroService {
     final uri = Uri.parse('${DashboardService.baseUrl}/financeiro/overview')
         .replace(queryParameters: {
       'periodo': periodo,
+      'mes': mes,
       if (concessionaria != null) 'concessionaria': concessionaria,
       if (busca.isNotEmpty) 'busca': busca,
       'pagina': '$pagina',
