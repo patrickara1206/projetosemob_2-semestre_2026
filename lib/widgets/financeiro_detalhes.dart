@@ -13,20 +13,19 @@ class FinanceiroDetalhes extends StatelessWidget {
     required this.dias,
   });
 
-  static const azul = Color(0xFF2563EB);
-  static const laranja = Color(0xFFEA580C);
-
   @override
   Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
     if (dias.isEmpty) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(32),
-        decoration: cardDecoration(),
-        child: const Text(
+        decoration: cardDecoration(context),
+        child: Text(
           'Sem registros financeiros para o mês selecionado.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: AppColors.muted),
+          style: TextStyle(color: cores.onSurfaceVariant),
         ),
       );
     }
@@ -35,12 +34,12 @@ class FinanceiroDetalhes extends StatelessWidget {
       builder: (context, box) {
         final grafico = SizedBox(
           height: 400,
-          child: _grafico(),
+          child: _grafico(context),
         );
 
         final tabela = SizedBox(
           height: 400,
-          child: _tabela(),
+          child: _tabela(context),
         );
 
         if (box.maxWidth >= 1000) {
@@ -65,28 +64,39 @@ class FinanceiroDetalhes extends StatelessWidget {
     );
   }
 
-  Widget _legenda(Color cor, String titulo) {
+  Widget _legenda(
+    BuildContext context,
+    Color cor,
+    String titulo,
+  ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 16,
-          height: 3,
-          color: cor,
-        ),
+        Container(width: 16, height: 3, color: cor),
         const SizedBox(width: 6),
         Text(
           titulo,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: AppColors.muted,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],
     );
   }
 
-  Widget _grafico() {
+  Widget _grafico(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+
+    final azul = escuro
+        ? const Color(0xFF60A5FA)
+        : const Color(0xFF2563EB);
+
+    final laranja = escuro
+        ? const Color(0xFFFB923C)
+        : const Color(0xFFEA580C);
+
     final vendas = <FlSpot>[];
     final utilizacao = <FlSpot>[];
 
@@ -99,13 +109,8 @@ class FinanceiroDetalhes extends StatelessWidget {
       if (dia.vendas != null) {
         vendas.add(FlSpot(i.toDouble(), dia.vendas!));
 
-        if (dia.vendas! > maiorValor) {
-          maiorValor = dia.vendas!;
-        }
-
-        if (dia.vendas! < menorValor) {
-          menorValor = dia.vendas!;
-        }
+        if (dia.vendas! > maiorValor) maiorValor = dia.vendas!;
+        if (dia.vendas! < menorValor) menorValor = dia.vendas!;
       } else {
         vendas.add(FlSpot.nullSpot);
       }
@@ -148,24 +153,24 @@ class FinanceiroDetalhes extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Vendas e utilização por dia',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: AppColors.navy,
+              color: cores.onSurface,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Valores em reais dos relatórios importados',
             style: TextStyle(
               fontSize: 12,
-              color: AppColors.muted,
+              color: cores.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 14),
@@ -173,15 +178,18 @@ class FinanceiroDetalhes extends StatelessWidget {
             spacing: 20,
             runSpacing: 8,
             children: [
-              _legenda(azul, 'Vendas'),
-              _legenda(laranja, 'Utilização'),
+              _legenda(context, azul, 'Vendas'),
+              _legenda(context, laranja, 'Utilização'),
             ],
           ),
           const SizedBox(height: 20),
           Expanded(
             child: !possuiValores
-                ? const Center(
-                    child: Text('Valores diários indisponíveis'),
+                ? Center(
+                    child: Text(
+                      'Valores diários indisponíveis',
+                      style: TextStyle(color: cores.onSurfaceVariant),
+                    ),
                   )
                 : LineChart(
                     LineChartData(
@@ -193,11 +201,10 @@ class FinanceiroDetalhes extends StatelessWidget {
                       maxY: maxY,
                       borderData: FlBorderData(show: false),
                       gridData: FlGridData(
-                        show: true,
                         drawVerticalLine: false,
                         horizontalInterval: intervaloY,
-                        getDrawingHorizontalLine: (_) => const FlLine(
-                          color: AppColors.border,
+                        getDrawingHorizontalLine: (_) => FlLine(
+                          color: cores.outlineVariant,
                           strokeWidth: 1,
                           dashArray: [4, 4],
                         ),
@@ -214,15 +221,13 @@ class FinanceiroDetalhes extends StatelessWidget {
                             showTitles: true,
                             interval: intervaloY,
                             reservedSize: 68,
-                            getTitlesWidget: (valor, meta) {
-                              return Text(
-                                fmtInt(valor),
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: AppColors.muted,
-                                ),
-                              );
-                            },
+                            getTitlesWidget: (valor, meta) => Text(
+                              fmtInt(valor),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: cores.onSurfaceVariant,
+                              ),
+                            ),
                           ),
                         ),
                         bottomTitles: AxisTitles(
@@ -243,9 +248,9 @@ class FinanceiroDetalhes extends StatelessWidget {
                                 padding: const EdgeInsets.only(top: 8),
                                 child: Text(
                                   dias[indice].rotulo,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 10,
-                                    color: AppColors.muted,
+                                    color: cores.onSurfaceVariant,
                                   ),
                                 ),
                               );
@@ -255,7 +260,7 @@ class FinanceiroDetalhes extends StatelessWidget {
                       ),
                       lineTouchData: LineTouchData(
                         touchTooltipData: LineTouchTooltipData(
-                          getTooltipColor: (_) => AppColors.navy,
+                          getTooltipColor: (_) => cores.inverseSurface,
                           fitInsideHorizontally: true,
                           fitInsideVertically: true,
                           maxContentWidth: 220,
@@ -269,8 +274,8 @@ class FinanceiroDetalhes extends StatelessWidget {
                               return LineTooltipItem(
                                 '${dias[indice].rotulo}'
                                 ' · $titulo: ${fmtMoney(ponto.y)}',
-                                const TextStyle(
-                                  color: Colors.white,
+                                TextStyle(
+                                  color: cores.onInverseSurface,
                                   fontSize: 12,
                                 ),
                               );
@@ -299,11 +304,11 @@ class FinanceiroDetalhes extends StatelessWidget {
                   ),
           ),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'Toque ou passe o mouse para consultar os valores.',
             style: TextStyle(
               fontSize: 11,
-              color: AppColors.muted,
+              color: cores.onSurfaceVariant,
             ),
           ),
         ],
@@ -311,27 +316,29 @@ class FinanceiroDetalhes extends StatelessWidget {
     );
   }
 
-  Widget _tabela() {
+  Widget _tabela(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Movimentos financeiros',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: AppColors.navy,
+              color: cores.onSurface,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             '${dias.length} dias com registros',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: AppColors.muted,
+              color: cores.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 16),
@@ -341,6 +348,24 @@ class FinanceiroDetalhes extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: DataTable(
                   columnSpacing: 20,
+                  dividerThickness: 1,
+                  border: TableBorder(
+                    horizontalInside: BorderSide(
+                      color: cores.outlineVariant,
+                    ),
+                  ),
+                  headingRowColor: WidgetStatePropertyAll<Color>(
+                    cores.surfaceContainerHighest,
+                  ),
+                  headingTextStyle: TextStyle(
+                    color: cores.onSurface,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  dataTextStyle: TextStyle(
+                    color: cores.onSurface,
+                    fontSize: 12,
+                  ),
                   columns: const [
                     DataColumn(label: Text('Data')),
                     DataColumn(
@@ -357,13 +382,20 @@ class FinanceiroDetalhes extends StatelessWidget {
                     ),
                   ],
                   rows: [
-                    for (final dia in dias)
+                    for (var i = 0; i < dias.length; i++)
                       DataRow(
+                        color: WidgetStatePropertyAll<Color>(
+                          i.isOdd
+                              ? cores.surfaceContainerHighest
+                              : cores.surface,
+                        ),
                         cells: [
-                          DataCell(Text(dia.rotulo)),
-                          DataCell(Text(fmtMoney(dia.vendas))),
-                          DataCell(Text(fmtMoney(dia.utilizacao))),
-                          DataCell(Text(fmtMoney(dia.creditoCirculante))),
+                          DataCell(Text(dias[i].rotulo)),
+                          DataCell(Text(fmtMoney(dias[i].vendas))),
+                          DataCell(Text(fmtMoney(dias[i].utilizacao))),
+                          DataCell(
+                            Text(fmtMoney(dias[i].creditoCirculante)),
+                          ),
                         ],
                       ),
                   ],

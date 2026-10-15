@@ -71,13 +71,13 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
     final dados = _data;
 
     if (dados == null) {
       if (_erro == null) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
+        return const Center(child: CircularProgressIndicator());
       }
 
       return Center(
@@ -86,16 +86,13 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
-                color: AppColors.red,
+                color: cores.error,
                 size: 40,
               ),
               const SizedBox(height: 12),
-              Text(
-                _erro!,
-                textAlign: TextAlign.center,
-              ),
+              Text(_erro!, textAlign: TextAlign.center),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: _carregando ? null : _load,
@@ -121,17 +118,17 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _header(),
+              _header(context),
               const SizedBox(height: 16),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
-                decoration: cardDecoration(),
-                child: const Text(
+                decoration: cardDecoration(context),
+                child: Text(
                   'Mês de referência: agosto de 2026 • Totais mensais',
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.muted,
+                    color: cores.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -145,14 +142,14 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.redSoft,
+                    color: cores.errorContainer,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     _erro!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.red,
+                      color: cores.onErrorContainer,
                     ),
                   ),
                 ),
@@ -167,8 +164,7 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
                     child: _Kpi(
                       title: 'VENDAS DE CRÉDITOS',
                       icon: Icons.payments_outlined,
-                      iconColor: AppColors.primary,
-                      iconBg: const Color(0xFFE3EEFB),
+                      iconColor: cores.primary,
                       value: fmtMoney(dados.totalVendas),
                       note: 'Total de vendas no mês selecionado',
                     ),
@@ -178,8 +174,9 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
                     child: _Kpi(
                       title: 'UTILIZAÇÃO DE CRÉDITOS',
                       icon: Icons.directions_bus_outlined,
-                      iconColor: AppColors.navy,
-                      iconBg: const Color(0xFFE3E8FA),
+                      iconColor: escuro
+                          ? const Color(0xFFA5B4FC)
+                          : AppColors.navy,
                       value: fmtMoney(dados.totalUtilizacao),
                       note: 'Total utilizado no mês selecionado',
                     ),
@@ -189,8 +186,9 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
                     child: _Kpi(
                       title: 'CRÉDITO CIRCULANTE',
                       icon: Icons.account_balance_wallet_outlined,
-                      iconColor: AppColors.green,
-                      iconBg: AppColors.greenSoft,
+                      iconColor: escuro
+                          ? const Color(0xFF86EFAC)
+                          : AppColors.green,
                       value: fmtMoney(dados.creditoCirculante),
                       note: 'Soma dos valores diários do mês selecionado',
                     ),
@@ -198,9 +196,7 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
                 ],
               ),
               const SizedBox(height: 20),
-              FinanceiroDetalhes(
-                dias: dados.diasFinanceiros,
-              ),
+              FinanceiroDetalhes(dias: dados.diasFinanceiros),
             ],
           ),
         );
@@ -208,14 +204,16 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
     );
   }
 
-  Widget _header() {
+  Widget _header(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
     return Wrap(
       alignment: WrapAlignment.spaceBetween,
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 16,
       runSpacing: 12,
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -223,25 +221,25 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primary,
+                color: cores.primary,
               ),
             ),
-            SizedBox(height: 6),
+            const SizedBox(height: 6),
             Text(
               'Gestão Financeira',
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
-                color: AppColors.navy,
+                color: cores.onSurface,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               'Vendas, utilização e crédito circulante '
               'dos relatórios importados.',
               style: TextStyle(
                 fontSize: 12,
-                color: AppColors.muted,
+                color: cores.onSurfaceVariant,
               ),
             ),
           ],
@@ -260,7 +258,6 @@ class _Kpi extends StatelessWidget {
   final String title;
   final IconData icon;
   final Color iconColor;
-  final Color iconBg;
   final String value;
   final String note;
 
@@ -268,16 +265,17 @@ class _Kpi extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.iconColor,
-    required this.iconBg,
     required this.value,
     required this.note,
   });
 
   @override
   Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -286,25 +284,21 @@ class _Kpi extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF374151),
+                    color: cores.onSurfaceVariant,
                   ),
                 ),
               ),
               Container(
-                width: 30,
-                height: 30,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
-                  color: iconBg,
+                  color: cores.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  icon,
-                  size: 16,
-                  color: iconColor,
-                ),
+                child: Icon(icon, size: 18, color: iconColor),
               ),
             ],
           ),
@@ -314,19 +308,19 @@ class _Kpi extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
-                color: AppColors.navy,
+                color: cores.onSurface,
               ),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             note,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
-              color: AppColors.muted,
+              color: cores.onSurfaceVariant,
             ),
           ),
         ],
