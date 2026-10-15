@@ -9,21 +9,29 @@ class TariffDonut extends StatelessWidget {
 
   const TariffDonut({super.key, required this.pctPagantes});
 
-  static const _pagantes = Color(0xFF0B5FB0);
-  static const _naoPagantes = Color(0xFFC5CAF5);
-
   @override
   Widget build(BuildContext context) {
-    final p = pctPagantes?.clamp(0.0, 100.0).toDouble();
-    final n = p == null ? null : 100 - p;
+    final cores = Theme.of(context).colorScheme;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+
+    final pagantes = escuro
+        ? const Color(0xFF60A5FA)
+        : const Color(0xFF0B5FB0);
+
+    final naoPagantes = escuro
+        ? const Color(0xFFA5B4FC)
+        : const Color(0xFFC5CAF5);
+
+    final percentual = pctPagantes?.clamp(0.0, 100.0).toDouble();
+    final restante = percentual == null ? null : 100 - percentual;
 
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Expanded(
                 child: Text(
@@ -31,11 +39,15 @@ class TariffDonut extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF374151),
+                    color: cores.onSurface,
                   ),
                 ),
               ),
-              Icon(Icons.more_vert, size: 18, color: AppColors.muted),
+              Icon(
+                Icons.more_vert,
+                size: 18,
+                color: cores.onSurfaceVariant,
+              ),
             ],
           ),
           Expanded(
@@ -52,27 +64,27 @@ class TariffDonut extends StatelessWidget {
                         PieChart(
                           PieChartData(
                             startDegreeOffset: -90,
-                            sectionsSpace: 0,
+                            sectionsSpace: 2,
                             centerSpaceRadius: 62,
-                            sections: p == null
+                            sections: percentual == null
                                 ? [
                                     PieChartSectionData(
                                       value: 1,
-                                      color: AppColors.border,
+                                      color: cores.outlineVariant,
                                       radius: 28,
                                       showTitle: false,
                                     ),
                                   ]
                                 : [
                                     PieChartSectionData(
-                                      value: p,
-                                      color: _pagantes,
+                                      value: percentual,
+                                      color: pagantes,
                                       radius: 28,
                                       showTitle: false,
                                     ),
                                     PieChartSectionData(
-                                      value: n!,
-                                      color: _naoPagantes,
+                                      value: restante!,
+                                      color: naoPagantes,
                                       radius: 28,
                                       showTitle: false,
                                     ),
@@ -83,18 +95,20 @@ class TariffDonut extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              p == null ? '--' : '${p.round()}%',
-                              style: const TextStyle(
+                              percentual == null
+                                  ? '--'
+                                  : '${percentual.round()}%',
+                              style: TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.navy,
+                                color: cores.onSurface,
                               ),
                             ),
-                            const Text(
+                            Text(
                               'PAGANTES',
                               style: TextStyle(
                                 fontSize: 10,
-                                color: AppColors.muted,
+                                color: cores.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -102,17 +116,21 @@ class TariffDonut extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   _LegendRow(
-                    color: _pagantes,
+                    color: pagantes,
                     label: 'Pagantes',
-                    value: p == null ? '--' : '${fmtDec(p)}%',
+                    value: percentual == null
+                        ? '--'
+                        : '${fmtDec(percentual)}%',
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   _LegendRow(
-                    color: _naoPagantes,
+                    color: naoPagantes,
                     label: 'Não Pagantes (Total)',
-                    value: n == null ? '--' : '${fmtDec(n)}%',
+                    value: restante == null
+                        ? '--'
+                        : '${fmtDec(restante)}%',
                   ),
                 ],
               ),
@@ -128,6 +146,7 @@ class _LegendRow extends StatelessWidget {
   final Color color;
   final String label;
   final String value;
+
   const _LegendRow({
     required this.color,
     required this.label,
@@ -136,8 +155,10 @@ class _LegendRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 220,
+    final cores = Theme.of(context).colorScheme;
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 260),
       child: Row(
         children: [
           Icon(Icons.circle, size: 10, color: color),
@@ -145,15 +166,19 @@ class _LegendRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF374151)),
+              style: TextStyle(
+                fontSize: 12,
+                color: cores.onSurfaceVariant,
+              ),
             ),
           ),
+          const SizedBox(width: 8),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: AppColors.navy,
+              color: cores.onSurface,
             ),
           ),
         ],
