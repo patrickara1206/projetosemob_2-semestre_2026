@@ -7,6 +7,7 @@ import '../models/dashboard_overview.dart';
 class AnomalyPanel extends StatelessWidget {
   final List<Anomalia> anomalias;
   final void Function(Anomalia) onTapItem;
+
   const AnomalyPanel({
     super.key,
     required this.anomalias,
@@ -15,59 +16,73 @@ class AnomalyPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final esquema = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.warning_amber_rounded,
-                color: AppColors.orange,
+                color: esquema.primary,
                 size: 20,
               ),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'ANOMALIAS DETECTADAS',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF374151),
+                    color: esquema.onSurface,
                   ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 2,
+                ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFDECEC),
+                  color: esquema.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
+                child: Text(
                   'Recentes',
-                  style: TextStyle(fontSize: 10, color: AppColors.red),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: esquema.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           if (anomalias.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
               child: Center(
                 child: Text(
                   'Nenhuma anomalia no período',
-                  style: TextStyle(color: AppColors.muted, fontSize: 12),
+                  style: TextStyle(
+                    color: esquema.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             )
           else
-            for (final a in anomalias)
+            for (final anomalia in anomalias)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: AnomalyCard(anomalia: a, onPressed: () => onTapItem(a)),
+                child: AnomalyCard(
+                  anomalia: anomalia,
+                  onPressed: () => onTapItem(anomalia),
+                ),
               ),
         ],
       ),
@@ -78,6 +93,7 @@ class AnomalyPanel extends StatelessWidget {
 class AnomalyCard extends StatelessWidget {
   final Anomalia anomalia;
   final VoidCallback onPressed;
+
   const AnomalyCard({
     super.key,
     required this.anomalia,
@@ -86,18 +102,25 @@ class AnomalyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final esquema = Theme.of(context).colorScheme;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
     final alta = anomalia.severidade == 'alta';
-    final accent = alta ? AppColors.red : AppColors.orange;
-    final bg = alta ? const Color(0xFFFDF2F2) : const Color(0xFFFFF8E7);
-    final desvioTxt = fmtPercent(anomalia.desvio);
+
+    final accent = alta
+        ? (escuro ? const Color(0xFFFCA5A5) : AppColors.red)
+        : (escuro
+            ? const Color(0xFFFCD34D)
+            : const Color(0xFFB45309));
 
     return Container(
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: bg,
-        border: Border(left: BorderSide(color: accent, width: 4)),
+        color: esquema.surfaceContainerHighest,
+        border: Border(
+          left: BorderSide(color: accent, width: 4),
+        ),
         borderRadius: BorderRadius.circular(6),
       ),
-      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -106,65 +129,44 @@ class AnomalyCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   anomalia.titulo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
+                    color: esquema.onSurface,
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  'Score: ${anomalia.score.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 10, color: accent),
-                ),
+              const SizedBox(width: 8),
+              Text(
+                'Score: ${anomalia.score.toStringAsFixed(2)}',
+                style: TextStyle(fontSize: 10, color: accent),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Obs: ${anomalia.observado} | Esp: ${anomalia.esperado}',
-                  style: const TextStyle(fontSize: 11),
-                ),
-              ),
-              Text(
-                'Desvio: $desvioTxt',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: accent,
-                ),
-              ),
-            ],
+          Text(
+            'Obs: ${anomalia.observado} | Esp: ${anomalia.esperado}',
+            style: TextStyle(
+              fontSize: 11,
+              color: esquema.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Desvio: ${fmtPercent(anomalia.desvio)}',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: accent,
+            ),
           ),
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerRight,
-            child: alta
-                ? FilledButton(
-                    onPressed: onPressed,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      minimumSize: const Size(0, 30),
-                      textStyle: const TextStyle(fontSize: 10),
-                    ),
-                    child: const Text('VER DETALHES'),
-                  )
-                : OutlinedButton(
-                    onPressed: onPressed,
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 30),
-                      textStyle: const TextStyle(fontSize: 10),
-                    ),
-                    child: const Text('ANALISAR'),
-                  ),
+            child: OutlinedButton(
+              onPressed: onPressed,
+              child: Text(alta ? 'VER DETALHES' : 'ANALISAR'),
+            ),
           ),
         ],
       ),

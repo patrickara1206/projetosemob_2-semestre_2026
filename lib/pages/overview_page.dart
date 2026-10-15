@@ -34,10 +34,16 @@ class _OverviewPageState extends State<OverviewPage> {
     super.dispose();
   }
 
-  Future<DashboardOverview> _fetch() =>
-      _service.getOverview(periodo: periodoNotifier.value.api, mes: '2026-08');
+  Future<DashboardOverview> _fetch() {
+    return _service.getOverview(
+      periodo: periodoNotifier.value.api,
+      mes: '2026-08',
+    );
+  }
 
-  void _reload() => setState(() => _future = _fetch());
+  void _reload() {
+    setState(() => _future = _fetch());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,23 +53,35 @@ class _OverviewPageState extends State<OverviewPage> {
         if (snap.connectionState != ConnectionState.done) {
           return const Center(child: CircularProgressIndicator());
         }
+
         if (snap.hasError) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, color: AppColors.red, size: 40),
-                const SizedBox(height: 8),
-                Text('${snap.error}'),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: _reload,
-                  child: const Text('Tentar novamente'),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    color: Theme.of(context).colorScheme.error,
+                    size: 40,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${snap.error}',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: _reload,
+                    child: const Text('Tentar novamente'),
+                  ),
+                ],
+              ),
             ),
           );
         }
+
         return _Content(data: snap.data!);
       },
     );
@@ -72,14 +90,30 @@ class _OverviewPageState extends State<OverviewPage> {
 
 class _Content extends StatelessWidget {
   final DashboardOverview data;
+
   const _Content({required this.data});
 
   @override
   Widget build(BuildContext context) {
+    final esquema = Theme.of(context).colorScheme;
+
     return LayoutBuilder(
       builder: (context, box) {
-        final w = box.maxWidth;
-        final wide = w >= 1100;
+        final largura = box.maxWidth;
+        final wide = largura >= 1100;
+        final padding = largura < 700 ? 16.0 : 24.0;
+        const gap = 16.0;
+
+        final colunas = largura >= 1100
+            ? 5
+            : largura >= 700
+                ? 3
+                : largura >= 400
+                    ? 2
+                    : 1;
+
+        final larguraCartao =
+            (largura - padding * 2 - gap * (colunas - 1)) / colunas;
 
         final kpis = [
           KpiCard(
@@ -116,39 +150,66 @@ class _Content extends StatelessWidget {
           ),
         ];
 
-        final cols = w >= 1100 ? 5 : (w >= 700 ? 3 : 2);
-        const gap = 16.0;
-        final pad = w < 700 ? 16.0 : 24.0;
-        final itemW = (w - pad * 2 - gap * (cols - 1)) / cols;
+        final grafico = VolumeChart(serie: data.serie);
 
-        final chart = VolumeChart(serie: data.serie);
-        final side = Column(
+        final lateral = Column(
           children: [
             IntelligenceCard(data: data.inteligencia),
             const SizedBox(height: 16),
-            AnomalyPanel(anomalias: data.anomalias, onTapItem: (a) {}),
+            AnomalyPanel(
+              anomalias: data.anomalias,
+              onTapItem: (anomalia) {
+                showDialog<void>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text(anomalia.titulo),
+                    content: Text(
+                      'Observado: ${anomalia.observado}\n'
+                      'Esperado: ${anomalia.esperado}\n'
+                      'Desvio: ${fmtPercent(anomalia.desvio)}',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Fechar'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ],
         );
 
         return SingleChildScrollView(
-          padding: EdgeInsets.all(pad),
+          padding: EdgeInsets.all(padding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 16,
+                runSpacing: 12,
                 children: [
-                  const Expanded(
-                    child: Text(
-                      'Visão Geral da Operação',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.navy,
-                      ),
+                  Text(
+                    'Visão Geral da Operação',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: esquema.onSurface,
                     ),
                   ),
                   OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'A exportação ainda não está disponível.',
+                          ),
+                        ),
+                      );
+                    },
                     icon: const Icon(Icons.download, size: 16),
                     label: const Text('Exportar Relatório'),
                   ),
@@ -159,7 +220,11 @@ class _Content extends StatelessWidget {
                 spacing: gap,
                 runSpacing: gap,
                 children: [
-                  for (final k in kpis) SizedBox(width: itemW, child: k),
+                  for (final kpi in kpis)
+                    SizedBox(
+                      width: larguraCartao,
+                      child: kpi,
+                    ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -167,15 +232,15 @@ class _Content extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 3, child: chart),
+                    Expanded(flex: 3, child: grafico),
                     const SizedBox(width: 20),
-                    Expanded(flex: 2, child: side),
+                    Expanded(flex: 2, child: lateral),
                   ],
                 )
               else ...[
-                chart,
+                grafico,
                 const SizedBox(height: 16),
-                side,
+                lateral,
               ],
             ],
           ),

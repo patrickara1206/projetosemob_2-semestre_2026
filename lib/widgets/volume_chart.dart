@@ -7,22 +7,23 @@ import '../models/dashboard_overview.dart';
 class VolumeChart extends StatelessWidget {
   final List<SeriePonto> serie;
 
-  const VolumeChart({super.key, required this.serie});
-
-  static const azul = Color(0xFF2563EB);
-  static const laranja = Color(0xFFEA580C);
-  static const texto = Color(0xFF64748B);
+  const VolumeChart({
+    super.key,
+    required this.serie,
+  });
 
   String _numero(double valor) {
-    return valor
-        .toStringAsFixed(0)
-        .replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (match) => '${match[1]}.',
-        );
+    return valor.toStringAsFixed(0).replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (match) => '${match[1]}.',
+    );
   }
 
-  Widget _legenda(Color cor, String titulo) {
+  Widget _legenda(
+    BuildContext context,
+    Color cor,
+    String titulo,
+  ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -35,13 +36,28 @@ class VolumeChart extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 6),
-        Text(titulo, style: const TextStyle(fontSize: 12, color: texto)),
+        Text(
+          titulo,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final esquema = Theme.of(context).colorScheme;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    final azul = escuro
+        ? const Color(0xFF60A5FA)
+        : const Color(0xFF2563EB);
+    final laranja = escuro
+        ? const Color(0xFFFB923C)
+        : const Color(0xFFEA580C);
+
     final totalRealizado = serie.fold<double>(
       0,
       (total, ponto) => total + ponto.realizado,
@@ -54,22 +70,25 @@ class VolumeChart extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Viagens realizadas e programadas',
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
+              color: esquema.onSurface,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Quantidade de viagens por dia',
-            style: TextStyle(fontSize: 12, color: texto),
+            style: TextStyle(
+              fontSize: 12,
+              color: esquema.onSurfaceVariant,
+            ),
           ),
           if (serie.isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -77,16 +96,16 @@ class VolumeChart extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: esquema.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 'No período: ${_numero(totalRealizado)} realizadas'
                 ' de ${_numero(totalProgramado)} programadas',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF334155),
+                  color: esquema.onSurface,
                 ),
               ),
             ),
@@ -96,34 +115,42 @@ class VolumeChart extends StatelessWidget {
             spacing: 20,
             runSpacing: 8,
             children: [
-              _legenda(azul, 'Realizadas'),
-              _legenda(laranja, 'Programadas · tracejado'),
+              _legenda(context, azul, 'Realizadas'),
+              _legenda(context, laranja, 'Programadas · tracejado'),
             ],
           ),
           const SizedBox(height: 20),
           SizedBox(
             height: 280,
             child: serie.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'Sem dados para o período selecionado',
-                      style: TextStyle(color: texto),
+                      style: TextStyle(color: esquema.onSurfaceVariant),
                     ),
                   )
-                : _buildChart(),
+                : _buildChart(context, azul, laranja),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Passe o mouse ou toque em um dia para ver os valores.'
-            ' Linhas sobrepostas indicam valores iguais ou próximos.',
-            style: TextStyle(fontSize: 11, color: texto),
+          Text(
+            'Passe o mouse ou toque em um dia para ver os valores. '
+            'Linhas sobrepostas indicam valores iguais ou próximos.',
+            style: TextStyle(
+              fontSize: 11,
+              color: esquema.onSurfaceVariant,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChart() {
+  Widget _buildChart(
+    BuildContext context,
+    Color azul,
+    Color laranja,
+  ) {
+    final esquema = Theme.of(context).colorScheme;
     final realizados = <FlSpot>[];
     final programados = <FlSpot>[];
     double maiorValor = 0;
@@ -132,13 +159,11 @@ class VolumeChart extends StatelessWidget {
       final ponto = serie[i];
 
       realizados.add(FlSpot(i.toDouble(), ponto.realizado));
-
       programados.add(FlSpot(i.toDouble(), ponto.esperado));
 
       if (ponto.realizado > maiorValor) {
         maiorValor = ponto.realizado;
       }
-
       if (ponto.esperado > maiorValor) {
         maiorValor = ponto.esperado;
       }
@@ -147,10 +172,10 @@ class VolumeChart extends StatelessWidget {
     final intervaloY = maiorValor <= 10
         ? 2.0
         : maiorValor <= 100
-        ? 20.0
-        : maiorValor <= 500
-        ? 100.0
-        : (maiorValor / 5 / 100).ceil() * 100.0;
+            ? 20.0
+            : maiorValor <= 500
+                ? 100.0
+                : (maiorValor / 5 / 100).ceil() * 100.0;
 
     final maxY = maiorValor == 0
         ? intervaloY * 5
@@ -171,8 +196,8 @@ class VolumeChart extends StatelessWidget {
           show: true,
           drawVerticalLine: false,
           horizontalInterval: intervaloY,
-          getDrawingHorizontalLine: (_) => const FlLine(
-            color: Color(0xFFE2E8F0),
+          getDrawingHorizontalLine: (_) => FlLine(
+            color: esquema.outlineVariant,
             strokeWidth: 1,
             dashArray: [4, 4],
           ),
@@ -189,12 +214,13 @@ class VolumeChart extends StatelessWidget {
               showTitles: true,
               interval: intervaloY,
               reservedSize: 52,
-              getTitlesWidget: (valor, meta) {
-                return Text(
-                  _numero(valor),
-                  style: const TextStyle(fontSize: 11, color: texto),
-                );
-              },
+              getTitlesWidget: (valor, meta) => Text(
+                _numero(valor),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: esquema.onSurfaceVariant,
+                ),
+              ),
             ),
           ),
           bottomTitles: AxisTitles(
@@ -215,7 +241,10 @@ class VolumeChart extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(
                     serie[indice].rotulo,
-                    style: const TextStyle(fontSize: 11, color: texto),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: esquema.onSurfaceVariant,
+                    ),
                   ),
                 );
               },
@@ -225,7 +254,7 @@ class VolumeChart extends StatelessWidget {
         lineTouchData: LineTouchData(
           enabled: true,
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) => const Color(0xFF0F172A),
+            getTooltipColor: (_) => esquema.inverseSurface,
             fitInsideHorizontally: true,
             fitInsideVertically: true,
             maxContentWidth: 220,
@@ -239,8 +268,8 @@ class VolumeChart extends StatelessWidget {
                 return LineTooltipItem(
                   '${serie[indice].rotulo}'
                   ' · $titulo: ${_numero(ponto.y)}',
-                  const TextStyle(
-                    color: Colors.white,
+                  TextStyle(
+                    color: esquema.onInverseSurface,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -266,12 +295,11 @@ class VolumeChart extends StatelessWidget {
                   radius: 2.5,
                   color: azul,
                   strokeWidth: 1,
-                  strokeColor: Colors.white,
+                  strokeColor: esquema.surface,
                 );
               },
             ),
           ),
-
           LineChartBarData(
             spots: programados,
             isCurved: false,
