@@ -19,8 +19,10 @@ class AnomalyTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
     return Container(
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,27 +31,31 @@ class AnomalyTable extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.warning_amber_rounded,
-                  color: AppColors.red,
+                  color: cores.error,
                   size: 22,
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Anomalias Operacionais Detectadas (ML)',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.navy,
+                      color: cores.onSurface,
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 TextButton(
                   onPressed: onVerTodas,
                   child: const Text(
                     'Ver Todas',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -58,33 +64,27 @@ class AnomalyTable extends StatelessWidget {
           LayoutBuilder(
             builder: (context, box) {
               final width = math.max(box.maxWidth, 720.0);
+
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
                   width: width,
                   child: Column(
                     children: [
-                      const _Row(
-                        header: true,
-                        cells: [
-                          'ID ROTA',
-                          'TIPO DE DESVIO',
-                          'VEÍCULO',
-                          'SEVERIDADE',
-                          'AÇÃO',
-                        ],
-                      ),
+                      const _TableHeader(),
                       if (anomalias.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(24),
+                        Padding(
+                          padding: const EdgeInsets.all(24),
                           child: Text(
                             'Nenhuma anomalia no período',
-                            style: TextStyle(color: AppColors.muted),
+                            style: TextStyle(
+                              color: cores.onSurfaceVariant,
+                            ),
                           ),
                         )
                       else
                         for (var i = 0; i < anomalias.length; i++)
-                          _DataRow(
+                          _AnomalyRow(
                             anomalia: anomalias[i],
                             zebra: i.isOdd,
                             onAction: () => onAction(anomalias[i]),
@@ -103,29 +103,45 @@ class AnomalyTable extends StatelessWidget {
 
 const _flex = [2, 4, 2, 2, 2];
 
-class _Row extends StatelessWidget {
-  final bool header;
-  final List<String> cells;
-  const _Row({required this.header, required this.cells});
+class _TableHeader extends StatelessWidget {
+  const _TableHeader();
 
   @override
   Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
+    const titulos = [
+      'ID ROTA',
+      'TIPO DE DESVIO',
+      'VEÍCULO',
+      'SEVERIDADE',
+      'AÇÃO',
+    ];
+
     return Container(
-      color: AppColors.navy,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 14,
+      ),
+      decoration: BoxDecoration(
+        color: cores.surfaceContainerHighest,
+        border: Border(
+          bottom: BorderSide(color: cores.outlineVariant),
+        ),
+      ),
       child: Row(
         children: [
-          for (var i = 0; i < cells.length; i++)
+          for (var i = 0; i < titulos.length; i++)
             Expanded(
               flex: _flex[i],
               child: Align(
-                alignment: i == 4
+                alignment: i == titulos.length - 1
                     ? Alignment.centerRight
                     : Alignment.centerLeft,
                 child: Text(
-                  cells[i],
-                  style: const TextStyle(
-                    color: Colors.white,
+                  titulos[i],
+                  style: TextStyle(
+                    color: cores.onSurface,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
@@ -138,11 +154,12 @@ class _Row extends StatelessWidget {
   }
 }
 
-class _DataRow extends StatelessWidget {
+class _AnomalyRow extends StatelessWidget {
   final AnomaliaOp anomalia;
   final bool zebra;
   final VoidCallback onAction;
-  const _DataRow({
+
+  const _AnomalyRow({
     required this.anomalia,
     required this.zebra,
     required this.onAction,
@@ -150,36 +167,74 @@ class _DataRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final alta = anomalia.severidade == 'alta';
+    final tema = Theme.of(context);
+    final cores = tema.colorScheme;
+    final escuro = tema.brightness == Brightness.dark;
+    final alta = anomalia.severidade.toLowerCase().trim() == 'alta';
+
+    final corSeveridade = alta
+        ? (escuro ? const Color(0xFFFCA5A5) : AppColors.red)
+        : (escuro
+              ? const Color(0xFFFCD34D)
+              : const Color(0xFF92400E));
+
+    final fundoSeveridade = alta
+        ? (escuro ? const Color(0xFF451A1A) : AppColors.redSoft)
+        : (escuro
+              ? const Color(0xFF422E12)
+              : AppColors.orangeSoft);
 
     return Container(
-      color: zebra ? const Color(0xFFF8F9FC) : Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 12,
+      ),
+      decoration: BoxDecoration(
+        color: zebra ? cores.surfaceContainerHighest : cores.surface,
+        border: Border(
+          bottom: BorderSide(color: cores.outlineVariant),
+        ),
+      ),
       child: Row(
         children: [
           Expanded(
             flex: _flex[0],
-            child: Text(
-              anomalia.idRota,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppColors.navy,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text(
+                anomalia.idRota,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: cores.onSurface,
+                ),
               ),
             ),
           ),
           Expanded(
             flex: _flex[1],
-            child: Text(
-              anomalia.tipo,
-              style: const TextStyle(fontSize: 12, color: AppColors.text),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text(
+                anomalia.tipo,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: cores.onSurface,
+                ),
+              ),
             ),
           ),
           Expanded(
             flex: _flex[2],
-            child: Text(
-              anomalia.veiculo,
-              style: const TextStyle(fontSize: 12, color: AppColors.text),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text(
+                anomalia.veiculo,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: cores.onSurfaceVariant,
+                ),
+              ),
             ),
           ),
           Expanded(
@@ -189,10 +244,10 @@ class _DataRow extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
-                  vertical: 3,
+                  vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: alta ? AppColors.redSoft : AppColors.orangeSoft,
+                  color: fundoSeveridade,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -200,7 +255,7 @@ class _DataRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: alta ? AppColors.red : const Color(0xFFB7791F),
+                    color: corSeveridade,
                   ),
                 ),
               ),
@@ -210,7 +265,7 @@ class _DataRow extends StatelessWidget {
             flex: _flex[4],
             child: Align(
               alignment: Alignment.centerRight,
-              child: _actionButton(),
+              child: _actionButton(context),
             ),
           ),
         ],
@@ -218,30 +273,38 @@ class _DataRow extends StatelessWidget {
     );
   }
 
-  Widget _actionButton() {
-    const size = Size(0, 30);
-    const text = TextStyle(fontSize: 10, fontWeight: FontWeight.w600);
+  Widget _actionButton(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
+    const tamanho = Size(0, 32);
+    const estiloTexto = TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+    );
 
     switch (anomalia.acao) {
       case 'notificar':
-        return OutlinedButton(
-          onPressed: onAction,
-          style: OutlinedButton.styleFrom(minimumSize: size, textStyle: text),
-          child: const Text('Notificar'),
-        );
       case 'ajustar':
         return OutlinedButton(
           onPressed: onAction,
-          style: OutlinedButton.styleFrom(minimumSize: size, textStyle: text),
-          child: const Text('Ajustar Int.'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: cores.primary,
+            side: BorderSide(color: cores.outline),
+            minimumSize: tamanho,
+            textStyle: estiloTexto,
+          ),
+          child: Text(
+            anomalia.acao == 'notificar' ? 'Notificar' : 'Ajustar Int.',
+          ),
         );
       default:
         return FilledButton(
           onPressed: onAction,
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            minimumSize: size,
-            textStyle: text,
+            backgroundColor: cores.primary,
+            foregroundColor: cores.onPrimary,
+            minimumSize: tamanho,
+            textStyle: estiloTexto,
           ),
           child: const Text('Investigar'),
         );
