@@ -96,14 +96,20 @@ class SemobApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'SEMOB-SCS',
-
-      debugShowCheckedModeBanner: false,
-
-      theme: buildTheme(),
-
-      routerConfig: _router,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: temaNotifier,
+      builder: (context, modo, child) {
+        return MaterialApp.router(
+          title: 'SEMOB-SCS',
+          debugShowCheckedModeBanner: false,
+          theme: buildTheme(),
+          darkTheme: buildTheme(
+            brightness: Brightness.dark,
+          ),
+          themeMode: modo,
+          routerConfig: _router,
+        );
+      },
     );
   }
 }
