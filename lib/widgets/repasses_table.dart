@@ -27,7 +27,7 @@ class RepassesTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
