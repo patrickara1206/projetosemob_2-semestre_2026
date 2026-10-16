@@ -17,7 +17,7 @@ class FeatureImportanceTable extends StatelessWidget {
         : features.map((f) => f.peso).reduce(math.max);
 
     return Container(
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
