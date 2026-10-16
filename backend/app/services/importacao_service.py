@@ -1,6 +1,11 @@
 import hashlib
 import json
 
+from io import BytesIO
+from pathlib import Path
+from zipfile import ZipFile, BadZipFile
+
+
 from app.services.validacao_importacao_service import (
     validar_tipo_relatorio,
     validar_mes_relatorio,
@@ -88,15 +93,25 @@ def calcular_hash(conteudo):
 def verificar_arquivo_duplicado(conteudo):
     hash_arquivo = calcular_hash(conteudo)
 
-    existente = buscar_importacao_por_hash(hash_arquivo)
+    existente = buscar_importacao_por_hash(
+        hash_arquivo
+    )
 
     if existente:
-        raise ValueError("Este arquivo já foi importado.")
+        raise ValueError(
+            "Este arquivo já foi importado."
+        )
 
     return hash_arquivo
 
 
-def iniciar_importacao(nome_arquivo, tipo_relatorio, mes, tipo_periodo, hash_arquivo):
+def iniciar_importacao(
+    nome_arquivo,
+    tipo_relatorio,
+    mes,
+    tipo_periodo,
+    hash_arquivo,
+):
     return criar_importacao(
         {
             "nome_arquivo": nome_arquivo,
@@ -110,7 +125,10 @@ def iniciar_importacao(nome_arquivo, tipo_relatorio, mes, tipo_periodo, hash_arq
     )
 
 
-def concluir_importacao(importacao_id, quantidade):
+def concluir_importacao(
+    importacao_id,
+    quantidade,
+):
     atualizar_importacao(
         importacao_id,
         {
@@ -120,7 +138,10 @@ def concluir_importacao(importacao_id, quantidade):
     )
 
 
-def registrar_erro_importacao(importacao_id, erro):
+def registrar_erro_importacao(
+    importacao_id,
+    erro,
+):
     atualizar_importacao(
         importacao_id,
         {
@@ -130,21 +151,44 @@ def registrar_erro_importacao(importacao_id, erro):
     )
 
 
-def montar_resultado(importacao_id, quantidade):
+def montar_resultado(
+    importacao_id,
+    quantidade,
+):
     return {
         "importacao_id": importacao_id,
         "registros": quantidade,
     }
 
 
-def validar_dados(df, mes, tipo_periodo, nome_arquivo):
-    validar_mes_relatorio(df, mes)
+def validar_dados(
+    df,
+    mes,
+    tipo_periodo,
+    nome_arquivo,
+):
+    validar_mes_relatorio(
+        df,
+        mes,
+    )
 
-    validar_periodo_relatorio(df, tipo_periodo, nome_arquivo)
+    validar_periodo_relatorio(
+        df,
+        tipo_periodo,
+        nome_arquivo,
+    )
 
 
-def importar_operacao(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    df_original = ler_tabela_html_bytes(conteudo, indice=1)
+def importar_operacao(
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
+):
+    df_original = ler_tabela_html_bytes(
+        conteudo,
+        indice=1,
+    )
 
     validar_tipo_relatorio(
         df=df_original,
@@ -152,11 +196,22 @@ def importar_operacao(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
         nome_arquivo=nome_arquivo,
     )
 
-    df = normalizar_operacao(df_original, mes, tipo_periodo)
+    df = normalizar_operacao(
+        df_original,
+        mes,
+        tipo_periodo,
+    )
 
-    validar_dados(df, mes, tipo_periodo, nome_arquivo)
+    validar_dados(
+        df,
+        mes,
+        tipo_periodo,
+        nome_arquivo,
+    )
 
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(
+        conteudo
+    )
 
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
@@ -171,17 +226,34 @@ def importar_operacao(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
 
         inserir_operacao(df)
 
-        concluir_importacao(importacao["id"], len(df))
+        concluir_importacao(
+            importacao["id"],
+            len(df),
+        )
 
-        return montar_resultado(importacao["id"], len(df))
+        return montar_resultado(
+            importacao["id"],
+            len(df),
+        )
 
     except Exception as erro:
-        registrar_erro_importacao(importacao["id"], erro)
+        registrar_erro_importacao(
+            importacao["id"],
+            erro,
+        )
         raise
 
 
-def importar_passageiros(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    df_original = ler_tabela_html_bytes(conteudo, indice=1)
+def importar_passageiros(
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
+):
+    df_original = ler_tabela_html_bytes(
+        conteudo,
+        indice=1,
+    )
 
     validar_tipo_relatorio(
         df=df_original,
@@ -189,11 +261,22 @@ def importar_passageiros(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
         nome_arquivo=nome_arquivo,
     )
 
-    df = normalizar_passageiros(df_original, mes, tipo_periodo)
+    df = normalizar_passageiros(
+        df_original,
+        mes,
+        tipo_periodo,
+    )
 
-    validar_dados(df, mes, tipo_periodo, nome_arquivo)
+    validar_dados(
+        df,
+        mes,
+        tipo_periodo,
+        nome_arquivo,
+    )
 
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(
+        conteudo
+    )
 
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
@@ -208,17 +291,34 @@ def importar_passageiros(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
 
         inserir_passageiros(df)
 
-        concluir_importacao(importacao["id"], len(df))
+        concluir_importacao(
+            importacao["id"],
+            len(df),
+        )
 
-        return montar_resultado(importacao["id"], len(df))
+        return montar_resultado(
+            importacao["id"],
+            len(df),
+        )
 
     except Exception as erro:
-        registrar_erro_importacao(importacao["id"], erro)
+        registrar_erro_importacao(
+            importacao["id"],
+            erro,
+        )
         raise
 
 
-def importar_financeiro(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    df_original = ler_tabela_html_bytes(conteudo, indice=2)
+def importar_financeiro(
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
+):
+    df_original = ler_tabela_html_bytes(
+        conteudo,
+        indice=2,
+    )
 
     validar_tipo_relatorio(
         df=df_original,
@@ -226,11 +326,22 @@ def importar_financeiro(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
         nome_arquivo=nome_arquivo,
     )
 
-    df = normalizar_financeiro(df_original, mes, tipo_periodo)
+    df = normalizar_financeiro(
+        df_original,
+        mes,
+        tipo_periodo,
+    )
 
-    validar_dados(df, mes, tipo_periodo, nome_arquivo)
+    validar_dados(
+        df,
+        mes,
+        tipo_periodo,
+        nome_arquivo,
+    )
 
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(
+        conteudo
+    )
 
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
@@ -245,17 +356,34 @@ def importar_financeiro(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
 
         inserir_financeiro(df)
 
-        concluir_importacao(importacao["id"], len(df))
+        concluir_importacao(
+            importacao["id"],
+            len(df),
+        )
 
-        return montar_resultado(importacao["id"], len(df))
+        return montar_resultado(
+            importacao["id"],
+            len(df),
+        )
 
     except Exception as erro:
-        registrar_erro_importacao(importacao["id"], erro)
+        registrar_erro_importacao(
+            importacao["id"],
+            erro,
+        )
         raise
 
 
-def importar_fcv(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    df_original = ler_tabela_html_bytes(conteudo, indice=1)
+def importar_fcv(
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
+):
+    df_original = ler_tabela_html_bytes(
+        conteudo,
+        indice=1,
+    )
 
     validar_tipo_relatorio(
         df=df_original,
@@ -263,11 +391,22 @@ def importar_fcv(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
         nome_arquivo=nome_arquivo,
     )
 
-    df = normalizar_fcv(df_original, mes, tipo_periodo)
+    df = normalizar_fcv(
+        df_original,
+        mes,
+        tipo_periodo,
+    )
 
-    validar_dados(df, mes, tipo_periodo, nome_arquivo)
+    validar_dados(
+        df,
+        mes,
+        tipo_periodo,
+        nome_arquivo,
+    )
 
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(
+        conteudo
+    )
 
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
@@ -282,17 +421,34 @@ def importar_fcv(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
 
         inserir_fcv(df)
 
-        concluir_importacao(importacao["id"], len(df))
+        concluir_importacao(
+            importacao["id"],
+            len(df),
+        )
 
-        return montar_resultado(importacao["id"], len(df))
+        return montar_resultado(
+            importacao["id"],
+            len(df),
+        )
 
     except Exception as erro:
-        registrar_erro_importacao(importacao["id"], erro)
+        registrar_erro_importacao(
+            importacao["id"],
+            erro,
+        )
         raise
 
 
-def importar_linhas(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    df_original = ler_tabela_html_bytes(conteudo, indice=1)
+def importar_linhas(
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
+):
+    df_original = ler_tabela_html_bytes(
+        conteudo,
+        indice=1,
+    )
 
     validar_tipo_relatorio(
         df=df_original,
@@ -300,11 +456,22 @@ def importar_linhas(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
         nome_arquivo=nome_arquivo,
     )
 
-    df = normalizar_linhas(df_original, mes, tipo_periodo)
+    df = normalizar_linhas(
+        df_original,
+        mes,
+        tipo_periodo,
+    )
 
-    validar_dados(df, mes, tipo_periodo, nome_arquivo)
+    validar_dados(
+        df,
+        mes,
+        tipo_periodo,
+        nome_arquivo,
+    )
 
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(
+        conteudo
+    )
 
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
@@ -319,17 +486,34 @@ def importar_linhas(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
 
         inserir_linhas(df)
 
-        concluir_importacao(importacao["id"], len(df))
+        concluir_importacao(
+            importacao["id"],
+            len(df),
+        )
 
-        return montar_resultado(importacao["id"], len(df))
+        return montar_resultado(
+            importacao["id"],
+            len(df),
+        )
 
     except Exception as erro:
-        registrar_erro_importacao(importacao["id"], erro)
+        registrar_erro_importacao(
+            importacao["id"],
+            erro,
+        )
         raise
 
 
-def importar_resumo_faixa_horaria(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    df_original = ler_tabela_html_bytes(conteudo, indice=1)
+def importar_resumo_faixa_horaria(
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
+):
+    df_original = ler_tabela_html_bytes(
+        conteudo,
+        indice=1,
+    )
 
     validar_tipo_relatorio(
         df=df_original,
@@ -337,11 +521,22 @@ def importar_resumo_faixa_horaria(conteudo, nome_arquivo, mes, tipo_periodo="men
         nome_arquivo=nome_arquivo,
     )
 
-    df = normalizar_resumo_faixa_horaria(df_original, mes, tipo_periodo)
+    df = normalizar_resumo_faixa_horaria(
+        df_original,
+        mes,
+        tipo_periodo,
+    )
 
-    validar_dados(df, mes, tipo_periodo, nome_arquivo)
+    validar_dados(
+        df,
+        mes,
+        tipo_periodo,
+        nome_arquivo,
+    )
 
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(
+        conteudo
+    )
 
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
@@ -356,17 +551,34 @@ def importar_resumo_faixa_horaria(conteudo, nome_arquivo, mes, tipo_periodo="men
 
         inserir_resumo_faixa_horaria(df)
 
-        concluir_importacao(importacao["id"], len(df))
+        concluir_importacao(
+            importacao["id"],
+            len(df),
+        )
 
-        return montar_resultado(importacao["id"], len(df))
+        return montar_resultado(
+            importacao["id"],
+            len(df),
+        )
 
     except Exception as erro:
-        registrar_erro_importacao(importacao["id"], erro)
+        registrar_erro_importacao(
+            importacao["id"],
+            erro,
+        )
         raise
 
 
-def importar_faixa_horaria(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    df_original = ler_tabela_html_bytes(conteudo, indice=1)
+def importar_faixa_horaria(
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
+):
+    df_original = ler_tabela_html_bytes(
+        conteudo,
+        indice=1,
+    )
 
     validar_tipo_relatorio(
         df=df_original,
@@ -374,11 +586,22 @@ def importar_faixa_horaria(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
         nome_arquivo=nome_arquivo,
     )
 
-    df = normalizar_faixa_horaria(df_original, mes, tipo_periodo)
+    df = normalizar_faixa_horaria(
+        df_original,
+        mes,
+        tipo_periodo,
+    )
 
-    validar_dados(df, mes, tipo_periodo, nome_arquivo)
+    validar_dados(
+        df,
+        mes,
+        tipo_periodo,
+        nome_arquivo,
+    )
 
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(
+        conteudo
+    )
 
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
@@ -393,17 +616,34 @@ def importar_faixa_horaria(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
 
         inserir_faixa_horaria(df)
 
-        concluir_importacao(importacao["id"], len(df))
+        concluir_importacao(
+            importacao["id"],
+            len(df),
+        )
 
-        return montar_resultado(importacao["id"], len(df))
+        return montar_resultado(
+            importacao["id"],
+            len(df),
+        )
 
     except Exception as erro:
-        registrar_erro_importacao(importacao["id"], erro)
+        registrar_erro_importacao(
+            importacao["id"],
+            erro,
+        )
         raise
 
 
-def importar_viagens(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    df_original = ler_tabela_html_bytes(conteudo, indice=1)
+def importar_viagens(
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
+):
+    df_original = ler_tabela_html_bytes(
+        conteudo,
+        indice=1,
+    )
 
     validar_tipo_relatorio(
         df=df_original,
@@ -411,11 +651,22 @@ def importar_viagens(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
         nome_arquivo=nome_arquivo,
     )
 
-    df = normalizar_viagens(df_original, mes, tipo_periodo)
+    df = normalizar_viagens(
+        df_original,
+        mes,
+        tipo_periodo,
+    )
 
-    validar_dados(df, mes, tipo_periodo, nome_arquivo)
+    validar_dados(
+        df,
+        mes,
+        tipo_periodo,
+        nome_arquivo,
+    )
 
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(
+        conteudo
+    )
 
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
@@ -430,19 +681,36 @@ def importar_viagens(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
 
         inserir_viagens(df)
 
-        concluir_importacao(importacao["id"], len(df))
+        concluir_importacao(
+            importacao["id"],
+            len(df),
+        )
 
-        return montar_resultado(importacao["id"], len(df))
+        return montar_resultado(
+            importacao["id"],
+            len(df),
+        )
 
     except Exception as erro:
-        registrar_erro_importacao(importacao["id"], erro)
+        registrar_erro_importacao(
+            importacao["id"],
+            erro,
+        )
         raise
 
 
 def importar_viagens_ocorrencias(
-    tipo_relatorio, tipo_ocorrencia, conteudo, nome_arquivo, mes, tipo_periodo="mensal"
+    tipo_relatorio,
+    tipo_ocorrencia,
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
 ):
-    df_original = ler_tabela_html_bytes(conteudo, indice=1)
+    df_original = ler_tabela_html_bytes(
+        conteudo,
+        indice=1,
+    )
 
     validar_tipo_relatorio(
         df=df_original,
@@ -450,11 +718,23 @@ def importar_viagens_ocorrencias(
         nome_arquivo=nome_arquivo,
     )
 
-    df = normalizar_viagens_ocorrencias(df_original, mes, tipo_periodo, tipo_ocorrencia)
+    df = normalizar_viagens_ocorrencias(
+        df_original,
+        mes,
+        tipo_periodo,
+        tipo_ocorrencia,
+    )
 
-    validar_dados(df, mes, tipo_periodo, nome_arquivo)
+    validar_dados(
+        df,
+        mes,
+        tipo_periodo,
+        nome_arquivo,
+    )
 
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(
+        conteudo
+    )
 
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
@@ -469,19 +749,34 @@ def importar_viagens_ocorrencias(
 
         inserir_viagens_ocorrencias(df)
 
-        concluir_importacao(importacao["id"], len(df))
+        concluir_importacao(
+            importacao["id"],
+            len(df),
+        )
 
-        return montar_resultado(importacao["id"], len(df))
+        return montar_resultado(
+            importacao["id"],
+            len(df),
+        )
 
     except Exception as erro:
-        registrar_erro_importacao(importacao["id"], erro)
+        registrar_erro_importacao(
+            importacao["id"],
+            erro,
+        )
         raise
 
 
 def importar_generico(
-    tipo_relatorio, conteudo, nome_arquivo, mes, tipo_periodo="mensal"
+    tipo_relatorio,
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
 ):
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(
+        conteudo
+    )
 
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
@@ -492,9 +787,16 @@ def importar_generico(
     )
 
     try:
-        config = RELATORIOS[tipo_relatorio]
+        config = RELATORIOS[
+            tipo_relatorio
+        ]
 
-        df = ler_tabela_html_bytes(conteudo, indice=config["indice_tabela"])
+        df = ler_tabela_html_bytes(
+            conteudo,
+            indice=config[
+                "indice_tabela"
+            ],
+        )
 
         registros_dataframe = json.loads(
             df.to_json(
@@ -506,35 +808,65 @@ def importar_generico(
 
         registros = []
 
-        for numero_linha, dados in enumerate(registros_dataframe, start=1):
+        for (
+            numero_linha,
+            dados,
+        ) in enumerate(
+            registros_dataframe,
+            start=1,
+        ):
             registros.append(
                 {
-                    "tipo_relatorio": tipo_relatorio,
-                    "mes_referencia": mes,
-                    "tipo_periodo": tipo_periodo,
-                    "numero_linha": numero_linha,
-                    "dados": dados,
-                    "importacao_id": importacao["id"],
+                    "tipo_relatorio":
+                        tipo_relatorio,
+                    "mes_referencia":
+                        mes,
+                    "tipo_periodo":
+                        tipo_periodo,
+                    "numero_linha":
+                        numero_linha,
+                    "dados":
+                        dados,
+                    "importacao_id":
+                        importacao["id"],
                 }
             )
 
         if registros:
-            inserir_dados_relatorio(registros)
+            inserir_dados_relatorio(
+                registros
+            )
 
-        concluir_importacao(importacao["id"], len(registros))
+        concluir_importacao(
+            importacao["id"],
+            len(registros),
+        )
 
-        return montar_resultado(importacao["id"], len(registros))
+        return montar_resultado(
+            importacao["id"],
+            len(registros),
+        )
 
     except Exception as erro:
-        registrar_erro_importacao(importacao["id"], erro)
+        registrar_erro_importacao(
+            importacao["id"],
+            erro,
+        )
         raise
 
 
 def importar_relatorio(
-    tipo_relatorio, conteudo, nome_arquivo, mes, tipo_periodo="mensal"
+    tipo_relatorio,
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
 ):
     if tipo_relatorio not in RELATORIOS:
-        raise ValueError(f"Tipo de relatório inválido: " f"{tipo_relatorio}")
+        raise ValueError(
+            f"Tipo de relatório inválido: "
+            f"{tipo_relatorio}"
+        )
 
     if tipo_relatorio == "operacao":
         return importar_operacao(
@@ -576,7 +908,10 @@ def importar_relatorio(
             tipo_periodo=tipo_periodo,
         )
 
-    if tipo_relatorio == "resumo_faixa_horaria":
+    if (
+        tipo_relatorio
+        == "resumo_faixa_horaria"
+    ):
         return importar_resumo_faixa_horaria(
             conteudo=conteudo,
             nome_arquivo=nome_arquivo,
@@ -600,7 +935,10 @@ def importar_relatorio(
             tipo_periodo=tipo_periodo,
         )
 
-    if tipo_relatorio == "viagens_nao_iniciadas":
+    if (
+        tipo_relatorio
+        == "viagens_nao_iniciadas"
+    ):
         return importar_viagens_ocorrencias(
             tipo_relatorio=tipo_relatorio,
             tipo_ocorrencia="nao_iniciada",
@@ -610,7 +948,10 @@ def importar_relatorio(
             tipo_periodo=tipo_periodo,
         )
 
-    if tipo_relatorio == "viagens_nao_realizadas":
+    if (
+        tipo_relatorio
+        == "viagens_nao_realizadas"
+    ):
         return importar_viagens_ocorrencias(
             tipo_relatorio=tipo_relatorio,
             tipo_ocorrencia="nao_realizada",
@@ -620,7 +961,10 @@ def importar_relatorio(
             tipo_periodo=tipo_periodo,
         )
 
-    if tipo_relatorio == "viagens_nao_terminadas":
+    if (
+        tipo_relatorio
+        == "viagens_nao_terminadas"
+    ):
         return importar_viagens_ocorrencias(
             tipo_relatorio=tipo_relatorio,
             tipo_ocorrencia="nao_terminada",
@@ -637,3 +981,244 @@ def importar_relatorio(
         mes=mes,
         tipo_periodo=tipo_periodo,
     )
+
+
+def identificar_tipo_relatorio(
+    nome_arquivo,
+):
+    nome = Path(
+        nome_arquivo
+    ).name.lower()
+
+    if (
+        "nrealiz" in nome
+        or "nao_realiz" in nome
+    ):
+        return "viagens_nao_realizadas"
+
+    if (
+        "ninic" in nome
+        or "nao_inic" in nome
+    ):
+        return "viagens_nao_iniciadas"
+
+    if (
+        "nterm" in nome
+        or "nao_term" in nome
+    ):
+        return "viagens_nao_terminadas"
+
+    if (
+        "resumo" in nome
+        and (
+            "fxhr" in nome
+            or "faixa" in nome
+        )
+    ):
+        return "resumo_faixa_horaria"
+
+    if "fcv" in nome:
+        return "fcv"
+
+    if "linhas" in nome:
+        return "linhas"
+
+    if "passageiros" in nome:
+        return "passageiros"
+
+    if (
+        "saldos" in nome
+        or "financeiro" in nome
+    ):
+        return "financeiro"
+
+    if "viagens" in nome:
+        return "viagens"
+
+    if (
+        "fxhr" in nome
+        or "faixa_horaria" in nome
+        or "faixahr" in nome
+    ):
+        return "faixa_horaria"
+
+    if (
+        nome.startswith("mensal_")
+        or nome.startswith("quinzenal_")
+    ):
+        return "operacao"
+
+    return None
+
+
+def importar_zip(
+    conteudo,
+    nome_arquivo,
+    mes,
+    tipo_periodo="mensal",
+):
+    try:
+        zip_buffer = BytesIO(
+            conteudo
+        )
+
+        with ZipFile(
+            zip_buffer
+        ) as arquivo_zip:
+
+            arquivos_html = [
+                item
+                for item
+                in arquivo_zip.infolist()
+                if (
+                    not item.is_dir()
+                    and item.filename
+                    .lower()
+                    .endswith(
+                        (
+                            ".html",
+                            ".htm",
+                        )
+                    )
+                )
+            ]
+
+            if not arquivos_html:
+                raise ValueError(
+                    "O arquivo ZIP não contém "
+                    "relatórios HTML."
+                )
+
+            resultados = []
+
+            total_importados = 0
+            total_erros = 0
+            total_ignorados = 0
+            total_registros = 0
+
+            for item in arquivos_html:
+
+                nome_html = Path(
+                    item.filename
+                ).name
+
+                tipo_relatorio = (
+                    identificar_tipo_relatorio(
+                        nome_html
+                    )
+                )
+
+                if tipo_relatorio is None:
+
+                    total_ignorados += 1
+
+                    resultados.append(
+                        {
+                            "arquivo":
+                                nome_html,
+                            "status":
+                                "ignorado",
+                            "motivo":
+                                (
+                                    "Não foi possível "
+                                    "identificar o tipo "
+                                    "do relatório."
+                                ),
+                        }
+                    )
+
+                    continue
+
+                conteudo_html = (
+                    arquivo_zip.read(
+                        item
+                    )
+                )
+
+                try:
+                    resultado = importar_relatorio(
+                        tipo_relatorio=
+                            tipo_relatorio,
+                        conteudo=
+                            conteudo_html,
+                        nome_arquivo=
+                            nome_html,
+                        mes=
+                            mes,
+                        tipo_periodo=
+                            tipo_periodo,
+                    )
+
+                    quantidade_registros = (
+                        resultado.get(
+                            "registros",
+                            0,
+                        )
+                    )
+
+                    total_importados += 1
+
+                    total_registros += (
+                        quantidade_registros
+                    )
+
+                    resultados.append(
+                        {
+                            "arquivo":
+                                nome_html,
+                            "tipo_relatorio":
+                                tipo_relatorio,
+                            "status":
+                                "sucesso",
+                            "registros":
+                                quantidade_registros,
+                        }
+                    )
+
+                except Exception as erro:
+
+                    total_erros += 1
+
+                    resultados.append(
+                        {
+                            "arquivo":
+                                nome_html,
+                            "tipo_relatorio":
+                                tipo_relatorio,
+                            "status":
+                                "erro",
+                            "mensagem":
+                                str(erro),
+                        }
+                    )
+
+            return {
+                "arquivo_zip":
+                    nome_arquivo,
+
+                "arquivos_encontrados":
+                    len(
+                        arquivos_html
+                    ),
+
+                "arquivos_importados":
+                    total_importados,
+
+                "arquivos_com_erro":
+                    total_erros,
+
+                "arquivos_ignorados":
+                    total_ignorados,
+
+                "total_registros":
+                    total_registros,
+
+                "resultados":
+                    resultados,
+            }
+
+    except BadZipFile:
+        raise ValueError(
+            "O arquivo enviado "
+            "não é um ZIP válido."
+        )
