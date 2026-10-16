@@ -4,9 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/dashboard_overview.dart';
 
 class DashboardService {
-  /// Web/desktop: http://localhost:8000
-  /// Emulador Android: http://10.0.2.2:8000
-  static const String baseUrl = 'http://192.168.15.3:8000'; // aqui vai ter que alterar pro ip da maquina na hora que for testar 
+  static const String baseUrl = 'http://127.0.0.1:8000';
   
   static const bool usarVazio = false;
 
