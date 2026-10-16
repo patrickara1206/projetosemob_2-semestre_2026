@@ -14,14 +14,17 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
   String mes = '2026-08';
   String tipoPeriodo = 'mensal';
 
-  bool carregando = false;
+  bool carregandoHtml = false;
+  bool carregandoZip = false;
 
   String? mensagem;
   bool sucesso = false;
 
+  bool get carregando => carregandoHtml || carregandoZip;
+
   Future<void> importar() async {
     setState(() {
-      carregando = true;
+      carregandoHtml = true;
       mensagem = null;
       sucesso = false;
     });
@@ -49,7 +52,6 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
       }
 
       var texto = erro.toString();
-
       texto = texto.replaceFirst('Exception: ', '');
 
       setState(() {
@@ -59,7 +61,60 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
     } finally {
       if (mounted) {
         setState(() {
-          carregando = false;
+          carregandoHtml = false;
+        });
+      }
+    }
+  }
+
+  Future<void> importarZip() async {
+    setState(() {
+      carregandoZip = true;
+      mensagem = null;
+      sucesso = false;
+    });
+
+    try {
+      final resultado = await ImportacaoService().enviarZip(
+        mes: mes,
+        tipoPeriodo: tipoPeriodo,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      final importados = resultado['arquivos_importados'] ?? 0;
+      final erros = resultado['arquivos_com_erro'] ?? 0;
+      final ignorados = resultado['arquivos_ignorados'] ?? 0;
+      final registros = resultado['total_registros'] ?? 0;
+
+      setState(() {
+        sucesso = erros == 0;
+
+        mensagem =
+            'Importação do ZIP concluída. '
+            '$importados arquivo(s) importado(s), '
+            '$registros registro(s) adicionados, '
+            '$erros arquivo(s) com erro e '
+            '$ignorados arquivo(s) ignorado(s).';
+      });
+    } catch (erro) {
+      if (!mounted) {
+        return;
+      }
+
+      var texto = erro.toString();
+      texto = texto.replaceFirst('Exception: ', '');
+
+      setState(() {
+        sucesso = false;
+        mensagem = texto;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          carregandoZip = false;
         });
       }
     }
@@ -74,7 +129,10 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
         children: [
           const Text(
             'Importar dados',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
 
           const SizedBox(height: 8),
@@ -82,7 +140,8 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
           const Text(
             'Selecione o tipo de relatório, '
             'o mês de referência, o período '
-            'e o arquivo HTML.',
+            'e escolha se deseja importar um HTML '
+            'ou um arquivo ZIP com vários relatórios.',
           ),
 
           const SizedBox(height: 32),
@@ -98,17 +157,26 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
                 value: 'operacao',
                 child: Text('Operação geral'),
               ),
-              DropdownMenuItem(value: 'fcv', child: Text('FCV')),
+              DropdownMenuItem(
+                value: 'fcv',
+                child: Text('FCV'),
+              ),
               DropdownMenuItem(
                 value: 'faixa_horaria',
                 child: Text('Faixa horária'),
               ),
-              DropdownMenuItem(value: 'linhas', child: Text('Linhas')),
+              DropdownMenuItem(
+                value: 'linhas',
+                child: Text('Linhas'),
+              ),
               DropdownMenuItem(
                 value: 'resumo_faixa_horaria',
                 child: Text('Resumo por faixa horária'),
               ),
-              DropdownMenuItem(value: 'viagens', child: Text('Viagens')),
+              DropdownMenuItem(
+                value: 'viagens',
+                child: Text('Viagens'),
+              ),
               DropdownMenuItem(
                 value: 'viagens_nao_iniciadas',
                 child: Text('Viagens não iniciadas'),
@@ -151,9 +219,18 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
           DropdownButton<String>(
             value: mes,
             items: const [
-              DropdownMenuItem(value: '2026-07', child: Text('Julho/2026')),
-              DropdownMenuItem(value: '2026-08', child: Text('Agosto/2026')),
-              DropdownMenuItem(value: '2026-09', child: Text('Setembro/2026')),
+              DropdownMenuItem(
+                value: '2026-07',
+                child: Text('Julho/2026'),
+              ),
+              DropdownMenuItem(
+                value: '2026-08',
+                child: Text('Agosto/2026'),
+              ),
+              DropdownMenuItem(
+                value: '2026-09',
+                child: Text('Setembro/2026'),
+              ),
             ],
             onChanged: carregando
                 ? null
@@ -176,8 +253,14 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
           DropdownButton<String>(
             value: tipoPeriodo,
             items: const [
-              DropdownMenuItem(value: 'mensal', child: Text('Mensal')),
-              DropdownMenuItem(value: 'quinzenal', child: Text('1ª Quinzena')),
+              DropdownMenuItem(
+                value: 'mensal',
+                child: Text('Mensal'),
+              ),
+              DropdownMenuItem(
+                value: 'quinzenal',
+                child: Text('1ª Quinzena'),
+              ),
             ],
             onChanged: carregando
                 ? null
@@ -195,15 +278,39 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
 
           ElevatedButton.icon(
             onPressed: carregando ? null : importar,
-            icon: carregando
+            icon: carregandoHtml
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
                   )
                 : const Icon(Icons.upload_file),
             label: Text(
-              carregando ? 'Importando...' : 'Selecionar e importar HTML',
+              carregandoHtml
+                  ? 'Importando...'
+                  : 'Selecionar e importar HTML',
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          ElevatedButton.icon(
+            onPressed: carregando ? null : importarZip,
+            icon: carregandoZip
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Icon(Icons.folder_zip_outlined),
+            label: Text(
+              carregandoZip
+                  ? 'Importando...'
+                  : 'Selecionar e importar ZIP',
             ),
           ),
 
@@ -215,17 +322,25 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: sucesso ? Colors.green.shade50 : Colors.red.shade50,
+                color: sucesso
+                    ? Colors.green.shade50
+                    : Colors.red.shade50,
                 border: Border.all(
-                  color: sucesso ? Colors.green.shade300 : Colors.red.shade300,
+                  color: sucesso
+                      ? Colors.green.shade300
+                      : Colors.red.shade300,
                 ),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    sucesso ? Icons.check_circle : Icons.error_outline,
-                    color: sucesso ? Colors.green : Colors.red,
+                    sucesso
+                        ? Icons.check_circle
+                        : Icons.error_outline,
+                    color: sucesso
+                        ? Colors.green
+                        : Colors.red,
                   ),
 
                   const SizedBox(width: 12),
