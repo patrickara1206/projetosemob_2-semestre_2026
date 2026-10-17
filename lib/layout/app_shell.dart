@@ -6,38 +6,47 @@ import 'top_bar.dart';
 
 class AppShell extends StatelessWidget {
   final Widget child;
-  const AppShell({super.key, required this.child});
+
+  const AppShell({
+    super.key,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, box) {
-      final compact = box.maxWidth < 900;
+    return LayoutBuilder(
+      builder: (context, box) {
+        final compact = box.maxWidth < 900;
 
-      final content = Column(
-        children: [
-          TopBar(compact: compact),
-          Expanded(child: child),
-          const _Footer(),
-        ],
-      );
+        final content = Column(
+          children: [
+            TopBar(compact: compact),
+            Expanded(child: child),
+            const _Footer(),
+          ],
+        );
 
-      return Scaffold(
-        drawer: compact
-            ? const Drawer(
-                backgroundColor: AppColors.sidebar,
-                child: Sidebar(),
-              )
-            : null,
-        body: compact
-            ? content
-            : Row(
-                children: [
-                  const SizedBox(width: 220, child: Sidebar()),
-                  Expanded(child: content),
-                ],
-              ),
-      );
-    });
+        return Scaffold(
+          drawer: compact
+              ? const Drawer(
+                  backgroundColor: AppColors.sidebar,
+                  child: Sidebar(),
+                )
+              : null,
+          body: compact
+              ? content
+              : Row(
+                  children: [
+                    const SizedBox(
+                      width: 220,
+                      child: Sidebar(),
+                    ),
+                    Expanded(child: content),
+                  ],
+                ),
+        );
+      },
+    );
   }
 }
 
@@ -46,22 +55,46 @@ class _Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final esquema = Theme.of(context).colorScheme;
+    final compacto = MediaQuery.sizeOf(context).width < 600;
+
     return Container(
       height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      color: Colors.white,
+      padding: EdgeInsets.symmetric(
+        horizontal: compacto ? 12 : 24,
+      ),
+      decoration: BoxDecoration(
+        color: esquema.surface,
+        border: Border(
+          top: BorderSide(
+            color: esquema.outlineVariant,
+          ),
+        ),
+      ),
       child: Row(
         children: [
           Expanded(
             child: Text(
-              '© ${DateTime.now().year} SEMOB-SCS - Inteligência em Transportes. '
+              '© ${DateTime.now().year} SEMOB-SCS - '
+              'Inteligência em Transportes. '
               'Todos os direitos reservados.',
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, color: AppColors.muted),
+              style: TextStyle(
+                fontSize: 12,
+                color: esquema.onSurfaceVariant,
+              ),
             ),
           ),
-          const Text('Suporte Técnico',
-              style: TextStyle(fontSize: 12, color: AppColors.muted)),
+          if (!compacto) ...[
+            const SizedBox(width: 12),
+            Text(
+              'Suporte Técnico',
+              style: TextStyle(
+                fontSize: 12,
+                color: esquema.onSurfaceVariant,
+              ),
+            ),
+          ],
         ],
       ),
     );

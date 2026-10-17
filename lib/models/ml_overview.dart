@@ -1,25 +1,31 @@
 class ScoreDia {
-  final String rotulo; // "Seg"
-  final double score; // 0 a 1
+  final String rotulo;
+  final double score;
   final bool destaque;
 
-  const ScoreDia(
-      {required this.rotulo, required this.score, this.destaque = false});
+  const ScoreDia({
+    required this.rotulo,
+    required this.score,
+    this.destaque = false,
+  });
 
   factory ScoreDia.fromJson(Map<String, dynamic> j) => ScoreDia(
-        rotulo: j['rotulo'] as String,
-        score: (j['score'] as num).toDouble(),
-        destaque: j['destaque'] as bool? ?? false,
-      );
+    rotulo: j['rotulo'] as String,
+    score: (j['score'] as num).toDouble(),
+    destaque: j['destaque'] as bool? ?? false,
+  );
 }
 
 class FeatureImportance {
-  final String nome; // "Sazonalidade (Hora do Dia)"
-  final String categoria; // "Temporal"
-  final double peso; // 0 a 1
+  final String nome;
+  final String categoria;
+  final double peso;
 
-  const FeatureImportance(
-      {required this.nome, required this.categoria, required this.peso});
+  const FeatureImportance({
+    required this.nome,
+    required this.categoria,
+    required this.peso,
+  });
 
   factory FeatureImportance.fromJson(Map<String, dynamic> j) =>
       FeatureImportance(
@@ -30,27 +36,31 @@ class FeatureImportance {
 }
 
 class LogIa {
-  final String hora; // "14:02:11"
+  final String hora;
   final String mensagem;
-  final String nivel; // 'ok' | 'info' | 'warn' | 'erro' | 'debug'
+  final String nivel;
 
-  const LogIa({required this.hora, required this.mensagem, required this.nivel});
+  const LogIa({
+    required this.hora,
+    required this.mensagem,
+    required this.nivel,
+  });
 
   factory LogIa.fromJson(Map<String, dynamic> j) => LogIa(
-        hora: j['hora'] as String,
-        mensagem: j['mensagem'] as String,
-        nivel: j['nivel'] as String? ?? 'info',
-      );
+    hora: j['hora'] as String,
+    mensagem: j['mensagem'] as String,
+    nivel: j['nivel'] as String? ?? 'info',
+  );
 }
 
 class MlOverview {
   final double? previsoes;
-  final double? previsoesVariacao; // % vs semana anterior
+  final double? previsoesVariacao;
   final int? anomalias24h;
-  final double? scoreMedio; // 0 a 1
-  final double? scoreMeta; // 0 a 1
+  final double? scoreMedio;
+  final double? scoreMeta;
   final DateTime? ultimoTreinamento;
-  final String? statusModelo; // 'saudavel' | 'atencao' | 'critico'
+  final String? statusModelo;
   final List<ScoreDia> scoreSerie;
   final List<FeatureImportance> features;
   final List<LogIa> logs;
@@ -92,9 +102,7 @@ class MlOverview {
       features: ((j['features'] as List?) ?? [])
           .map((e) => FeatureImportance.fromJson(e))
           .toList(),
-      logs: ((j['logs'] as List?) ?? [])
-          .map((e) => LogIa.fromJson(e))
-          .toList(),
+      logs: ((j['logs'] as List?) ?? []).map((e) => LogIa.fromJson(e)).toList(),
     );
   }
 }

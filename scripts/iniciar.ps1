@@ -93,7 +93,7 @@ try {
     Write-Host "Backend desta pasta conectado em http://127.0.0.1:$ApiPort."
     if ($VerificarBackend) {
         $semobFinanceiro = Invoke-RestMethod "http://127.0.0.1:$ApiPort/financeiro/overview?mes=2026-08&periodo=mes" -TimeoutSec 30
-        Write-Host "Financeiro respondeu: $($semobFinanceiro.dias) dias disponíveis."
+        Write-Host "Financeiro respondeu: $(@($semobFinanceiro.dias_financeiros).Count) dias disponíveis."
         return
     }
     Push-Location $semobRoot

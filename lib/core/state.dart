@@ -43,6 +43,8 @@ class PeriodoNotifier extends ValueNotifier<Periodo> {
 
   void recarregar() => notifyListeners();
 
+  void atualizar() => recarregar();
+
   Map<String, String> get parametros => {
     'mes': mesReferencia,
     if (value == Periodo.personalizado && inicio != null && fim != null) ...{

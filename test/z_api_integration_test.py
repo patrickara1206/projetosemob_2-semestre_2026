@@ -34,13 +34,13 @@ class ApiIntegrationTests(unittest.TestCase):
         ])
 
     def test_all_overviews_apply_week_latest_and_custom_filters(self):
-        from app.services import operacao_service, passageiros_service, financeiro_dashboard_service
+        from app.services import operacao_service, passageiros_service, financeiro_service
         financial = [{'data': f'2026-08-{day:02d}', 'tipo_periodo': 'mensal',
                       'total_vendas': 10., 'total_utilizacao': 4., 'credito_circulante': 6.}
                      for day in range(1, 11)]
         with patch.object(operacao_service, 'carregar_operacao_banco', return_value=self.fixtures()), \
              patch.object(passageiros_service, 'carregar_passageiros_banco', return_value=self.fixtures()), \
-             patch.object(financeiro_dashboard_service, 'buscar_financeiro_mes', return_value=financial):
+             patch.object(financeiro_service, 'buscar_financeiro_mes', return_value=financial):
             for query, count, trips in [('periodo=mes', 10, 55), ('periodo=semana', 7, 49),
                                         ('periodo=hoje', 1, 10),
                                         ('periodo=personalizado&inicio=2026-08-02&fim=2026-08-04', 3, 9)]:
@@ -50,6 +50,8 @@ class ApiIntegrationTests(unittest.TestCase):
                 self.assertEqual([dashboard.status_code, operation.status_code, passengers.status_code], [200] * 3)
                 self.assertEqual(len(dashboard.json()['serie']), count)
                 self.assertEqual(dashboard.json()['viagens']['valor'], trips)
+                self.assertEqual(dashboard.json()['inteligencia']['dias_analisados'], count)
+                self.assertIsNotNone(dashboard.json()['inteligencia']['cumprimento_programacao'])
                 self.assertEqual(dashboard.json()['financeiro']['valor'], count * 10)
                 self.assertEqual(operation.json()['total_viagens']['realizado'], trips)
                 self.assertEqual(passengers.json()['total_passageiros']['valor'], trips * 20)
@@ -88,6 +90,33 @@ class ApiIntegrationTests(unittest.TestCase):
             response = self.client.post('/importacao/financeiro?mes=2026-08',
                                         files={'arquivo': ('relatorio.html', b'<html></html>', 'text/html')})
         self.assertEqual(response.status_code, 400)
+
+    def test_main_financial_contract_and_empty_overviews_are_preserved(self):
+        from app.services import financeiro_service
+        records = [{'data': '2026-08-01', 'tipo_periodo': 'mensal',
+                    'total_vendas': 12.34, 'total_utilizacao': 2.34, 'credito_circulante': 10}]
+        with patch.object(financeiro_service, 'buscar_financeiro_mes', return_value=records):
+            response = self.client.get('/financeiro/overview?mes=2026-08')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['dias_financeiros'][0]['vendas'], 12.34)
+        self.assertEqual(response.json()['total_vendas'], 12.34)
+        for path in ('dashboard', 'operacao', 'passageiros', 'financeiro'):
+            response = self.client.get(f'/{path}/overview?mes=2026-08')
+            self.assertEqual(response.status_code, 200)
+
+    def test_main_zip_import_route_is_preserved(self):
+        from app.routes import importacao
+        with patch.object(importacao, 'importar_zip', return_value={'arquivos_importados': 2}) as importer:
+            response = self.client.post('/importacao/lote/zip?mes=2026-08',
+                files={'arquivo': ('relatorios.zip', b'zip-test', 'application/zip')})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()['arquivos_importados'], 2)
+            importer.assert_called_once()
+            importer.reset_mock()
+            response = self.client.post('/importacao/lote/zip?mes=2026-08',
+                files={'arquivo': ('relatorios.txt', b'txt', 'text/plain')})
+            self.assertEqual(response.status_code, 400)
+            importer.assert_not_called()
 
     def test_application_registers_all_required_routes_except_ml(self):
         schema = self.client.get('/openapi.json').json()

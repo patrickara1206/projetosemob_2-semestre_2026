@@ -19,19 +19,64 @@ class AppColors {
   static const cyan = Color(0xFF00BCD4);
 }
 
-ThemeData buildTheme() {
+final temaNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
+
+void alternarTema() {
+  temaNotifier.value = temaNotifier.value == ThemeMode.dark
+      ? ThemeMode.light
+      : ThemeMode.dark;
+}
+
+ThemeData buildTheme({
+  Brightness brightness = Brightness.light,
+}) {
+  final escuro = brightness == Brightness.dark;
+
+  final esquema = ColorScheme.fromSeed(
+    seedColor: AppColors.primary,
+    brightness: brightness,
+  ).copyWith(
+    surface: escuro ? const Color(0xFF1E293B) : Colors.white,
+    surfaceContainerHighest: escuro
+        ? const Color(0xFF293548)
+        : const Color(0xFFF1F5F9),
+    onSurface: escuro
+        ? const Color(0xFFE2E8F0)
+        : AppColors.text,
+    onSurfaceVariant: escuro
+        ? const Color(0xFFCBD5E1)
+        : AppColors.muted,
+    outlineVariant: escuro
+        ? const Color(0xFF475569)
+        : AppColors.border,
+  );
+
   return ThemeData(
     useMaterial3: true,
-    scaffoldBackgroundColor: AppColors.background,
-    colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+    brightness: brightness,
+    colorScheme: esquema,
+    scaffoldBackgroundColor: escuro
+        ? const Color(0xFF0F172A)
+        : AppColors.background,
+    dividerColor: esquema.outlineVariant,
+    iconTheme: IconThemeData(color: esquema.onSurfaceVariant),
   );
 }
 
-/// Estilo padrão dos cards brancos.
-BoxDecoration cardDecoration() => BoxDecoration(
-      color: AppColors.card,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: const [
-        BoxShadow(color: Color(0x0F000000), blurRadius: 8, offset: Offset(0, 2)),
-      ],
-    );
+BoxDecoration cardDecoration([BuildContext? context]) {
+  final esquema = context == null
+      ? null
+      : Theme.of(context).colorScheme;
+
+  return BoxDecoration(
+    color: esquema?.surface ?? AppColors.card,
+    borderRadius: BorderRadius.circular(12),
+    boxShadow: const [
+      BoxShadow(
+        color: Color(0x0F000000),
+        blurRadius: 8,
+        offset: Offset(0, 2),
+      ),
+    ],
+  );
+}

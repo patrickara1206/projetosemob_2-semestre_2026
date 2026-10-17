@@ -1,14 +1,24 @@
-from typing import Literal
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends
+from app.routes.filtros import filtros_overview
 from app.services.financeiro_dashboard_service import obter_dashboard_financeiro
 
-router = APIRouter(prefix="/financeiro", tags=["Financeiro"])
+from app.services.financeiro_service import obter_overview_financeiro
+
+
+router = APIRouter(
+    prefix="/financeiro",
+    tags=["Financeiro"],
+)
+
 
 @router.get("/overview")
-def overview_financeiro(
-    mes: str = Query("2026-08", pattern=r"^\d{4}-(0[1-9]|1[0-2])$"),
-    periodo: Literal["mes", "semana", "hoje"] = "mes",
-    busca: str = Query("", max_length=100),
-    pagina: int = Query(1, ge=1),
-):
-    return obter_dashboard_financeiro(mes, periodo, busca, pagina)
+def financeiro_overview(filtros: dict = Depends(filtros_overview)):
+    return obter_overview_financeiro(**filtros)
+
+
+@router.get("/dashboard")
+def financeiro_dashboard(filtros: dict = Depends(filtros_overview), busca: str = "", pagina: int = 1):
+    from fastapi import HTTPException
+    if pagina < 1 or len(busca) > 100:
+        raise HTTPException(422, "Página ou busca inválida.")
+    return obter_dashboard_financeiro(**filtros, busca=busca, pagina=pagina)

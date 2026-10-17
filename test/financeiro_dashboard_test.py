@@ -50,10 +50,10 @@ class FinanceiroTests(unittest.TestCase):
         self.assertEqual(filtered['total_vendas'],2.3)
     def test_route_contract_and_validation(self):
         with patch.object(service,'buscar_financeiro_mes',return_value=[row(1)]):
-            response=client.get('/financeiro/overview?mes=2026-08&periodo=mes')
+            response=client.get('/financeiro/dashboard?mes=2026-08&periodo=mes')
         self.assertEqual(response.status_code,200)
         self.assertEqual(response.json()['evolucao'][0]['vendas'],10)
         for query in ['mes=2026-13','mes=bad','pagina=0','periodo=bad']:
-            self.assertEqual(client.get('/financeiro/overview?'+query).status_code,422)
+            self.assertEqual(client.get('/financeiro/dashboard?'+query).status_code,422)
 
 if __name__=='__main__':unittest.main()

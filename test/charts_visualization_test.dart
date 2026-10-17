@@ -23,11 +23,11 @@ void main() {
       const VolumeChart(serie: [SeriePonto(rotulo: 'Jul', realizado: 100, esperado: 120), SeriePonto(rotulo: 'Ago', realizado: 150, esperado: 130, anomalia: true)]),
       const DemandChart(serie: [DemandaPonto(rotulo: '08h', volume: 120, anomalia: true), DemandaPonto(rotulo: '09h', volume: 140)]),
       const RevenueSubsidyChart(serie: []),
-      const RevenueSubsidyChart(serie: [FinPonto(rotulo: '31/08', vendas: 0, utilizacao: 0)]),
-      const RevenueSubsidyChart(serie: [FinPonto(rotulo: '30/08', vendas: 100, utilizacao: 40), FinPonto(rotulo: '31/08', vendas: 150, utilizacao: 80)]),
+      const RevenueSubsidyChart(serie: [FinPonto(rotulo: '31/08', receita: 0, subsidio: 0)]),
+      const RevenueSubsidyChart(serie: [FinPonto(rotulo: '30/08', receita: 100, subsidio: 40), FinPonto(rotulo: '31/08', receita: 150, subsidio: 80)]),
     ];
     for (final chart in charts) {
-      await tester.pumpWidget(MaterialApp(home: Scaffold(body: Center(child: SizedBox(width: 340, height: 440, child: chart)))));
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: Center(child: SizedBox(width: 340, height: 440, child: chart is VolumeChart ? SingleChildScrollView(child: chart) : chart)))));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull, reason: chart.runtimeType.toString());
     }

@@ -60,7 +60,8 @@ class ImportacaoService {
     }
 
     if (response.statusCode != 200) {
-      if (json != null && json['detail'] != null) {
+      if (json != null &&
+          json['detail'] != null) {
         throw Exception(
           json['detail'].toString(),
         );
@@ -68,6 +69,80 @@ class ImportacaoService {
 
       throw Exception(
         'Erro ao importar o arquivo.',
+      );
+    }
+
+    if (json == null) {
+      throw Exception(
+        'Resposta inválida do servidor.',
+      );
+    }
+
+    return json;
+  }
+
+  Future<Map<String, dynamic>> enviarZip({
+    required String mes,
+    required String tipoPeriodo,
+  }) async {
+    final arquivo = await FilePicker.pickFile(
+      type: FileType.custom,
+      allowedExtensions: ['zip'],
+    );
+
+    if (arquivo == null) {
+      throw Exception(
+        'Nenhum arquivo ZIP selecionado.',
+      );
+    }
+
+    final bytes = await arquivo.readAsBytes();
+
+    final uri = Uri.parse(
+      '${DashboardService.baseUrl}/importacao/lote/zip',
+    ).replace(
+      queryParameters: {
+        'mes': mes,
+        'tipo_periodo': tipoPeriodo,
+      },
+    );
+
+    final request = http.MultipartRequest(
+      'POST',
+      uri,
+    );
+
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'arquivo',
+        bytes,
+        filename: arquivo.name,
+      ),
+    );
+
+    final response = await request.send();
+
+    final corpo =
+        await response.stream.bytesToString();
+
+    Map<String, dynamic>? json;
+
+    try {
+      json = jsonDecode(corpo);
+    } catch (_) {
+      json = null;
+    }
+
+    if (response.statusCode != 200) {
+      if (json != null &&
+          json['detail'] != null) {
+        throw Exception(
+          json['detail'].toString(),
+        );
+      }
+
+      throw Exception(
+        'Erro ao importar o arquivo ZIP.',
       );
     }
 

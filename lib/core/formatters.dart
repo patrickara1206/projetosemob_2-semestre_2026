@@ -1,13 +1,11 @@
-/// 42500 -> "42.500". Se for nulo -> "--".
 String fmtInt(num? v) {
   if (v == null) return '--';
-  return v
-      .round()
-      .toString()
-      .replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => '.');
+  return v.round().toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => '.',
+  );
 }
 
-/// 2.4 -> "+2,4%". Se for nulo -> "--".
 String fmtPercent(double? v, {bool sign = true}) {
   if (v == null) return '--';
   final s = v.abs().toStringAsFixed(1).replaceAll('.', ',');
@@ -19,13 +17,12 @@ String fmtDateTime(DateTime d) {
   String two(int n) => n.toString().padLeft(2, '0');
   return '${two(d.day)}/${two(d.month)}/${d.year}\n${two(d.hour)}:${two(d.minute)}';
 }
-/// 88.4 -> "88,4". Se for nulo -> "--".
+
 String fmtDec(num? v, {int digits = 1}) {
   if (v == null) return '--';
   return v.toStringAsFixed(digits).replaceAll('.', ',');
 }
 
-/// 142500 -> "142,5K" | 1200000 -> "1,2M". Se for nulo -> "--".
 String fmtCompact(num? v) {
   if (v == null) return '--';
   final a = v.abs();
@@ -34,7 +31,6 @@ String fmtCompact(num? v) {
   return fmtInt(v);
 }
 
-/// DateTime -> "Há 4 horas". Se for nulo -> "--".
 String fmtHa(DateTime? d) {
   if (d == null) return '--';
   final diff = DateTime.now().difference(d);

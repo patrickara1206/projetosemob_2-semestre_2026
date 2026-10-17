@@ -2,107 +2,90 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
-import '../core/formatters.dart';
 import '../models/operacao_overview.dart';
 
 class HourlyChart extends StatelessWidget {
   final List<ViagensHora> dados;
-  const HourlyChart({super.key, required this.dados});
 
-  static const _line = Color(0xFF0B5FB0);
+  const HourlyChart({super.key, required this.dados});
 
   @override
   Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  'RELAÇÃO VIAGENS / HORA DO DIA',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF374151),
-                  ),
-                ),
+          Text(
+            'RELAÇÃO VIAGENS / HORA DO DIA',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: cores.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 4,
+            ),
+            decoration: BoxDecoration(
+              color: cores.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              'Média Dia Útil',
+              style: TextStyle(
+                fontSize: 10,
+                color: cores.onSurfaceVariant,
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F3F6),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  'Média Dia Útil',
-                  style: TextStyle(fontSize: 10, color: AppColors.muted),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 16),
           SizedBox(
             height: 290,
             child: dados.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'Sem dados para o período selecionado',
-                      style: TextStyle(color: AppColors.muted),
+                      style: TextStyle(color: cores.onSurfaceVariant),
                     ),
                   )
-                : _chart(),
+                : _chart(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _chart() {
-    final spots = [
-      for (var i = 0; i < dados.length; i++)
-        FlSpot(i.toDouble(), dados[i].viagens),
-    ];
-    final interval = dados.length <= 6
+  Widget _chart(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    final linha = escuro
+        ? const Color(0xFF60A5FA)
+        : const Color(0xFF0B5FB0);
+
+    final intervalo = dados.length <= 6
         ? 1.0
         : (dados.length / 6).ceilToDouble();
 
     return LineChart(
       LineChartData(
         minX: 0,
-        maxX: dados.length <= 1 ? 1 : (dados.length - 1).toDouble(),
+        maxX: dados.length == 1 ? 1.0 : (dados.length - 1).toDouble(),
         minY: 0,
-        lineTouchData: LineTouchData(
-          touchTooltipData: LineTouchTooltipData(
-            fitInsideHorizontally: true,
-            fitInsideVertically: true,
-            getTooltipItems: (spots) => spots.map((spot) {
-              final index = spot.x.round().clamp(0, dados.length - 1);
-              final label = dados[index].rotulo;
-              final seriesLabel = '';
-              return LineTooltipItem(
-                '$label\n$seriesLabel${fmtInt(spot.y)} viagens',
-                const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-
         borderData: FlBorderData(show: false),
         gridData: FlGridData(
           drawVerticalLine: false,
-          getDrawingHorizontalLine: (_) =>
-              const FlLine(color: AppColors.border, strokeWidth: 1),
+          getDrawingHorizontalLine: (_) => FlLine(
+            color: cores.outlineVariant,
+            strokeWidth: 1,
+            dashArray: [4, 4],
+          ),
         ),
         titlesData: FlTitlesData(
           topTitles: const AxisTitles(
@@ -114,27 +97,37 @@ class HourlyChart extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 36,
-              getTitlesWidget: (v, meta) => Text(
-                '${v.toInt()}',
-                style: const TextStyle(fontSize: 10, color: AppColors.muted),
+              reservedSize: 42,
+              getTitlesWidget: (valor, meta) => Text(
+                '${valor.toInt()}',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: cores.onSurfaceVariant,
+                ),
               ),
             ),
           ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: interval,
-              getTitlesWidget: (v, meta) {
-                final i = v.toInt();
-                if (i < 0 || i >= dados.length) return const SizedBox();
+              interval: intervalo,
+              reservedSize: 32,
+              getTitlesWidget: (valor, meta) {
+                final indice = valor.round();
+
+                if ((valor - indice).abs() > 0.001 ||
+                    indice < 0 ||
+                    indice >= dados.length) {
+                  return const SizedBox.shrink();
+                }
+
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    dados[i].rotulo,
-                    style: const TextStyle(
+                    dados[indice].rotulo,
+                    style: TextStyle(
                       fontSize: 10,
-                      color: AppColors.muted,
+                      color: cores.onSurfaceVariant,
                     ),
                   ),
                 );
@@ -142,26 +135,51 @@ class HourlyChart extends StatelessWidget {
             ),
           ),
         ),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (_) => cores.inverseSurface,
+            fitInsideHorizontally: true,
+            fitInsideVertically: true,
+            getTooltipItems: (pontos) {
+              return pontos.map((ponto) {
+                final indice = ponto.x.round();
+
+                return LineTooltipItem(
+                  '${dados[indice].rotulo}\n'
+                  '${ponto.y.toStringAsFixed(0)} viagens',
+                  TextStyle(
+                    color: cores.onInverseSurface,
+                    fontSize: 12,
+                  ),
+                );
+              }).toList();
+            },
+          ),
+        ),
         lineBarsData: [
           LineChartBarData(
-            spots: spots,
+            spots: [
+              for (var i = 0; i < dados.length; i++)
+                FlSpot(i.toDouble(), dados[i].viagens),
+            ],
             isCurved: false,
-            color: _line,
-            barWidth: 5,
+            color: linha,
+            barWidth: 3,
             belowBarData: BarAreaData(
               show: true,
-              color: _line.withValues(alpha: 0.06),
+              color: linha.withValues(alpha: 0.08),
             ),
             dotData: FlDotData(
               show: true,
-              checkToShowDot: (spot, _) =>
-                  dados.length == 1 || dados[spot.x.toInt()].pico,
-              getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
-                radius: 5,
-                color: Colors.white,
-                strokeWidth: 2.5,
-                strokeColor: _line,
-              ),
+              checkToShowDot: (spot, _) => dados[spot.x.toInt()].pico,
+              getDotPainter: (spot, percent, bar, index) {
+                return FlDotCirclePainter(
+                  radius: 5,
+                  color: cores.surface,
+                  strokeWidth: 2.5,
+                  strokeColor: linha,
+                );
+              },
             ),
           ),
         ],

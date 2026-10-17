@@ -69,10 +69,7 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       var mensagem = e.toString();
 
-      mensagem = mensagem.replaceFirst(
-        'Exception: ',
-        '',
-      );
+      mensagem = mensagem.replaceFirst('Exception: ', '');
 
       if (!mounted) {
         return;
@@ -113,9 +110,7 @@ class _LoginPageState extends State<LoginPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: 0.08,
-                  ),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -136,9 +131,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
 
                   const Text(
                     'SEMOB-SCS',
@@ -150,31 +143,22 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 6,
-                  ),
+                  const SizedBox(height: 6),
 
                   const Text(
                     'Inteligência em Transportes',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
 
-                  const SizedBox(
-                    height: 32,
-                  ),
+                  const SizedBox(height: 32),
 
                   TextFormField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: 'E-mail',
-                      prefixIcon: Icon(
-                        Icons.email_outlined,
-                      ),
+                      prefixIcon: Icon(Icons.email_outlined),
                       border: OutlineInputBorder(),
                     ),
                     validator: (valor) {
@@ -189,18 +173,14 @@ class _LoginPageState extends State<LoginPage> {
                     },
                   ),
 
-                  const SizedBox(
-                    height: 16,
-                  ),
+                  const SizedBox(height: 16),
 
                   TextFormField(
                     controller: senhaController,
                     obscureText: ocultarSenha,
                     decoration: InputDecoration(
                       labelText: 'Senha',
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                      ),
+                      prefixIcon: const Icon(Icons.lock_outline),
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         onPressed: () {
@@ -228,34 +208,23 @@ class _LoginPageState extends State<LoginPage> {
                   ),
 
                   if (erro != null) ...[
-                    const SizedBox(
-                      height: 16,
-                    ),
+                    const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.red.shade50,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.red.shade200,
-                        ),
+                        border: Border.all(color: Colors.red.shade200),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: Colors.red.shade700,
-                          ),
-                          const SizedBox(
-                            width: 10,
-                          ),
+                          Icon(Icons.error_outline, color: Colors.red.shade700),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               erro!,
-                              style: TextStyle(
-                                color: Colors.red.shade800,
-                              ),
+                              style: TextStyle(color: Colors.red.shade800),
                             ),
                           ),
                         ],
@@ -263,41 +232,28 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ],
 
-                  const SizedBox(
-                    height: 24,
-                  ),
+                  const SizedBox(height: 24),
 
                   SizedBox(
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: carregando
-                          ? null
-                          : entrar,
+                      onPressed: carregando ? null : entrar,
                       child: carregando
                           ? const SizedBox(
                               width: 22,
                               height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text(
-                              'Entrar',
-                            ),
+                          : const Text('Entrar'),
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
 
                   const Text(
                     'Acesso restrito aos usuários autorizados pela SEMOB.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),

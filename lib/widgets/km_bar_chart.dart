@@ -2,64 +2,57 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
-import 'chart_summary.dart';
-import '../core/formatters.dart';
 import '../models/operacao_overview.dart';
 
 class KmBarChart extends StatelessWidget {
   final List<KmMes> dados;
+
   const KmBarChart({super.key, required this.dados});
 
   @override
   Widget build(BuildContext context) {
-    final productive = dados.fold<double>(0, (sum, p) => sum + p.produtiva);
-    final dead = dados.fold<double>(0, (sum, p) => sum + p.morta);
-    final total = productive + dead;
+    final cores = Theme.of(context).colorScheme;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    final produtiva = escuro
+        ? const Color(0xFF60A5FA)
+        : AppColors.navy;
+    final morta = escuro
+        ? const Color(0xFF67E8F9)
+        : AppColors.cyan;
+
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  'EVOLUÇÃO DA QUILOMETRAGEM MENSAL',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF374151),
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            'QUILOMETRAGEM PRODUTIVA E MORTA',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: cores.onSurface,
+            ),
           ),
-          if (dados.isNotEmpty)
-            ChartSummary(items: [
-              (label: 'Total • km', value: fmtCompact(total)),
-              (label: 'Produtiva • km', value: fmtCompact(productive)),
-              (label: 'Morta / total', value: total > 0 ? '${fmtDec(dead / total * 100)}%' : '—'),
-            ]),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           SizedBox(
-            height: 220,
+            height: 290,
             child: dados.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'Sem dados para o período selecionado',
-                      style: TextStyle(color: AppColors.muted),
+                      style: TextStyle(color: cores.onSurfaceVariant),
                     ),
                   )
-                : _chart(),
+                : _chart(context, produtiva, morta),
           ),
           const SizedBox(height: 12),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            spacing: 20,
+            runSpacing: 8,
             children: [
-              _Dot(color: AppColors.navy, label: 'Produtiva'),
-              SizedBox(width: 20),
-              _Dot(color: AppColors.cyan, label: 'Morta'),
+              _Dot(color: produtiva, label: 'Produtiva'),
+              _Dot(color: morta, label: 'Morta'),
             ],
           ),
         ],
@@ -67,34 +60,55 @@ class KmBarChart extends StatelessWidget {
     );
   }
 
-  Widget _chart() {
+  Widget _chart(
+    BuildContext context,
+    Color produtiva,
+    Color morta,
+  ) {
+    final cores = Theme.of(context).colorScheme;
+
     final maxTotal = dados
-        .map((d) => d.produtiva + d.morta)
+        .map((dia) => dia.produtiva + dia.morta)
         .reduce((a, b) => a > b ? a : b);
+
+    final intervaloX = dados.length <= 6
+        ? 1.0
+        : (dados.length / 6).ceilToDouble();
 
     return BarChart(
       BarChartData(
-        maxY: maxTotal == 0 ? 1 : maxTotal * 1.15,
+        minY: 0,
+        maxY: maxTotal <= 0 ? 1.0 : maxTotal * 1.15,
         alignment: BarChartAlignment.spaceAround,
         borderData: FlBorderData(show: false),
+        gridData: FlGridData(
+          drawVerticalLine: false,
+          getDrawingHorizontalLine: (_) => FlLine(
+            color: cores.outlineVariant,
+            strokeWidth: 1,
+            dashArray: [4, 4],
+          ),
+        ),
         barTouchData: BarTouchData(
           enabled: true,
           touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (_) => cores.inverseSurface,
             fitInsideHorizontally: true,
             fitInsideVertically: true,
-            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              final item = dados[group.x];
+            getTooltipItem: (grupo, indiceGrupo, barra, indiceBarra) {
+              final dia = dados[grupo.x];
+
               return BarTooltipItem(
-                '${item.rotulo}\nProdutiva: ${fmtDec(item.produtiva)} km\nMorta: ${fmtDec(item.morta)} km\nTotal: ${fmtDec(item.produtiva + item.morta)} km',
-                const TextStyle(color: Colors.white, fontSize: 12),
+                '${dia.rotulo}\n'
+                'Produtiva: ${dia.produtiva.toStringAsFixed(1)} km\n'
+                'Morta: ${dia.morta.toStringAsFixed(1)} km',
+                TextStyle(
+                  color: cores.onInverseSurface,
+                  fontSize: 11,
+                ),
               );
             },
           ),
-        ),
-        gridData: FlGridData(
-          drawVerticalLine: false,
-          getDrawingHorizontalLine: (_) =>
-              const FlLine(color: AppColors.border, strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
           topTitles: const AxisTitles(
@@ -106,27 +120,39 @@ class KmBarChart extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 64,
-              maxIncluded: false,
-              getTitlesWidget: (v, meta) => Text(
-                '${fmtCompact(v)} km',
-                style: const TextStyle(fontSize: 10, color: AppColors.muted),
+              reservedSize: 44,
+              getTitlesWidget: (valor, meta) => Text(
+                valor >= 1000
+                    ? '${(valor / 1000).toStringAsFixed(1)}k'
+                    : '${valor.toInt()}',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: cores.onSurfaceVariant,
+                ),
               ),
             ),
           ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              getTitlesWidget: (v, meta) {
-                final i = v.toInt();
-                if (i < 0 || i >= dados.length) return const SizedBox();
+              interval: intervaloX,
+              reservedSize: 32,
+              getTitlesWidget: (valor, meta) {
+                final indice = valor.round();
+
+                if ((valor - indice).abs() > 0.001 ||
+                    indice < 0 ||
+                    indice >= dados.length) {
+                  return const SizedBox.shrink();
+                }
+
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    dados[i].rotulo,
-                    style: const TextStyle(
+                    dados[indice].rotulo,
+                    style: TextStyle(
                       fontSize: 10,
-                      color: AppColors.muted,
+                      color: cores.onSurfaceVariant,
                     ),
                   ),
                 );
@@ -141,16 +167,20 @@ class KmBarChart extends StatelessWidget {
               barRods: [
                 BarChartRodData(
                   toY: dados[i].produtiva + dados[i].morta,
-                  width: 26,
+                  width: dados.length > 12 ? 8 : 22,
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(3),
                   ),
                   rodStackItems: [
-                    BarChartRodStackItem(0, dados[i].produtiva, AppColors.navy),
+                    BarChartRodStackItem(
+                      0,
+                      dados[i].produtiva,
+                      produtiva,
+                    ),
                     BarChartRodStackItem(
                       dados[i].produtiva,
                       dados[i].produtiva + dados[i].morta,
-                      AppColors.cyan,
+                      morta,
                     ),
                   ],
                 ),
@@ -165,17 +195,22 @@ class KmBarChart extends StatelessWidget {
 class _Dot extends StatelessWidget {
   final Color color;
   final String label;
+
   const _Dot({required this.color, required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.circle, size: 8, color: color),
+        Icon(Icons.circle, size: 9, color: color),
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: Color(0xFF374151)),
+          style: TextStyle(
+            fontSize: 11,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

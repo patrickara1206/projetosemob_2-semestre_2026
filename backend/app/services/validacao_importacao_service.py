@@ -2,7 +2,6 @@ import os
 import re
 import unicodedata
 
-
 NOMES_RELATORIOS = {
     "operacao": "Operação geral",
     "fcv": "FCV",
@@ -21,37 +20,23 @@ NOMES_RELATORIOS = {
 def normalizar_nome_coluna(valor):
     texto = str(valor).strip().lower()
 
-    texto = unicodedata.normalize(
-        "NFKD",
-        texto
-    )
+    texto = unicodedata.normalize("NFKD", texto)
 
     texto = "".join(
-        caractere
-        for caractere in texto
-        if not unicodedata.combining(caractere)
+        caractere for caractere in texto if not unicodedata.combining(caractere)
     )
 
-    texto = re.sub(
-        r"[^a-z0-9]+",
-        "_",
-        texto
-    )
+    texto = re.sub(r"[^a-z0-9]+", "_", texto)
 
     return texto.strip("_")
 
 
 def normalizar_colunas(df):
-    return {
-        normalizar_nome_coluna(coluna)
-        for coluna in df.columns
-    }
+    return {normalizar_nome_coluna(coluna) for coluna in df.columns}
 
 
 def preparar_nome_arquivo(nome_arquivo):
-    nome = os.path.basename(
-        nome_arquivo
-    ).lower()
+    nome = os.path.basename(nome_arquivo).lower()
 
     if nome.endswith(".html"):
         nome = nome[:-5]
@@ -63,9 +48,7 @@ def preparar_nome_arquivo(nome_arquivo):
 
 
 def detectar_tipo_por_nome(nome_arquivo):
-    nome = preparar_nome_arquivo(
-        nome_arquivo
-    )
+    nome = preparar_nome_arquivo(nome_arquivo)
 
     if "viag_ninic" in nome:
         return "viagens_nao_iniciadas"
@@ -97,10 +80,7 @@ def detectar_tipo_por_nome(nome_arquivo):
     if nome.startswith("saldos"):
         return "financeiro"
 
-    if re.fullmatch(
-        r"(mensal|quinzenal)_\d{6}",
-        nome
-    ):
+    if re.fullmatch(r"(mensal|quinzenal)_\d{6}", nome):
         return "operacao"
 
     return None
@@ -124,21 +104,14 @@ def detectar_tipo_por_estrutura(df):
         return None
 
     if quantidade == 4:
-        segunda_coluna = df.iloc[
-            :,
-            1
-        ].astype(str)
+        segunda_coluna = df.iloc[:, 1].astype(str)
 
-        proporcao_faixa = (
-            segunda_coluna
-            .str.contains(
-                r"^\s*\d{1,2}\s*(?:h|hs|:00)?\s*$",
-                case=False,
-                regex=True,
-                na=False,
-            )
-            .mean()
-        )
+        proporcao_faixa = segunda_coluna.str.contains(
+            r"^\s*\d{1,2}\s*(?:h|hs|:00)?\s*$",
+            case=False,
+            regex=True,
+            na=False,
+        ).mean()
 
         if proporcao_faixa > 0.5:
             return "resumo_faixa_horaria"
@@ -146,72 +119,40 @@ def detectar_tipo_por_estrutura(df):
         return "linhas"
 
     if quantidade == 6:
-        primeira_coluna = df.iloc[
-            :,
-            0
-        ].astype(str)
+        primeira_coluna = df.iloc[:, 0].astype(str)
 
-        proporcao_data = (
-            primeira_coluna
-            .str.match(
-                r"^\s*\d{1,2}/\d{1,2}/\d{4}\s*$",
-                na=False,
-            )
-            .mean()
-        )
+        proporcao_data = primeira_coluna.str.match(
+            r"^\s*\d{1,2}/\d{1,2}/\d{4}\s*$",
+            na=False,
+        ).mean()
 
         if proporcao_data > 0.5:
             return "faixa_horaria"
 
-        if (
-            "dia" in colunas
-            and "catraca" in colunas
-            and "antecipados" in colunas
-        ):
+        if "dia" in colunas and "catraca" in colunas and "antecipados" in colunas:
             return "passageiros"
 
     if quantidade == 5:
-        if (
-            "mes" in colunas
-            and "dia" in colunas
-            and "total_vendas" in colunas
-        ):
+        if "mes" in colunas and "dia" in colunas and "total_vendas" in colunas:
             return "financeiro"
 
     return None
 
 
-def detectar_tipo_relatorio(
-    df,
-    nome_arquivo=""
-):
-    tipo_nome = detectar_tipo_por_nome(
-        nome_arquivo
-    )
+def detectar_tipo_relatorio(df, nome_arquivo=""):
+    tipo_nome = detectar_tipo_por_nome(nome_arquivo)
 
     if tipo_nome is not None:
         return tipo_nome
 
-    return detectar_tipo_por_estrutura(
-        df
-    )
+    return detectar_tipo_por_estrutura(df)
 
 
-def validar_tipo_relatorio(
-    df,
-    tipo_relatorio,
-    nome_arquivo
-):
+def validar_tipo_relatorio(df, tipo_relatorio, nome_arquivo):
     if tipo_relatorio not in NOMES_RELATORIOS:
-        raise ValueError(
-            f"Tipo de relatório inválido: "
-            f"{tipo_relatorio}."
-        )
+        raise ValueError(f"Tipo de relatório inválido: " f"{tipo_relatorio}.")
 
-    tipo_detectado = detectar_tipo_relatorio(
-        df,
-        nome_arquivo
-    )
+    tipo_detectado = detectar_tipo_relatorio(df, nome_arquivo)
 
     if tipo_detectado is None:
         raise ValueError(
@@ -222,13 +163,9 @@ def validar_tipo_relatorio(
         )
 
     if tipo_detectado != tipo_relatorio:
-        esperado = NOMES_RELATORIOS[
-            tipo_relatorio
-        ]
+        esperado = NOMES_RELATORIOS[tipo_relatorio]
 
-        detectado = NOMES_RELATORIOS[
-            tipo_detectado
-        ]
+        detectado = NOMES_RELATORIOS[tipo_detectado]
 
         raise ValueError(
             f"O arquivo enviado não corresponde "
@@ -239,32 +176,19 @@ def validar_tipo_relatorio(
         )
 
 
-def validar_mes_relatorio(
-    df,
-    mes
-):
+def validar_mes_relatorio(df, mes):
     if "data" not in df.columns:
-        raise ValueError(
-            "Não foi possível validar o mês "
-            "do relatório."
-        )
+        raise ValueError("Não foi possível validar o mês " "do relatório.")
 
     datas = df["data"].dropna()
 
     if datas.empty:
-        raise ValueError(
-            "Nenhuma data válida foi encontrada "
-            "no relatório."
-        )
+        raise ValueError("Nenhuma data válida foi encontrada " "no relatório.")
 
-    meses_encontrados = set(
-        datas.dt.strftime("%Y-%m")
-    )
+    meses_encontrados = set(datas.dt.strftime("%Y-%m"))
 
     if meses_encontrados != {mes}:
-        encontrados = ", ".join(
-            sorted(meses_encontrados)
-        )
+        encontrados = ", ".join(sorted(meses_encontrados))
 
         raise ValueError(
             f"O mês selecionado ({mes}) não "
@@ -273,12 +197,8 @@ def validar_mes_relatorio(
         )
 
 
-def detectar_periodo_por_nome(
-    nome_arquivo
-):
-    nome = preparar_nome_arquivo(
-        nome_arquivo
-    )
+def detectar_periodo_por_nome(nome_arquivo):
+    nome = preparar_nome_arquivo(nome_arquivo)
 
     if "quinzenal" in nome:
         return "quinzenal"
@@ -289,38 +209,20 @@ def detectar_periodo_por_nome(
     return None
 
 
-def validar_periodo_relatorio(
-    df,
-    tipo_periodo,
-    nome_arquivo=""
-):
+def validar_periodo_relatorio(df, tipo_periodo, nome_arquivo=""):
     if tipo_periodo not in {
         "mensal",
         "quinzenal",
     }:
-        raise ValueError(
-            "Período inválido. "
-            "Selecione 'Mensal' ou "
-            "'1ª Quinzena'."
-        )
+        raise ValueError("Período inválido. " "Selecione 'Mensal' ou " "'1ª Quinzena'.")
 
-    periodo_detectado = detectar_periodo_por_nome(
-        nome_arquivo
-    )
+    periodo_detectado = detectar_periodo_por_nome(nome_arquivo)
 
     if periodo_detectado is not None:
         if periodo_detectado != tipo_periodo:
-            encontrado = (
-                "Mensal"
-                if periodo_detectado == "mensal"
-                else "1ª Quinzena"
-            )
+            encontrado = "Mensal" if periodo_detectado == "mensal" else "1ª Quinzena"
 
-            selecionado = (
-                "Mensal"
-                if tipo_periodo == "mensal"
-                else "1ª Quinzena"
-            )
+            selecionado = "Mensal" if tipo_periodo == "mensal" else "1ª Quinzena"
 
             raise ValueError(
                 f"O período selecionado "
@@ -333,27 +235,18 @@ def validar_periodo_relatorio(
         return
 
     if "data" not in df.columns:
-        raise ValueError(
-            "Não foi possível validar o período "
-            "do relatório."
-        )
+        raise ValueError("Não foi possível validar o período " "do relatório.")
 
     datas = df["data"].dropna()
 
     if datas.empty:
         raise ValueError(
-            "Nenhuma data válida foi encontrada "
-            "para validar o período."
+            "Nenhuma data válida foi encontrada " "para validar o período."
         )
 
-    maior_dia = int(
-        datas.dt.day.max()
-    )
+    maior_dia = int(datas.dt.day.max())
 
-    if (
-        tipo_periodo == "quinzenal"
-        and maior_dia > 15
-    ):
+    if tipo_periodo == "quinzenal" and maior_dia > 15:
         raise ValueError(
             "O arquivo contém dados posteriores "
             "ao dia 15 e não pode ser importado "

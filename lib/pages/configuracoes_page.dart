@@ -58,12 +58,12 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
   Widget build(BuildContext context) => SingleChildScrollView(
     padding: const EdgeInsets.all(24),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text('Configurações', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.navy)),
+      Text('Configurações', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Theme.of(context).colorScheme.onSurface)),
       const SizedBox(height: 20),
       Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
-        decoration: cardDecoration(),
+        decoration: cardDecoration(context),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Conexão com o servidor', style: TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
@@ -79,7 +79,7 @@ class _ConfiguracoesPageState extends State<ConfiguracoesPage> {
       Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
-        decoration: cardDecoration(),
+        decoration: cardDecoration(context),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Mês dos indicadores', style: TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),

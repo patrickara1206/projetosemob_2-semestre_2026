@@ -18,66 +18,87 @@ class CategoryTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
     return Container(
-      decoration: cardDecoration(),
+      decoration: cardDecoration(context),
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.all(20),
-            child: Row(
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 20,
+              runSpacing: 8,
               children: [
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Detalhamento de Categorias',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF374151))),
-                      SizedBox(height: 2),
-                      Text('Estrutura preparada para expansão de perfis tarifários',
-                          style:
-                              TextStyle(fontSize: 11, color: AppColors.muted)),
-                    ],
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Detalhamento de Categorias',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: cores.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Distribuição dos passageiros por categoria tarifária',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: cores.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
                 TextButton(
                   onPressed: onVerRelatorio,
-                  child: const Text('VER RELATÓRIO COMPLETO →',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.navy)),
+                  child: const Text(
+                    'VER RELATÓRIO COMPLETO →',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          LayoutBuilder(builder: (context, box) {
-            final width = math.max(box.maxWidth, 600.0);
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: width,
-                child: Column(
-                  children: [
-                    const _Header(),
-                    if (categorias.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text('Nenhuma categoria no período',
-                            style: TextStyle(color: AppColors.muted)),
-                      )
-                    else
-                      for (var i = 0; i < categorias.length; i++)
-                        _DataRow(item: categorias[i], zebra: i.isOdd),
-                  ],
+          LayoutBuilder(
+            builder: (context, box) {
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: math.max(box.maxWidth, 640.0),
+                  child: Column(
+                    children: [
+                      const _Header(),
+                      if (categorias.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(
+                            'Nenhuma categoria no período',
+                            style: TextStyle(
+                              color: cores.onSurfaceVariant,
+                            ),
+                          ),
+                        )
+                      else
+                        for (var i = 0; i < categorias.length; i++)
+                          _CategoryRow(
+                            item: categorias[i],
+                            zebra: i.isOdd,
+                          ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -91,71 +112,107 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget cell(String t, int flex, Alignment a) => Expanded(
-          flex: flex,
-          child: Align(
-            alignment: a,
-            child: Text(t,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700)),
-          ),
-        );
+    final cores = Theme.of(context).colorScheme;
+
+    const titulos = [
+      'CATEGORIA',
+      'VOLUME',
+      '% DO TOTAL',
+      'STATUS OPERACIONAL',
+    ];
 
     return Container(
-      color: AppColors.navy,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      decoration: BoxDecoration(
+        color: cores.surfaceContainerHighest,
+        border: Border(
+          bottom: BorderSide(color: cores.outlineVariant),
+        ),
+      ),
       child: Row(
         children: [
-          cell('CATEGORIA', _flex[0], Alignment.centerLeft),
-          cell('VOLUME (DIA)', _flex[1], Alignment.centerRight),
-          cell('% DO TOTAL', _flex[2], Alignment.centerRight),
-          cell('STATUS OPERACIONAL', _flex[3], Alignment.center),
+          for (var i = 0; i < titulos.length; i++)
+            Expanded(
+              flex: _flex[i],
+              child: Text(
+                titulos[i],
+                textAlign: i == 0
+                    ? TextAlign.left
+                    : (i == 3 ? TextAlign.center : TextAlign.right),
+                style: TextStyle(
+                  color: cores.onSurface,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-class _DataRow extends StatelessWidget {
+class _CategoryRow extends StatelessWidget {
   final CategoriaTarifaria item;
   final bool zebra;
-  const _DataRow({required this.item, required this.zebra});
+
+  const _CategoryRow({
+    required this.item,
+    required this.zebra,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
     final ativo = item.status == 'ativo';
 
+    final corStatus = ativo
+        ? (escuro ? const Color(0xFF86EFAC) : AppColors.green)
+        : cores.onSurfaceVariant;
+
+    final fundoStatus = ativo
+        ? (escuro ? const Color(0xFF15382A) : AppColors.greenSoft)
+        : cores.surfaceContainerHighest;
+
     return Container(
-      color: zebra ? const Color(0xFFF8F9FC) : Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      decoration: BoxDecoration(
+        color: zebra ? cores.surfaceContainerHighest : cores.surface,
+        border: Border(
+          bottom: BorderSide(color: cores.outlineVariant),
+        ),
+      ),
       child: Row(
         children: [
           Expanded(
             flex: _flex[0],
-            child: Text(item.nome,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.navy)),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text(
+                item.nome,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: cores.onSurface,
+                ),
+              ),
+            ),
           ),
           Expanded(
             flex: _flex[1],
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(fmtInt(item.volume),
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.text)),
+            child: Text(
+              fmtInt(item.volume),
+              textAlign: TextAlign.right,
+              style: TextStyle(fontSize: 12, color: cores.onSurface),
             ),
           ),
           Expanded(
             flex: _flex[2],
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text('${fmtDec(item.percentual)}%',
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.text)),
+            child: Text(
+              '${fmtDec(item.percentual)}%',
+              textAlign: TextAlign.right,
+              style: TextStyle(fontSize: 12, color: cores.onSurface),
             ),
           ),
           Expanded(
@@ -163,17 +220,22 @@ class _DataRow extends StatelessWidget {
             child: Align(
               alignment: Alignment.center,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: ativo ? AppColors.greenSoft : AppColors.border,
+                  color: fundoStatus,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(ativo ? 'ATIVO' : 'INATIVO',
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: ativo ? AppColors.green : AppColors.muted)),
+                child: Text(
+                  ativo ? 'ATIVO' : 'INATIVO',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: corStatus,
+                  ),
+                ),
               ),
             ),
           ),

@@ -1,502 +1,340 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+
 import '../core/formatters.dart';
-import '../core/theme.dart';
 import '../core/state.dart';
 import '../core/exportacao.dart';
+import '../core/theme.dart';
 import '../models/financeiro_overview.dart';
 import '../services/financeiro_service.dart';
-import '../widgets/revenue_subsidy_chart.dart';
+import '../widgets/financeiro_detalhes.dart';
 
 class FinanceiroPage extends StatefulWidget {
   const FinanceiroPage({super.key});
+
   @override
   State<FinanceiroPage> createState() => _FinanceiroPageState();
 }
 
 class _FinanceiroPageState extends State<FinanceiroPage> {
   final _service = FinanceiroService();
-  final _mesCtrl = TextEditingController(text: periodoNotifier.mesReferencia);
-  final _buscaCtrl = TextEditingController();
-  FinanceiroDashboard? _data;
-  String _mes = periodoNotifier.mesReferencia, _periodo = 'mes', _busca = '';
-  int _pagina = 1, _request = 0;
-  bool _loading = true;
-  bool _exportando = false;
-  String? _error;
-  Timer? _debounce;
+
+  FinanceiroOverview? _data;
+  String? _erro;
+  bool _carregando = false;
+  int _req = 0;
+
   @override
   void initState() {
     super.initState();
     _load();
-    periodoNotifier.addListener(_refresh);
+    periodoNotifier.addListener(_onPeriodo);
   }
 
   @override
   void dispose() {
-    _debounce?.cancel();
-    periodoNotifier.removeListener(_refresh);
-    _mesCtrl.dispose();
-    _buscaCtrl.dispose();
+    periodoNotifier.removeListener(_onPeriodo);
     super.dispose();
   }
 
-  Future<void> _load() async {
-    final id = ++_request;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      final result = await _service.getOverview(
-        mes: _mes,
-        periodo: _periodo,
-        busca: _busca,
-        pagina: _pagina,
-      );
-      if (!mounted || id != _request) return;
-      setState(() {
-        _data = result;
-        _pagina = result.pagina;
-      });
-    } catch (e) {
-      if (mounted && id == _request) {
-        setState(() {
-          _data = null;
-          _error = e.toString().replaceFirst('Exception: ', '');
-        });
-      }
-    } finally {
-      if (mounted && id == _request) setState(() => _loading = false);
-    }
-  }
-
-  void _refresh() => _load();
-
-  Future<void> _exportar() async {
-    final mes = _mes, periodo = _periodo, busca = _busca;
-    setState(() => _exportando = true);
-    try {
-      final primeiro = await _service.getOverview(mes: mes, periodo: periodo, busca: busca);
-      final itens = [...primeiro.movimentos];
-      for (var pagina = 2; pagina <= primeiro.totalPaginas; pagina++) {
-        final dados = await _service.getOverview(mes: mes, periodo: periodo, busca: busca, pagina: pagina);
-        itens.addAll(dados.movimentos);
-      }
-      if (!mounted) return;
-      exportarRelatorio(context, 'semob-financeiro-$mes.csv', [
-        ['Mês', mes, 'Período', periodo, 'Busca', busca],
-        ['Indicador', r'Valor (R$)'],
-        ['Vendas no período', primeiro.vendas],
-        ['Utilização no período', primeiro.utilizacao],
-        ['Crédito circulante no período', primeiro.creditoCirculante],
-        [], ['Data', r'Vendas (R$)', r'Utilização (R$)', r'Crédito circulante (R$)'],
-        for (final item in itens) [_date(item.data), item.vendas, item.utilizacao, item.creditoCirculante],
-      ]);
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))));
-      }
-    } finally {
-      if (mounted) setState(() => _exportando = false);
-    }
-  }
-
-  void _applyMonth() {
-    final month = _mesCtrl.text.trim();
-    if (!RegExp(r'^\d{4}-(0[1-9]|1[0-2])$').hasMatch(month)) {
-      setState(
-        () => _error = 'Informe o mês no formato AAAA-MM, por exemplo 2026-08.',
-      );
-      return;
-    }
-    _mes = month;
-    _pagina = 1;
+  void _onPeriodo() {
     _load();
   }
 
-  String _date(String? raw) {
-    if (raw == null) return '—';
-    final d = DateTime.tryParse(raw);
-    if (d == null) return 'Data indisponível';
-    return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  Future<void> _load() async {
+    final id = ++_req;
+
+    setState(() {
+      _erro = null;
+      _data = null;
+      _carregando = true;
+    });
+
+    try {
+      final dados = await _service.getOverview(
+        periodo: 'mes',
+        mes: periodoNotifier.mesReferencia,
+      );
+
+      if (!mounted || id != _req) return;
+
+      setState(() => _data = dados);
+    } catch (erro) {
+      if (!mounted || id != _req) return;
+
+      setState(() {
+        _erro = erro.toString().replaceFirst('Exception: ', '');
+      });
+    } finally {
+      if (mounted && id == _req) {
+        setState(() => _carregando = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final d = _data;
-    if (d == null) {
-      return SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Gestão Financeira', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.navy)),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(32),
-            decoration: cardDecoration(),
-            child: Column(children: [
-              if (_loading) ...[
-                const CircularProgressIndicator(),
-                const SizedBox(height: 16),
-                const Text('Carregando os dados financeiros...'),
-              ] else ...[
-                const Icon(Icons.error_outline, color: AppColors.red),
-                const SizedBox(height: 12),
-                Text(_error ?? 'Não foi possível carregar os dados.', textAlign: TextAlign.center),
-                const SizedBox(height: 12),
-                FilledButton(onPressed: _load, child: const Text('Tentar novamente')),
-              ],
-            ]),
-          ),
-        ]),
-      );
-    }
-    return LayoutBuilder(
-      builder: (context, box) {
-        final wide = box.maxWidth >= 1000;
-        final cards = [
-          _FinancialKpi(
-            title: 'VENDAS DE CRÉDITOS',
-            value: fmtMoney(d.vendas),
-            note: 'Total de vendas no período',
-            icon: Icons.payments_outlined,
-          ),
-          _FinancialKpi(
-            title: 'UTILIZAÇÃO DE CRÉDITOS',
-            value: fmtMoney(d.utilizacao),
-            note: 'Total utilizado no período',
-            icon: Icons.directions_bus_outlined,
-          ),
-          _FinancialKpi(
-            title: 'CRÉDITO CIRCULANTE',
-            value: fmtMoney(d.creditoCirculante),
-            note: 'Soma dos saldos registrados no período',
-            icon: Icons.account_balance_wallet_outlined,
-          ),
-        ];
-        final width = box.maxWidth - (box.maxWidth < 700 ? 32 : 48);
-        final columns = width >= 700 ? 3 : 1;
-        final cardWidth = (width - 16 * (columns - 1)) / columns;
-        final chart = SizedBox(
-          height: 400,
-          child: RevenueSubsidyChart(serie: d.evolucao),
-        );
-        final unavailable = Container(
-          height: 400,
-          padding: const EdgeInsets.all(20),
-          decoration: cardDecoration(),
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final cores = Theme.of(context).colorScheme;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
+    final dados = _data;
+
+    if (dados == null) {
+      if (_erro == null) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Informações complementares',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.navy,
-                ),
+              Icon(
+                Icons.error_outline,
+                color: cores.error,
+                size: 40,
               ),
-              SizedBox(height: 24),
-              Icon(Icons.info_outline, color: AppColors.primary, size: 32),
-              SizedBox(height: 16),
-              Text(
-                'Subsídios, custos operacionais e repasses por linha ainda não estão disponíveis na base de dados.',
-                style: TextStyle(color: AppColors.muted, height: 1.5),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Os indicadores ao lado utilizam os registros de vendas, utilização e crédito circulante.',
-                style: TextStyle(color: AppColors.muted, height: 1.5),
+              const SizedBox(height: 12),
+              Text(_erro!, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: _carregando ? null : _load,
+                child: const Text('Tentar novamente'),
               ),
             ],
           ),
-        );
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, box) {
+        final largura = box.maxWidth;
+        final padding = largura < 700 ? 16.0 : 24.0;
+        const gap = 16.0;
+        final colunas = largura >= 800 ? 3 : 1;
+        final larguraCartao =
+            (largura - padding * 2 - gap * (colunas - 1)) / colunas;
+
         return SingleChildScrollView(
-          padding: EdgeInsets.all(box.maxWidth < 700 ? 16 : 24),
+          padding: EdgeInsets.all(padding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Gestão Financeira',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.navy,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Vendas, utilização e crédito circulante dos relatórios importados.',
-                style: TextStyle(fontSize: 12, color: AppColors.muted),
-              ),
+              _header(context),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.all(12),
-                decoration: cardDecoration(),
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: _loading || _exportando ? null : _exportar,
-                      icon: const Icon(Icons.download, size: 16),
-                      label: Text(_exportando ? 'Gerando relatório...' : 'Exportar Relatório'),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: TextField(
-                        controller: _mesCtrl,
-                        onSubmitted: (_) => _applyMonth(),
-                        decoration: const InputDecoration(
-                          labelText: 'Mês • AAAA-MM',
-                          isDense: true,
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    OutlinedButton(
-                      onPressed: _loading ? null : _applyMonth,
-                      child: const Text('Aplicar'),
-                    ),
-                    for (final choice in [
-                      (key: 'mes', label: 'Mês completo'),
-                      (key: 'semana', label: 'Últimos 7 dias'),
-                      (key: 'hoje', label: 'Último dia'),
-                    ])
-                      ChoiceChip(
-                        label: Text(choice.label),
-                        selected: _periodo == choice.key,
-                        onSelected: _loading
-                            ? null
-                            : (_) {
-                                _periodo = choice.key;
-                                _pagina = 1;
-                                _load();
-                              },
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                d.dias == 0
-                    ? 'Sem registros para o mês selecionado.'
-                    : '${_date(d.inicio)} a ${_date(d.fim)} • ${d.dias} dias com registros',
-                style: const TextStyle(fontSize: 12, color: AppColors.muted),
-              ),
-              if (_loading)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: LinearProgressIndicator(),
-                ),
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: AppColors.red),
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: cardDecoration(context),
+                child: Text(
+                  'Mês de referência: ${periodoNotifier.mesReferencia} • Totais mensais',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: cores.onSurfaceVariant,
                   ),
                 ),
+              ),
+              if (_carregando) ...[
+                const SizedBox(height: 12),
+                const LinearProgressIndicator(),
+              ],
+              if (_erro != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: cores.errorContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _erro!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: cores.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               Wrap(
-                spacing: 16,
-                runSpacing: 16,
+                spacing: gap,
+                runSpacing: gap,
                 children: [
-                  for (final card in cards)
-                    SizedBox(width: cardWidth, child: card),
+                  SizedBox(
+                    width: larguraCartao,
+                    child: _Kpi(
+                      title: 'VENDAS DE CRÉDITOS',
+                      icon: Icons.payments_outlined,
+                      iconColor: cores.primary,
+                      value: fmtMoney(dados.totalVendas),
+                      note: 'Total de vendas no mês selecionado',
+                    ),
+                  ),
+                  SizedBox(
+                    width: larguraCartao,
+                    child: _Kpi(
+                      title: 'UTILIZAÇÃO DE CRÉDITOS',
+                      icon: Icons.directions_bus_outlined,
+                      iconColor: escuro
+                          ? const Color(0xFFA5B4FC)
+                          : AppColors.navy,
+                      value: fmtMoney(dados.totalUtilizacao),
+                      note: 'Total utilizado no mês selecionado',
+                    ),
+                  ),
+                  SizedBox(
+                    width: larguraCartao,
+                    child: _Kpi(
+                      title: 'CRÉDITO CIRCULANTE',
+                      icon: Icons.account_balance_wallet_outlined,
+                      iconColor: escuro
+                          ? const Color(0xFF86EFAC)
+                          : AppColors.green,
+                      value: fmtMoney(dados.creditoCirculante),
+                      note: 'Soma dos valores diários do mês selecionado',
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
-              if (wide)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(flex: 3, child: chart),
-                    const SizedBox(width: 20),
-                    Expanded(flex: 2, child: unavailable),
-                  ],
-                )
-              else ...[
-                chart,
-                const SizedBox(height: 16),
-                unavailable,
-              ],
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: cardDecoration(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Movimentos financeiros por dia',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.navy,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: 260,
-                      child: TextField(
-                        controller: _buscaCtrl,
-                        onChanged: (value) {
-                          _debounce?.cancel();
-                          _debounce = Timer(
-                            const Duration(milliseconds: 400),
-                            () {
-                              _busca = value.trim();
-                              _pagina = 1;
-                              _load();
-                            },
-                          );
-                        },
-                        decoration: const InputDecoration(
-                          hintText: 'Buscar data • DD/MM/AAAA',
-                          prefixIcon: Icon(Icons.search),
-                          isDense: true,
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    if (d.movimentos.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text(
-                          'Nenhum movimento encontrado.',
-                          style: TextStyle(color: AppColors.muted),
-                        ),
-                      )
-                    else
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          columns: const [
-                            DataColumn(label: Text('Data')),
-                            DataColumn(label: Text('Vendas'), numeric: true),
-                            DataColumn(
-                              label: Text('Utilização'),
-                              numeric: true,
-                            ),
-                            DataColumn(
-                              label: Text('Crédito circulante'),
-                              numeric: true,
-                            ),
-                          ],
-                          rows: [
-                            for (final row in d.movimentos)
-                              DataRow(
-                                cells: [
-                                  DataCell(Text(_date(row.data))),
-                                  DataCell(Text(fmtMoney(row.vendas))),
-                                  DataCell(Text(fmtMoney(row.utilizacao))),
-                                  DataCell(
-                                    Text(fmtMoney(row.creditoCirculante)),
-                                  ),
-                                ],
-                              ),
-                          ],
-                        ),
-                      ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          '${d.totalRegistros} registros • Página ${d.pagina} de ${d.totalPaginas}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.muted,
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: 'Página anterior',
-                          onPressed: _loading || d.pagina <= 1
-                              ? null
-                              : () {
-                                  _pagina--;
-                                  _load();
-                                },
-                          icon: const Icon(Icons.chevron_left),
-                        ),
-                        IconButton(
-                          tooltip: 'Próxima página',
-                          onPressed: _loading || d.pagina >= d.totalPaginas
-                              ? null
-                              : () {
-                                  _pagina++;
-                                  _load();
-                                },
-                          icon: const Icon(Icons.chevron_right),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              FinanceiroDetalhes(dias: dados.diasFinanceiros),
             ],
           ),
         );
       },
     );
   }
-}
 
-class _FinancialKpi extends StatelessWidget {
-  final String title, value, note;
-  final IconData icon;
-  const _FinancialKpi({
-    required this.title,
-    required this.value,
-    required this.note,
-    required this.icon,
-  });
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(20),
-    decoration: cardDecoration(),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _header(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 16,
+      runSpacing: 12,
       children: [
-        Row(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.muted,
-                ),
+            Text(
+              'FINANCEIRO / SEMOB-SCS',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: cores.primary,
               ),
             ),
-            Icon(icon, color: AppColors.primary, size: 22),
+            const SizedBox(height: 6),
+            Text(
+              'Gestão Financeira',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                color: cores.onSurface,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Vendas, utilização e crédito circulante '
+              'dos relatórios importados.',
+              style: TextStyle(
+                fontSize: 12,
+                color: cores.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 16),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: AppColors.navy,
-            ),
-          ),
+        OutlinedButton.icon(
+          onPressed: _data == null ? null : () => exportarRelatorio(context, 'financeiro-${periodoNotifier.mesReferencia}.csv', [
+            ['Data', 'Vendas', 'Utilização', 'Crédito circulante'],
+            for (final dia in _data!.diasFinanceiros) [dia.data, dia.vendas, dia.utilizacao, dia.creditoCirculante],
+          ]),
+          icon: const Icon(Icons.download),
+          label: const Text('Exportar Relatório'),
         ),
-        const SizedBox(height: 8),
-        Text(
-          note,
-          style: const TextStyle(fontSize: 11, color: AppColors.muted),
+        OutlinedButton.icon(
+          onPressed: _carregando ? null : _load,
+          icon: const Icon(Icons.refresh, size: 18),
+          label: const Text('Atualizar dados'),
         ),
       ],
-    ),
-  );
+    );
+  }
+}
+
+class _Kpi extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color iconColor;
+  final String value;
+  final String note;
+
+  const _Kpi({
+    required this.title,
+    required this.icon,
+    required this.iconColor,
+    required this.value,
+    required this.note,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: cardDecoration(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: cores.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: cores.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 18, color: iconColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: cores.onSurface,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            note,
+            style: TextStyle(
+              fontSize: 11,
+              color: cores.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
