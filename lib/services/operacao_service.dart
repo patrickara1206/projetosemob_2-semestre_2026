@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../core/state.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/operacao_overview.dart';
@@ -13,7 +14,7 @@ class OperacaoService {
 
     final uri = Uri.parse(
       '${DashboardService.baseUrl}/operacao/overview',
-    ).replace(queryParameters: {'periodo': periodo});
+    ).replace(queryParameters: {...periodoNotifier.parametros, 'periodo': periodo});
     final res = await http.get(uri);
 
     if (res.statusCode != 200) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/formatters.dart';
 import '../core/state.dart';
+import '../core/exportacao.dart';
 import '../core/theme.dart';
 import '../models/financeiro_overview.dart';
 import '../services/financeiro_service.dart';
@@ -44,13 +45,14 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
 
     setState(() {
       _erro = null;
+      _data = null;
       _carregando = true;
     });
 
     try {
       final dados = await _service.getOverview(
         periodo: 'mes',
-        mes: '2026-08',
+        mes: periodoNotifier.mesReferencia,
       );
 
       if (!mounted || id != _req) return;
@@ -125,7 +127,7 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
                 padding: const EdgeInsets.all(14),
                 decoration: cardDecoration(context),
                 child: Text(
-                  'Mês de referência: agosto de 2026 • Totais mensais',
+                  'Mês de referência: ${periodoNotifier.mesReferencia} • Totais mensais',
                   style: TextStyle(
                     fontSize: 12,
                     color: cores.onSurfaceVariant,
@@ -243,6 +245,14 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
               ),
             ),
           ],
+        ),
+        OutlinedButton.icon(
+          onPressed: _data == null ? null : () => exportarRelatorio(context, 'financeiro-${periodoNotifier.mesReferencia}.csv', [
+            ['Data', 'Vendas', 'Utilização', 'Crédito circulante'],
+            for (final dia in _data!.diasFinanceiros) [dia.data, dia.vendas, dia.utilizacao, dia.creditoCirculante],
+          ]),
+          icon: const Icon(Icons.download),
+          label: const Text('Exportar Relatório'),
         ),
         OutlinedButton.icon(
           onPressed: _carregando ? null : _load,

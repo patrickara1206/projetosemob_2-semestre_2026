@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../core/formatters.dart';
 import '../core/state.dart';
-import '../core/theme.dart';
 import '../models/dashboard_overview.dart';
 import '../services/dashboard_service.dart';
 import '../widgets/anomaly_card.dart';
@@ -37,7 +36,7 @@ class _OverviewPageState extends State<OverviewPage> {
   Future<DashboardOverview> _fetch() {
     return _service.getOverview(
       periodo: periodoNotifier.value.api,
-      mes: '2026-08',
+      mes: periodoNotifier.mesReferencia,
     );
   }
 

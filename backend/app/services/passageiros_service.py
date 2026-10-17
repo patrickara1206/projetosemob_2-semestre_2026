@@ -1,38 +1,73 @@
+from app.services.registros_diarios_service import selecionar_registros_diarios, filtrar_periodo
 import pandas as pd
 
 from app.repositories.passageiros_repository import buscar_passageiros_mes
 
-def obter_overview_passageiros(mes="2026-08"):
+def obter_overview_passageiros(mes="2026-08", periodo="mes", inicio=None, fim=None):
     df = carregar_passageiros_banco(mes)
+    df = filtrar_periodo(selecionar_registros_diarios(df, mes), periodo, inicio, fim)
 
-    pagantes = float(df["pagantes"].sum())
+    if df.empty:
+        return {
+            "total_passageiros": {"valor": None, "variacao": None},
+            "pagantes": {"percentual": None, "quantidade": None},
+            "gratuidades": {"percentual": None, "quantidade": None},
+            "pico_demanda": {"faixa": None, "media_hora": None},
+            "serie": [], "categorias": [],
+        }
+    diario = df.dropna(subset=["data"]).groupby("data", sort=True)["total_passageiros"].sum()
+    serie = [
+        {"rotulo": data.strftime("%d/%m"), "volume": float(volume), "anomalia": False}
+        for data, volume in diario.items()
+    ]
 
-    nao_pagantes = float(df["nao_pagantes"].sum())
+    pagantes = float(
+        df["pagantes"].sum()
+    )
 
-    total = float(df["total_passageiros"].sum())
+    nao_pagantes = float(
+        df["nao_pagantes"].sum()
+    )
 
-    pct_pagantes = pagantes / total * 100 if total > 0 else 0
+    total = float(
+        df["total_passageiros"].sum()
+    )
 
-    pct_gratuidades = nao_pagantes / total * 100 if total > 0 else 0
+    pct_pagantes = (
+        pagantes / total * 100
+        if total > 0
+        else 0
+    )
+
+    pct_gratuidades = (
+        nao_pagantes / total * 100
+        if total > 0
+        else 0
+    )
 
     return {
         "total_passageiros": {
             "valor": total,
             "variacao": None,
         },
+
         "pagantes": {
             "percentual": pct_pagantes,
             "quantidade": pagantes,
         },
+
         "gratuidades": {
             "percentual": pct_gratuidades,
             "quantidade": nao_pagantes,
         },
+
         "pico_demanda": {
             "faixa": None,
             "media_hora": None,
         },
-        "serie": [],
+
+        "serie": serie,
+
         "categorias": [],
     }
 

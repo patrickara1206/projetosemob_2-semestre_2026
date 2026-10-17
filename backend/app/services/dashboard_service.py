@@ -1,36 +1,17 @@
 from app.services.operacao_service import obter_overview_operacao
 from app.services.passageiros_service import obter_overview_passageiros
 from app.services.financeiro_service import obter_overview_financeiro
-from datetime import date
-from app.repositories.operacao_repository import buscar_operacao_mes
 
 
-def obter_dashboard_overview(mes="2026-08"):
-    operacao = obter_overview_operacao(mes)
-    passageiros = obter_overview_passageiros(mes)
-    financeiro = obter_overview_financeiro(mes)
+def obter_dashboard_overview(mes="2026-08", periodo="mes", inicio=None, fim=None):
+    operacao = obter_overview_operacao(mes, periodo, inicio, fim)
+    passageiros = obter_overview_passageiros(mes, periodo, inicio, fim)
+    financeiro = obter_overview_financeiro(mes, periodo, inicio, fim)
     km_produtiva = operacao["quilometragem"]["produtiva"] or 0
     km_morta = operacao["quilometragem"]["morta"] or 0
-    registros = buscar_operacao_mes(mes)
-    registros_por_data = {
-        str(registro["data"])[:10]: registro for registro in registros
-    }
-    serie = []
-    for data, registro in sorted(registros_por_data.items()):
-        serie.append(
-            {
-                "rotulo": date.fromisoformat(data).strftime("%d/%m"),
-                "realizado": float(registro.get("viagens_realizadas") or 0),
-                "esperado": float(registro.get("viagens_programadas") or 0),
-                "anomalia": False,
-            }
-        )
-    dias_validos = [
-        registro
-        for registro in registros_por_data.values()
-        if registro.get("viagens_realizadas") is not None
-        and registro.get("viagens_programadas") is not None
-    ]
+    serie = operacao["serie_viagens"]
+    dias_validos = [{"viagens_realizadas": item["realizado"],
+                     "viagens_programadas": item["esperado"]} for item in serie]
     total_realizado = sum(
         (int(registro["viagens_realizadas"]) for registro in dias_validos)
     )
@@ -61,7 +42,7 @@ def obter_dashboard_overview(mes="2026-08"):
         )
     )
     return {
-        "quilometragem": {"valor": km_produtiva + km_morta, "variacao": None},
+        "quilometragem": {"valor": (km_produtiva + km_morta) if operacao["quilometragem"]["produtiva"] is not None else None, "variacao": None},
         "viagens": {"valor": operacao["total_viagens"]["realizado"], "variacao": None},
         "passageiros_pagantes": {
             "valor": passageiros["pagantes"]["quantidade"],

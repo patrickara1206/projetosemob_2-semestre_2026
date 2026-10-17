@@ -1,3 +1,4 @@
+from app.services.registros_diarios_service import selecionar_registros_diarios, filtrar_periodo
 import pandas as pd
 
 from app.repositories.operacao_repository import buscar_operacao_mes
@@ -64,31 +65,63 @@ def carregar_operacao_banco(mes):
     return df
 
 
-def obter_overview_operacao(mes="2026-08"):
+def obter_overview_operacao(mes="2026-08", periodo="mes", inicio=None, fim=None):
     df = carregar_operacao_banco(mes)
+    df = filtrar_periodo(selecionar_registros_diarios(df, mes), periodo, inicio, fim)
 
-    viagens_programadas = int(df["viagens_programadas"].sum())
+    if df.empty:
+        return {
+            "total_viagens": {"realizado": None, "programado": None},
+            "pontualidade": {"valor": None, "variacao": None, "meta": 95},
+            "quilometragem": {"produtiva": None, "morta": None},
+            "km_mensal": [], "viagens_por_hora": [], "anomalias": [],
+            "serie_viagens": [],
+        }
 
-    viagens_realizadas = int(df["viagens_realizadas"].sum())
+    diario = df.dropna(subset=["data"]).groupby("data", sort=True)[
+        ["viagens_realizadas", "viagens_programadas"]
+    ].sum()
+    serie = [
+        {"rotulo": data.strftime("%d/%m"),
+         "realizado": float(row["viagens_realizadas"]),
+         "esperado": float(row["viagens_programadas"]),
+         "anomalia": False}
+        for data, row in diario.iterrows()
+    ]
 
-    km_produtiva = float(df["km_produtiva"].sum())
+    viagens_programadas = int(
+        df["viagens_programadas"].sum()
+    )
 
-    km_morta = float(df["km_morta"].sum())
+    viagens_realizadas = int(
+        df["viagens_realizadas"].sum()
+    )
+
+    km_produtiva = float(
+        df["km_produtiva"].sum()
+    )
+
+    km_morta = float(
+        df["km_morta"].sum()
+    )
 
     return {
         "total_viagens": {
             "realizado": viagens_realizadas,
             "programado": viagens_programadas,
         },
+
         "pontualidade": {
             "valor": None,
             "variacao": None,
             "meta": 95,
         },
+
         "quilometragem": {
             "produtiva": km_produtiva,
             "morta": km_morta,
         },
+
         "km_mensal": [
             {
                 "rotulo": mes,
@@ -96,6 +129,9 @@ def obter_overview_operacao(mes="2026-08"):
                 "morta": km_morta,
             }
         ],
+
+        "serie_viagens": serie,
         "viagens_por_hora": [],
+
         "anomalias": [],
     }

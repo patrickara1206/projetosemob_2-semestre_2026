@@ -1,10 +1,12 @@
+from app.services.registros_diarios_service import selecionar_registros_diarios, filtrar_periodo
 import pandas as pd
 
 from app.repositories.financeiro_repository import buscar_financeiro_mes
 
 
-def obter_overview_financeiro(mes="2026-08"):
+def obter_overview_financeiro(mes="2026-08", periodo="mes", inicio=None, fim=None):
     df = carregar_financeiro_banco(mes)
+    df = filtrar_periodo(selecionar_registros_diarios(df, mes), periodo, inicio, fim)
 
     if df.empty:
         return {

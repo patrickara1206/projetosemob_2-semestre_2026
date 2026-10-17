@@ -36,13 +36,13 @@ class VolumeChart extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 6),
-        Text(
+        Flexible(child: Text(
           titulo,
           style: TextStyle(
             fontSize: 12,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-        ),
+        )),
       ],
     );
   }

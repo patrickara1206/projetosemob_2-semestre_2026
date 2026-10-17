@@ -1,10 +1,11 @@
 import 'dart:convert';
+import '../core/state.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/dashboard_overview.dart';
 
 class DashboardService {
-  static const String baseUrl = 'http://127.0.0.1:8000';
+  static const String baseUrl = String.fromEnvironment('API_URL', defaultValue: 'http://127.0.0.1:8000');
   
   static const bool usarVazio = false;
 
@@ -20,7 +21,7 @@ class DashboardService {
 
     final uri = Uri.parse(
       '$baseUrl/dashboard/overview',
-    ).replace(queryParameters: {'periodo': periodo, 'mes': mes});
+    ).replace(queryParameters: {...periodoNotifier.parametros, 'periodo': periodo, 'mes': mes});
 
     final res = await http.get(uri);
 

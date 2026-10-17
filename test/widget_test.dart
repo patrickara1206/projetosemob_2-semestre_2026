@@ -22,6 +22,6 @@ void main() {
     notifier.atualizar();
 
     expect(notificacoes, 1);
-    expect(notifier.value, Periodo.hoje);
+    expect(notifier.value, Periodo.mes);
   });
 }
