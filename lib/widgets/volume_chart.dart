@@ -7,23 +7,18 @@ import '../models/dashboard_overview.dart';
 class VolumeChart extends StatelessWidget {
   final List<SeriePonto> serie;
 
-  const VolumeChart({
-    super.key,
-    required this.serie,
-  });
+  const VolumeChart({super.key, required this.serie});
 
   String _numero(double valor) {
-    return valor.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-      (match) => '${match[1]}.',
-    );
+    return valor
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]}.',
+        );
   }
 
-  Widget _legenda(
-    BuildContext context,
-    Color cor,
-    String titulo,
-  ) {
+  Widget _legenda(BuildContext context, Color cor, String titulo) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -36,13 +31,15 @@ class VolumeChart extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 6),
-        Flexible(child: Text(
-          titulo,
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+        Flexible(
+          child: Text(
+            titulo,
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
-        )),
+        ),
       ],
     );
   }
@@ -51,12 +48,8 @@ class VolumeChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final esquema = Theme.of(context).colorScheme;
     final escuro = Theme.of(context).brightness == Brightness.dark;
-    final azul = escuro
-        ? const Color(0xFF60A5FA)
-        : const Color(0xFF2563EB);
-    final laranja = escuro
-        ? const Color(0xFFFB923C)
-        : const Color(0xFFEA580C);
+    final azul = escuro ? const Color(0xFF60A5FA) : const Color(0xFF2563EB);
+    final laranja = escuro ? const Color(0xFFFB923C) : const Color(0xFFEA580C);
 
     final totalRealizado = serie.fold<double>(
       0,
@@ -85,10 +78,7 @@ class VolumeChart extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             'Quantidade de viagens por dia',
-            style: TextStyle(
-              fontSize: 12,
-              color: esquema.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 12, color: esquema.onSurfaceVariant),
           ),
           if (serie.isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -116,12 +106,12 @@ class VolumeChart extends StatelessWidget {
             runSpacing: 8,
             children: [
               _legenda(context, azul, 'Realizadas'),
-              _legenda(context, laranja, 'Programadas · tracejado'),
+              _legenda(context, laranja, 'Programadas'),
             ],
           ),
           const SizedBox(height: 20),
           SizedBox(
-            height: 280,
+            height: 260,
             child: serie.isEmpty
                 ? Center(
                     child: Text(
@@ -135,21 +125,14 @@ class VolumeChart extends StatelessWidget {
           Text(
             'Passe o mouse ou toque em um dia para ver os valores. '
             'Linhas sobrepostas indicam valores iguais ou próximos.',
-            style: TextStyle(
-              fontSize: 11,
-              color: esquema.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 11, color: esquema.onSurfaceVariant),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChart(
-    BuildContext context,
-    Color azul,
-    Color laranja,
-  ) {
+  Widget _buildChart(BuildContext context, Color azul, Color laranja) {
     final esquema = Theme.of(context).colorScheme;
     final realizados = <FlSpot>[];
     final programados = <FlSpot>[];
@@ -172,10 +155,10 @@ class VolumeChart extends StatelessWidget {
     final intervaloY = maiorValor <= 10
         ? 2.0
         : maiorValor <= 100
-            ? 20.0
-            : maiorValor <= 500
-                ? 100.0
-                : (maiorValor / 5 / 100).ceil() * 100.0;
+        ? 20.0
+        : maiorValor <= 500
+        ? 100.0
+        : (maiorValor / 5 / 100).ceil() * 100.0;
 
     final maxY = maiorValor == 0
         ? intervaloY * 5
@@ -216,10 +199,7 @@ class VolumeChart extends StatelessWidget {
               reservedSize: 52,
               getTitlesWidget: (valor, meta) => Text(
                 _numero(valor),
-                style: TextStyle(
-                  fontSize: 11,
-                  color: esquema.onSurfaceVariant,
-                ),
+                style: TextStyle(fontSize: 11, color: esquema.onSurfaceVariant),
               ),
             ),
           ),
@@ -281,30 +261,19 @@ class VolumeChart extends StatelessWidget {
         lineBarsData: [
           LineChartBarData(
             spots: realizados,
-            isCurved: false,
+            isCurved: true,
+            curveSmoothness: 0.15,
             color: azul,
-            barWidth: 3,
-            belowBarData: BarAreaData(
-              show: true,
-              color: azul.withValues(alpha: 0.07),
-            ),
-            dotData: FlDotData(
-              show: true,
-              getDotPainter: (spot, percent, bar, index) {
-                return FlDotCirclePainter(
-                  radius: 2.5,
-                  color: azul,
-                  strokeWidth: 1,
-                  strokeColor: esquema.surface,
-                );
-              },
-            ),
+            barWidth: 2.5,
+            belowBarData: BarAreaData(show: false),
+            dotData: const FlDotData(show: false),
           ),
           LineChartBarData(
             spots: programados,
-            isCurved: false,
+            isCurved: true,
+            curveSmoothness: 0.15,
             color: laranja,
-            barWidth: 2,
+            barWidth: 1.8,
             dashArray: [6, 5],
             dotData: const FlDotData(show: false),
           ),
