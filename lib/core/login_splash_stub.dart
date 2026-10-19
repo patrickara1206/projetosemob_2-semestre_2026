@@ -1,1 +1,8 @@
-void notifyLoginReady(double left, double top, double width, double height) {}
+void notifyLoginReady(
+  double left,
+  double top,
+  double width,
+  double height,
+) {}
+
+void notifyAppReady() {}

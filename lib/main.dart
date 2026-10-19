@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'core/login_splash.dart';
 
 import 'core/auth_state.dart';
 import 'core/theme.dart';
@@ -15,8 +16,18 @@ import 'pages/operacao_page.dart';
 import 'pages/overview_page.dart';
 import 'pages/passageiros_page.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await carregarEstadoLogin();
+
   runApp(const SemobApp());
+
+  if (authNotifier.value) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyAppReady();
+    });
+  }
 }
 
 final _router = GoRouter(
