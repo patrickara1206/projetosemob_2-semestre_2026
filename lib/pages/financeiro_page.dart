@@ -50,10 +50,7 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
     });
 
     try {
-      final dados = await _service.getOverview(
-        periodo: 'mes',
-        mes: periodoNotifier.mesReferencia,
-      );
+      final dados = await _service.getOverview();
 
       if (!mounted || id != _req) return;
 
@@ -88,11 +85,7 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.error_outline,
-                color: cores.error,
-                size: 40,
-              ),
+              Icon(Icons.error_outline, color: cores.error, size: 40),
               const SizedBox(height: 12),
               Text(_erro!, textAlign: TextAlign.center),
               const SizedBox(height: 16),
@@ -127,11 +120,12 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
                 padding: const EdgeInsets.all(14),
                 decoration: cardDecoration(context),
                 child: Text(
-                  'Mês de referência: ${periodoNotifier.mesReferencia} • Totais mensais',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: cores.onSurfaceVariant,
-                  ),
+                  periodoNotifier.value == Periodo.total
+                      ? 'Visualização: todos os dados disponíveis'
+                      : periodoNotifier.value == Periodo.quinzena
+                      ? 'Mês de referência: ${periodoNotifier.mesReferencia} • 1ª Quinzena'
+                      : 'Mês de referência: ${periodoNotifier.mesReferencia} • Mês completo',
+                  style: TextStyle(fontSize: 12, color: cores.onSurfaceVariant),
                 ),
               ),
               if (_carregando) ...[
@@ -239,18 +233,27 @@ class _FinanceiroPageState extends State<FinanceiroPage> {
             Text(
               'Vendas, utilização e crédito circulante '
               'dos relatórios importados.',
-              style: TextStyle(
-                fontSize: 12,
-                color: cores.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 12, color: cores.onSurfaceVariant),
             ),
           ],
         ),
         OutlinedButton.icon(
-          onPressed: _data == null ? null : () => exportarRelatorio(context, 'financeiro-${periodoNotifier.mesReferencia}.csv', [
-            ['Data', 'Vendas', 'Utilização', 'Crédito circulante'],
-            for (final dia in _data!.diasFinanceiros) [dia.data, dia.vendas, dia.utilizacao, dia.creditoCirculante],
-          ]),
+          onPressed: _data == null
+              ? null
+              : () => exportarRelatorio(
+                  context,
+                  'financeiro-${periodoNotifier.mesReferencia}.csv',
+                  [
+                    ['Data', 'Vendas', 'Utilização', 'Crédito circulante'],
+                    for (final dia in _data!.diasFinanceiros)
+                      [
+                        dia.data,
+                        dia.vendas,
+                        dia.utilizacao,
+                        dia.creditoCirculante,
+                      ],
+                  ],
+                ),
           icon: const Icon(Icons.download),
           label: const Text('Exportar Relatório'),
         ),
@@ -328,10 +331,7 @@ class _Kpi extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             note,
-            style: TextStyle(
-              fontSize: 11,
-              color: cores.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 11, color: cores.onSurfaceVariant),
           ),
         ],
       ),

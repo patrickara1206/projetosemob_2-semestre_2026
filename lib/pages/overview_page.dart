@@ -34,14 +34,13 @@ class _OverviewPageState extends State<OverviewPage> {
   }
 
   Future<DashboardOverview> _fetch() {
-    return _service.getOverview(
-      periodo: periodoNotifier.value.api,
-      mes: periodoNotifier.mesReferencia,
-    );
+    return _service.getOverview();
   }
 
   void _reload() {
-    setState(() => _future = _fetch());
+    setState(() {
+      _future = _fetch();
+    });
   }
 
   @override
@@ -66,10 +65,7 @@ class _OverviewPageState extends State<OverviewPage> {
                     size: 40,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    '${snap.error}',
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('${snap.error}', textAlign: TextAlign.center),
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: _reload,
@@ -106,10 +102,10 @@ class _Content extends StatelessWidget {
         final colunas = largura >= 1100
             ? 5
             : largura >= 700
-                ? 3
-                : largura >= 400
-                    ? 2
-                    : 1;
+            ? 3
+            : largura >= 400
+            ? 2
+            : 1;
 
         final larguraCartao =
             (largura - padding * 2 - gap * (colunas - 1)) / colunas;
@@ -199,6 +195,17 @@ class _Content extends StatelessWidget {
                       color: esquema.onSurface,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    periodoNotifier.value == Periodo.total
+                        ? 'Todos os dados disponíveis'
+                        : '${periodoNotifier.value.label} • '
+                              '${periodoNotifier.mesReferencia}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: esquema.onSurfaceVariant,
+                    ),
+                  ),
                   OutlinedButton.icon(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -220,10 +227,7 @@ class _Content extends StatelessWidget {
                 runSpacing: gap,
                 children: [
                   for (final kpi in kpis)
-                    SizedBox(
-                      width: larguraCartao,
-                      child: kpi,
-                    ),
+                    SizedBox(width: larguraCartao, child: kpi),
                 ],
               ),
               const SizedBox(height: 20),

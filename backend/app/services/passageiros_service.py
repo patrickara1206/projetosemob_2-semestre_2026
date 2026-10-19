@@ -1,11 +1,15 @@
-from app.services.registros_diarios_service import selecionar_registros_diarios, filtrar_periodo
 import pandas as pd
+from app.services.registros_diarios_service import selecionar_dados
+from app.repositories.passageiros_repository import buscar_passageiros
 
-from app.repositories.passageiros_repository import buscar_passageiros_mes
-
-def obter_overview_passageiros(mes="2026-08", periodo="mes", inicio=None, fim=None):
-    df = carregar_passageiros_banco(mes)
-    df = filtrar_periodo(selecionar_registros_diarios(df, mes), periodo, inicio, fim)
+def obter_overview_passageiros(
+    escopo="mes",
+    mes=None,
+):
+    df = carregar_passageiros_banco(
+        escopo=escopo,
+        mes=mes,
+    )
 
     if df.empty:
         return {
@@ -72,12 +76,37 @@ def obter_overview_passageiros(mes="2026-08", periodo="mes", inicio=None, fim=No
     }
 
 
-def normalizar_passageiros(df, mes, tipo_periodo):
+def normalizar_passageiros(
+    df,
+    mes,
+    tipo_periodo,
+):
     df = df.copy()
 
-    df = df[df["Dia"].astype(str).str.match(r"^\d{1,2}$")].copy()
+    # Mantém somente o mês escolhido no app.
+    df = df[
+        df["Mês"]
+        .astype(str)
+        .str.strip()
+        == mes
+    ].copy()
 
-    df["dia"] = pd.to_numeric(df["Dia"], errors="coerce").astype("Int64")
+    df = df[
+        df["Dia"]
+        .astype(str)
+        .str.match(r"^\d{1,2}$")
+    ].copy()
+
+    if df.empty:
+        raise ValueError(
+            f"Nenhum dado do mês {mes} "
+            "foi encontrado no arquivo."
+        )
+
+    df["dia"] = pd.to_numeric(
+        df["Dia"],
+        errors="coerce",
+    ).astype("Int64")
 
     colunas_origem = [
         "Catraca",
@@ -88,17 +117,32 @@ def normalizar_passageiros(df, mes, tipo_periodo):
 
     for coluna in colunas_origem:
         df[coluna] = (
-            pd.to_numeric(df[coluna], errors="coerce").fillna(0).astype("Int64")
+            pd.to_numeric(
+                df[coluna],
+                errors="coerce",
+            )
+            .fillna(0)
+            .astype("Int64")
         )
 
     df["catraca"] = df["Catraca"]
     df["antecipados"] = df["Antecipados"]
     df["nao_pagantes"] = df["Não Pagantes"]
-    df["total_passageiros"] = df["Total Passageiros"]
+    df["total_passageiros"] = (
+        df["Total Passageiros"]
+    )
 
-    df["pagantes"] = df["catraca"] + df["antecipados"]
+    df["pagantes"] = (
+        df["catraca"]
+        + df["antecipados"]
+    )
 
-    df["data"] = pd.to_datetime(mes + "-" + df["dia"].astype(str), errors="coerce")
+    df["data"] = pd.to_datetime(
+        mes
+        + "-"
+        + df["dia"].astype(str),
+        errors="coerce",
+    )
 
     df["mes_referencia"] = mes
     df["tipo_periodo"] = tipo_periodo
@@ -118,14 +162,27 @@ def normalizar_passageiros(df, mes, tipo_periodo):
     ]
 
 
-def carregar_passageiros_banco(mes):
-    registros = buscar_passageiros_mes(mes)
+def carregar_passageiros_banco(
+    escopo="mes",
+    mes=None,
+):
+    registros = buscar_passageiros(
+    mes=mes if escopo != "total" else None,
+    tipo_periodo=None,
+)
 
     if not registros:
         return pd.DataFrame()
 
     df = pd.DataFrame(registros)
 
-    df["data"] = pd.to_datetime(df["data"], errors="coerce")
+    df["data"] = pd.to_datetime(
+        df["data"],
+        errors="coerce",
+    )
 
-    return df
+    return selecionar_dados(
+        df,
+        escopo=escopo,
+        mes=mes,
+    )

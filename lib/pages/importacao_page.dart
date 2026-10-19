@@ -259,7 +259,7 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
               ),
               DropdownMenuItem(
                 value: 'quinzenal',
-                child: Text('1ª Quinzena'),
+                child: Text('Quinzenal'),
               ),
             ],
             onChanged: carregando

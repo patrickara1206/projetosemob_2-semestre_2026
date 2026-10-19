@@ -1,57 +1,63 @@
 import 'package:flutter/foundation.dart';
 
 enum Periodo {
-  hoje('Último dia', 'hoje'),
-  semana('Últimos 7 dias', 'semana'),
-  mes('Mês completo', 'mes'),
-  personalizado('Personalizado', 'personalizado');
+  total('Todos os dados', 'total'),
+  mes('Mensal', 'mes'),
+  quinzena('Quinzenal', 'quinzena');
 
   final String label;
-  final String api; // valor enviado ao backend
+  final String api;
+
   const Periodo(this.label, this.api);
 }
 
-/// Período selecionado na barra superior. As telas escutam este notifier
-/// e recarregam os dados quando ele muda.
 class PeriodoNotifier extends ValueNotifier<Periodo> {
   PeriodoNotifier() : super(Periodo.mes);
 
   String mesReferencia = '2026-08';
-  DateTime? inicio;
-  DateTime? fim;
+
+  void aplicarFiltro(
+    Periodo periodo, {
+    String? mes,
+  }) {
+    if (mes != null) {
+      mesReferencia = mes;
+    }
+
+    if (value != periodo) {
+      value = periodo;
+    } else {
+      notifyListeners();
+    }
+  }
+
+  void selecionarPeriodo(Periodo periodo) {
+    aplicarFiltro(periodo);
+  }
 
   void selecionarMes(String mes) {
-    mesReferencia = mes;
-    inicio = null;
-    fim = null;
-    if (value == Periodo.mes) {
-      recarregar();
-    } else {
-      value = Periodo.mes;
-    }
+    aplicarFiltro(
+      value,
+      mes: mes,
+    );
   }
 
-  void selecionarIntervalo(DateTime primeiro, DateTime ultimo) {
-    inicio = primeiro;
-    fim = ultimo;
-    if (value == Periodo.personalizado) {
-      recarregar();
-    } else {
-      value = Periodo.personalizado;
-    }
+  void atualizar() {
+    notifyListeners();
   }
 
-  void recarregar() => notifyListeners();
+  Map<String, String> get parametros {
+    if (value == Periodo.total) {
+      return {
+        'escopo': 'total',
+      };
+    }
 
-  void atualizar() => recarregar();
-
-  Map<String, String> get parametros => {
-    'mes': mesReferencia,
-    if (value == Periodo.personalizado && inicio != null && fim != null) ...{
-      'inicio': inicio!.toIso8601String().substring(0, 10),
-      'fim': fim!.toIso8601String().substring(0, 10),
-    },
-  };
+    return {
+      'escopo': value.api,
+      'mes': mesReferencia,
+    };
+  }
 }
 
 final periodoNotifier = PeriodoNotifier();

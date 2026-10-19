@@ -1,12 +1,16 @@
-from app.services.registros_diarios_service import selecionar_registros_diarios, filtrar_periodo
 import pandas as pd
+from app.services.registros_diarios_service import selecionar_dados
+from app.repositories.financeiro_repository import buscar_financeiro
 
-from app.repositories.financeiro_repository import buscar_financeiro_mes
 
-
-def obter_overview_financeiro(mes="2026-08", periodo="mes", inicio=None, fim=None):
-    df = carregar_financeiro_banco(mes)
-    df = filtrar_periodo(selecionar_registros_diarios(df, mes), periodo, inicio, fim)
+def obter_overview_financeiro(
+    escopo="mes",
+    mes=None,
+):
+    df = carregar_financeiro_banco(
+        escopo=escopo,
+        mes=mes,
+    )
 
     if df.empty:
         return {
@@ -52,51 +56,97 @@ def obter_overview_financeiro(mes="2026-08", periodo="mes", inicio=None, fim=Non
         "dias_financeiros": dias_financeiros,
     }
 
-def normalizar_financeiro(df, mes, tipo_periodo):
+def normalizar_financeiro(
+    df,
+    mes,
+    tipo_periodo,
+):
     df = df.copy()
 
-    df = df[df["Mês"].astype(str) == mes].copy()
+    # Mantém somente o mês escolhido no app.
+    df = df[
+        df["Mês"]
+        .astype(str)
+        .str.strip()
+        == mes
+    ].copy()
 
-    df = df[df["Dia"].astype(str).str.match(r"^\d{1,2}$")].copy()
+    df = df[
+        df["Dia"]
+        .astype(str)
+        .str.match(r"^\d{1,2}$")
+    ].copy()
 
-    df["dia"] = pd.to_numeric(df["Dia"], errors="coerce").astype("Int64")
+    if df.empty:
+        raise ValueError(
+            f"Nenhum dado do mês {mes} "
+            "foi encontrado no arquivo."
+        )
 
-    df["total_vendas"] = pd.to_numeric(df["Total Vendas"], errors="coerce").fillna(0)
+    df["dia"] = pd.to_numeric(
+        df["Dia"],
+        errors="coerce",
+    ).astype("Int64")
+
+    df["total_vendas"] = pd.to_numeric(
+        df["Total Vendas"],
+        errors="coerce",
+    ).fillna(0)
 
     df["total_utilizacao"] = pd.to_numeric(
-    df["Total Utilização"], errors="coerce"
+        df["Total Utilização"],
+        errors="coerce",
     ).fillna(0)
 
     df["credito_circulante"] = pd.to_numeric(
-    df["Crédito Circulante"], errors="coerce"
+        df["Crédito Circulante"],
+        errors="coerce",
     ).fillna(0)
 
-    df["data"] = pd.to_datetime(mes + "-" + df["dia"].astype(str), errors="coerce")
+    df["data"] = pd.to_datetime(
+        mes
+        + "-"
+        + df["dia"].astype(str),
+        errors="coerce",
+    )
 
     df["mes_referencia"] = mes
     df["tipo_periodo"] = tipo_periodo
 
     return df[
-[
-"data",
-"dia",
-"total_vendas",
-"total_utilizacao",
-"credito_circulante",
-"mes_referencia",
-"tipo_periodo",
-]
-]
+        [
+            "data",
+            "dia",
+            "total_vendas",
+            "total_utilizacao",
+            "credito_circulante",
+            "mes_referencia",
+            "tipo_periodo",
+        ]
+    ]
 
 
-def carregar_financeiro_banco(mes):
-    registros = buscar_financeiro_mes(mes)
+def carregar_financeiro_banco(
+    escopo="mes",
+    mes=None,
+):
+    registros = buscar_financeiro(
+    mes=mes if escopo != "total" else None,
+    tipo_periodo=None,
+)
 
     if not registros:
         return pd.DataFrame()
 
     df = pd.DataFrame(registros)
 
-    df["data"] = pd.to_datetime(df["data"], errors="coerce")
+    df["data"] = pd.to_datetime(
+        df["data"],
+        errors="coerce",
+    )
 
-    return df
+    return selecionar_dados(
+        df,
+        escopo=escopo,
+        mes=mes,
+    )

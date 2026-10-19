@@ -9,11 +9,21 @@ class KmMes {
     required this.morta,
   });
 
-  factory KmMes.fromJson(Map<String, dynamic> j) => KmMes(
-    rotulo: j['rotulo'] as String,
-    produtiva: (j['produtiva'] as num).toDouble(),
-    morta: (j['morta'] as num).toDouble(),
-  );
+  factory KmMes.fromJson(
+  Map<String, dynamic> j,
+) =>
+    KmMes(
+      rotulo:
+          j['rotulo']?.toString() ?? '--',
+      produtiva:
+          (j['produtiva'] as num?)
+                  ?.toDouble() ??
+              0,
+      morta:
+          (j['morta'] as num?)
+                  ?.toDouble() ??
+              0,
+    );
 }
 
 class ViagensHora {

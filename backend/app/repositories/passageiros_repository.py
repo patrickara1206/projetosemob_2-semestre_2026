@@ -10,35 +10,28 @@ def inserir_passageiros(df):
 
     resposta = (
         supabase.table("passageiros")
-        .upsert(registros, on_conflict="data,tipo_periodo")
+        .upsert(
+            registros,
+            on_conflict="data,tipo_periodo",
+        )
         .execute()
     )
 
     return resposta.data
 
 
-def buscar_passageiros_mes(mes):
-    resposta = (
-        supabase.table("passageiros")
-        .select("*")
-        .eq("mes_referencia", mes)
-        .order("data")
-        .execute()
-    )
+def buscar_passageiros(
+    mes=None,
+    tipo_periodo=None,
+):
+    query = supabase.table("passageiros").select("*")
 
-    registros = resposta.data or []
+    if mes is not None:
+        query = query.eq("mes_referencia", mes)
 
-    registros = sorted(
-        registros,
-        key=lambda registro: (0 if registro.get("tipo_periodo") == "mensal" else 1),
-    )
+    if tipo_periodo is not None:
+        query = query.eq("tipo_periodo", tipo_periodo)
 
-    registros_por_data = {}
+    resposta = query.order("data").execute()
 
-    for registro in registros:
-        data = str(registro["data"])[:10]
-
-        if data not in registros_por_data:
-            registros_por_data[data] = registro
-
-    return [registros_por_data[data] for data in sorted(registros_por_data)]
+    return resposta.data or []

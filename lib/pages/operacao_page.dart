@@ -21,11 +21,11 @@ class _OperacaoPageState extends State<OperacaoPage> {
   late Future<OperacaoOverview> _future;
 
   @override
-  void initState() {
-    super.initState();
-    _future = _fetch();
-    periodoNotifier.addListener(_reload);
-  }
+void initState() {
+  super.initState();
+  _future = _fetch();
+  periodoNotifier.addListener(_reload);
+}
 
   @override
   void dispose() {
@@ -34,14 +34,14 @@ class _OperacaoPageState extends State<OperacaoPage> {
   }
 
   Future<OperacaoOverview> _fetch() {
-    return _service.getOverview(
-      periodo: periodoNotifier.value.api,
-    );
-  }
+  return _service.getOverview();
+}
 
   void _reload() {
-    setState(() => _future = _fetch());
-  }
+  setState(() {
+    _future = _fetch();
+  });
+}
 
   @override
   Widget build(BuildContext context) {
