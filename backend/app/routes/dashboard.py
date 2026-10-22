@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 
 from app.routes.filtros import filtros_overview
 from app.services.dashboard_service import obter_dashboard_overview
-from app.repositories.importacao_repository import listar_meses_disponiveis
 from app.repositories.importacao_repository import (
     listar_meses_disponiveis,
     listar_periodos_disponiveis,
@@ -18,17 +17,13 @@ router = APIRouter(
 def dashboard_overview(
     filtros: dict = Depends(filtros_overview),
 ):
-    return obter_dashboard_overview(
-        **filtros
-    )
+    return obter_dashboard_overview(**filtros)
 
 
 @router.get("/meses")
 def dashboard_meses():
+    periodos = listar_periodos_disponiveis()
     return {
-        "meses":
-            listar_meses_disponiveis(),
-
-        "periodos":
-            listar_periodos_disponiveis(),
+        "meses": sorted(periodos.keys(), reverse=True),
+        "periodos": periodos,
     }

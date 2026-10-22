@@ -20,7 +20,6 @@ COLUNAS_OPERACAO = [
 
 def normalizar_operacao(df, mes, tipo_periodo):
     df = df.copy()
-
     df.columns = COLUNAS_OPERACAO
 
     df["data"] = pd.to_datetime(
@@ -36,13 +35,9 @@ def normalizar_operacao(df, mes, tipo_periodo):
         "viagens_realizadas",
         "viagens_nao_realizadas",
     ]
-
     for coluna in colunas_inteiras:
         df[coluna] = (
-            pd.to_numeric(
-                df[coluna],
-                errors="coerce",
-            )
+            pd.to_numeric(df[coluna], errors="coerce")
             .round()
             .astype("Int64")
         )
@@ -52,17 +47,10 @@ def normalizar_operacao(df, mes, tipo_periodo):
         "km_morta",
         "km_total",
     ]
-
     for coluna in colunas_decimais:
-        df[coluna] = pd.to_numeric(
-            df[coluna],
-            errors="coerce",
-        )
+        df[coluna] = pd.to_numeric(df[coluna], errors="coerce")
 
-    df = df.dropna(
-        subset=["data"],
-    )
-
+    df = df.dropna(subset=["data"])
     df["mes_referencia"] = mes
     df["tipo_periodo"] = tipo_periodo
 
@@ -81,14 +69,8 @@ def carregar_operacao_banco(
     if not registros:
         return pd.DataFrame()
 
-    df = pd.DataFrame(
-        registros
-    )
-
-    df["data"] = pd.to_datetime(
-        df["data"],
-        errors="coerce",
-    )
+    df = pd.DataFrame(registros)
+    df["data"] = pd.to_datetime(df["data"], errors="coerce")
 
     return selecionar_dados(
         df,
@@ -128,73 +110,34 @@ def obter_overview_operacao(
         }
 
     diario = (
-        df.dropna(
-            subset=["data"]
-        )
-        .groupby(
-            "data",
-            sort=True,
-        )[
+        df.groupby("data", sort=True)[
             [
                 "viagens_realizadas",
                 "viagens_programadas",
             ]
         ]
         .sum()
+        .reset_index()
     )
 
     serie = [
         {
-            "rotulo":
-                data.strftime("%d/%m"),
-            "realizado":
-                float(
-                    row[
-                        "viagens_realizadas"
-                    ]
-                ),
-            "esperado":
-                float(
-                    row[
-                        "viagens_programadas"
-                    ]
-                ),
+            "rotulo": row.data.strftime("%d/%m"),
+            "realizado": float(row.viagens_realizadas),
+            "esperado": float(row.viagens_programadas),
             "anomalia": False,
         }
-        for data, row
-        in diario.iterrows()
+        for row in diario.itertuples()
     ]
 
-    viagens_programadas = int(
-        df[
-            "viagens_programadas"
-        ].sum()
-    )
-
-    viagens_realizadas = int(
-        df[
-            "viagens_realizadas"
-        ].sum()
-    )
-
-    km_produtiva = float(
-        df[
-            "km_produtiva"
-        ].sum()
-    )
-
-    km_morta = float(
-        df[
-            "km_morta"
-        ].sum()
-    )
+    viagens_programadas = int(df["viagens_programadas"].sum())
+    viagens_realizadas = int(df["viagens_realizadas"].sum())
+    km_produtiva = float(df["km_produtiva"].sum())
+    km_morta = float(df["km_morta"].sum())
 
     if escopo == "total":
         km_por_mes = (
-            df.groupby(
-                "mes_referencia",
-                sort=True,
-            )[
+            df.groupby("mes_referencia", sort=True)[
                 [
                     "km_produtiva",
                     "km_morta",
@@ -206,43 +149,25 @@ def obter_overview_operacao(
 
         km_mensal = [
             {
-                "rotulo": str(
-                    row[
-                        "mes_referencia"
-                    ]
-                ),
-                "produtiva": float(
-                    row[
-                        "km_produtiva"
-                    ]
-                ),
-                "morta": float(
-                    row[
-                        "km_morta"
-                    ]
-                ),
+                "rotulo": str(row.mes_referencia),
+                "produtiva": float(row.km_produtiva),
+                "morta": float(row.km_morta),
             }
-            for _, row
-            in km_por_mes.iterrows()
+            for row in km_por_mes.itertuples()
         ]
-
     else:
         km_mensal = [
             {
                 "rotulo": str(mes),
-                "produtiva":
-                    km_produtiva,
-                "morta":
-                    km_morta,
+                "produtiva": km_produtiva,
+                "morta": km_morta,
             }
         ]
 
     return {
         "total_viagens": {
-            "realizado":
-                viagens_realizadas,
-            "programado":
-                viagens_programadas,
+            "realizado": viagens_realizadas,
+            "programado": viagens_programadas,
         },
         "pontualidade": {
             "valor": None,
@@ -250,17 +175,11 @@ def obter_overview_operacao(
             "meta": 95,
         },
         "quilometragem": {
-            "produtiva":
-                km_produtiva,
-            "morta":
-                km_morta,
+            "produtiva": km_produtiva,
+            "morta": km_morta,
         },
-        "km_mensal":
-            km_mensal,
-        "serie_viagens":
-            serie,
-        "viagens_por_hora":
-            [],
-        "anomalias":
-            [],
+        "km_mensal": km_mensal,
+        "serie_viagens": serie,
+        "viagens_por_hora": [],
+        "anomalias": [],
     }

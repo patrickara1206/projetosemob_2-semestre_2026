@@ -474,7 +474,7 @@ class _TopBarState extends State<TopBar> {
               ),
             ),
           Text(
-            'Dashboard\nOperacional',
+            'Dashboard Operacional',
             style: TextStyle(
               color: esquema.onSurface,
               fontWeight:

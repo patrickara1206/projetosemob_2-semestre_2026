@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from app.services.operacao_service import obter_overview_operacao
 from app.services.passageiros_service import obter_overview_passageiros
 from app.services.financeiro_service import obter_overview_financeiro
@@ -7,104 +9,61 @@ def obter_dashboard_overview(
     escopo="mes",
     mes=None,
 ):
-    operacao = obter_overview_operacao(
-        escopo=escopo,
-        mes=mes,
-    )
+    # Executa as 3 consultas de serviço em paralelo para reduzir latência
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        f_operacao = executor.submit(obter_overview_operacao, escopo=escopo, mes=mes)
+        f_passageiros = executor.submit(obter_overview_passageiros, escopo=escopo, mes=mes)
+        f_financeiro = executor.submit(obter_overview_financeiro, escopo=escopo, mes=mes)
 
-    passageiros = obter_overview_passageiros(
-        escopo=escopo,
-        mes=mes,
-    )
+        operacao = f_operacao.result()
+        passageiros = f_passageiros.result()
+        financeiro = f_financeiro.result()
 
-    financeiro = obter_overview_financeiro(
-        escopo=escopo,
-        mes=mes,
-    )
-
-    km_produtiva = (
-        operacao["quilometragem"]["produtiva"]
-        or 0
-    )
-
-    km_morta = (
-        operacao["quilometragem"]["morta"]
-        or 0
-    )
-
+    km_produtiva = operacao["quilometragem"]["produtiva"] or 0
+    km_morta = operacao["quilometragem"]["morta"] or 0
     serie = operacao["serie_viagens"]
 
-    dias_validos = [
-        {
-            "viagens_realizadas": item["realizado"],
-            "viagens_programadas": item["esperado"],
-        }
-        for item in serie
-    ]
+    total_realizado = 0
+    total_programado = 0
+    viagens_nao_realizadas = 0
+    dias_com_desvio = 0
+    total_dias = len(serie)
 
-    total_realizado = sum(
-        int(registro["viagens_realizadas"])
-        for registro in dias_validos
-    )
-
-    total_programado = sum(
-        int(registro["viagens_programadas"])
-        for registro in dias_validos
-    )
+    for item in serie:
+        realizado = int(item["realizado"])
+        esperado = int(item["esperado"])
+        total_realizado += realizado
+        total_programado += esperado
+        if esperado > realizado:
+            viagens_nao_realizadas += (esperado - realizado)
+        if realizado != esperado:
+            dias_com_desvio += 1
 
     cumprimento_programacao = (
-        round(
-            total_realizado
-            / total_programado
-            * 100,
-            2,
-        )
+        round(total_realizado / total_programado * 100, 2)
         if total_programado > 0
         else None
-    )
-
-    viagens_nao_realizadas = sum(
-        max(
-            int(registro["viagens_programadas"])
-            - int(registro["viagens_realizadas"]),
-            0,
-        )
-        for registro in dias_validos
-    )
-
-    dias_com_desvio = sum(
-        1
-        for registro in dias_validos
-        if int(registro["viagens_realizadas"])
-        != int(registro["viagens_programadas"])
     )
 
     return {
         "quilometragem": {
             "valor": (
                 km_produtiva + km_morta
-                if operacao["quilometragem"]["produtiva"]
-                is not None
+                if operacao["quilometragem"]["produtiva"] is not None
                 else None
             ),
             "variacao": None,
         },
         "viagens": {
-            "valor": operacao["total_viagens"][
-                "realizado"
-            ],
+            "valor": operacao["total_viagens"]["realizado"],
             "variacao": None,
         },
         "passageiros_pagantes": {
-            "valor": passageiros["pagantes"][
-                "quantidade"
-            ],
+            "valor": passageiros["pagantes"]["quantidade"],
             "variacao": None,
         },
         "passageiros_nao_pagantes": {
-            "valor": passageiros["gratuidades"][
-                "quantidade"
-            ],
+            "valor": passageiros["gratuidades"]["quantidade"],
             "variacao": None,
         },
         "financeiro": {
@@ -114,21 +73,10 @@ def obter_dashboard_overview(
         "serie": serie,
         "anomalias": [],
         "inteligencia": {
-            "cumprimento_programacao":
-                cumprimento_programacao,
-            "viagens_nao_realizadas": (
-                viagens_nao_realizadas
-                if dias_validos
-                else None
-            ),
-            "dias_com_desvio": (
-                dias_com_desvio
-                if dias_validos
-                else None
-            ),
-            "dias_analisados": len(
-                dias_validos
-            ),
+            "cumprimento_programacao": cumprimento_programacao,
+            "viagens_nao_realizadas": viagens_nao_realizadas if total_dias > 0 else None,
+            "dias_com_desvio": dias_com_desvio if total_dias > 0 else None,
+            "dias_analisados": total_dias,
         },
         "status_modelo": "OK",
     }
