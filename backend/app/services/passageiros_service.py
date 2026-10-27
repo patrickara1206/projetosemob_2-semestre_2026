@@ -1,6 +1,7 @@
 import pandas as pd
-from app.services.registros_diarios_service import selecionar_dados
+
 from app.repositories.passageiros_repository import buscar_passageiros
+from app.services.registros_diarios_service import selecionar_dados
 
 
 def obter_overview_passageiros(
@@ -14,29 +15,73 @@ def obter_overview_passageiros(
 
     if df.empty:
         return {
-            "total_passageiros": {"valor": None, "variacao": None},
-            "pagantes": {"percentual": None, "quantidade": None},
-            "gratuidades": {"percentual": None, "quantidade": None},
-            "pico_demanda": {"faixa": None, "media_hora": None},
+            "total_passageiros": {
+                "valor": None,
+                "variacao": None,
+            },
+            "pagantes": {
+                "percentual": None,
+                "quantidade": None,
+            },
+            "gratuidades": {
+                "percentual": None,
+                "quantidade": None,
+            },
+            "pico_demanda": {
+                "faixa": None,
+                "media_hora": None,
+            },
             "serie": [],
             "categorias": [],
         }
 
     diario = (
-        df.groupby("data", sort=True)["total_passageiros"]
+        df.groupby(
+            "data",
+            sort=True,
+        )["total_passageiros"]
         .sum()
     )
+
     serie = [
-        {"rotulo": data.strftime("%d/%m"), "volume": float(volume), "anomalia": False}
+        {
+            "rotulo": data.strftime("%d/%m"),
+            "volume": float(volume),
+            "anomalia": False,
+        }
         for data, volume in diario.items()
     ]
 
-    pagantes = float(df["pagantes"].sum())
-    nao_pagantes = float(df["nao_pagantes"].sum())
-    total = float(df["total_passageiros"].sum())
+    # Pico diário de demanda
+    data_pico = diario.idxmax()
+    volume_pico = float(diario.max())
 
-    pct_pagantes = (pagantes / total * 100) if total > 0 else 0
-    pct_gratuidades = (nao_pagantes / total * 100) if total > 0 else 0
+    pico_faixa = data_pico.strftime("%d/%m")
+    pico_volume = volume_pico
+
+    pagantes = float(
+        df["pagantes"].sum()
+    )
+
+    nao_pagantes = float(
+        df["nao_pagantes"].sum()
+    )
+
+    total = float(
+        df["total_passageiros"].sum()
+    )
+
+    pct_pagantes = (
+        pagantes / total * 100
+        if total > 0
+        else 0
+    )
+
+    pct_gratuidades = (
+        nao_pagantes / total * 100
+        if total > 0
+        else 0
+    )
 
     return {
         "total_passageiros": {
@@ -52,8 +97,8 @@ def obter_overview_passageiros(
             "quantidade": nao_pagantes,
         },
         "pico_demanda": {
-            "faixa": None,
-            "media_hora": None,
+            "faixa": pico_faixa,
+            "media_hora": pico_volume,
         },
         "serie": serie,
         "categorias": [],
@@ -68,25 +113,81 @@ def normalizar_passageiros(
     df = df.copy()
 
     # Mantém somente o mês escolhido no app.
-    df = df[df["Mês"].astype(str).str.strip() == mes]
-    df = df[df["Dia"].astype(str).str.match(r"^\d{1,2}$")]
+    df = df[
+        df["Mês"]
+        .astype(str)
+        .str.strip()
+        == mes
+    ]
+
+    df = df[
+        df["Dia"]
+        .astype(str)
+        .str.match(r"^\d{1,2}$")
+    ]
 
     if df.empty:
         raise ValueError(
-            f"Nenhum dado do mês {mes} foi encontrado no arquivo."
+            f"Nenhum dado do mês {mes} "
+            "foi encontrado no arquivo."
         )
 
-    df["dia"] = pd.to_numeric(df["Dia"], errors="coerce").astype("Int64")
-    df["catraca"] = pd.to_numeric(df["Catraca"], errors="coerce").fillna(0).astype("Int64")
-    df["antecipados"] = pd.to_numeric(df["Antecipados"], errors="coerce").fillna(0).astype("Int64")
-    df["nao_pagantes"] = pd.to_numeric(df["Não Pagantes"], errors="coerce").fillna(0).astype("Int64")
-    df["total_passageiros"] = pd.to_numeric(df["Total Passageiros"], errors="coerce").fillna(0).astype("Int64")
-    df["pagantes"] = df["catraca"] + df["antecipados"]
+    df["dia"] = (
+        pd.to_numeric(
+            df["Dia"],
+            errors="coerce",
+        )
+        .astype("Int64")
+    )
+
+    df["catraca"] = (
+        pd.to_numeric(
+            df["Catraca"],
+            errors="coerce",
+        )
+        .fillna(0)
+        .astype("Int64")
+    )
+
+    df["antecipados"] = (
+        pd.to_numeric(
+            df["Antecipados"],
+            errors="coerce",
+        )
+        .fillna(0)
+        .astype("Int64")
+    )
+
+    df["nao_pagantes"] = (
+        pd.to_numeric(
+            df["Não Pagantes"],
+            errors="coerce",
+        )
+        .fillna(0)
+        .astype("Int64")
+    )
+
+    df["total_passageiros"] = (
+        pd.to_numeric(
+            df["Total Passageiros"],
+            errors="coerce",
+        )
+        .fillna(0)
+        .astype("Int64")
+    )
+
+    df["pagantes"] = (
+        df["catraca"]
+        + df["antecipados"]
+    )
 
     df["data"] = pd.to_datetime(
-        mes + "-" + df["dia"].astype(str),
+        mes
+        + "-"
+        + df["dia"].astype(str),
         errors="coerce",
     )
+
     df["mes_referencia"] = mes
     df["tipo_periodo"] = tipo_periodo
 
@@ -110,7 +211,9 @@ def carregar_passageiros_banco(
     mes=None,
 ):
     registros = buscar_passageiros(
-        mes=mes if escopo != "total" else None,
+        mes=mes
+        if escopo != "total"
+        else None,
         tipo_periodo=None,
     )
 
@@ -118,7 +221,11 @@ def carregar_passageiros_banco(
         return pd.DataFrame()
 
     df = pd.DataFrame(registros)
-    df["data"] = pd.to_datetime(df["data"], errors="coerce")
+
+    df["data"] = pd.to_datetime(
+        df["data"],
+        errors="coerce",
+    )
 
     return selecionar_dados(
         df,

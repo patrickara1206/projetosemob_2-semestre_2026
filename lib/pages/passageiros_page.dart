@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/exportacao.dart';
 import '../core/formatters.dart';
 import '../core/state.dart';
 import '../core/theme.dart';
@@ -7,6 +8,7 @@ import '../models/passageiros_overview.dart';
 import '../services/passageiros_service.dart';
 import '../widgets/category_table.dart';
 import '../widgets/demand_chart.dart';
+import '../widgets/page_header.dart';
 import '../widgets/tariff_donut.dart';
 
 class PassageirosPage extends StatefulWidget {
@@ -18,30 +20,34 @@ class PassageirosPage extends StatefulWidget {
 
 class _PassageirosPageState extends State<PassageirosPage> {
   final _service = PassageirosService();
+
   late Future<PassageirosOverview> _future;
 
   @override
-void initState() {
-  super.initState();
-  _future = _fetch();
-  periodoNotifier.addListener(_reload);
-}
+  void initState() {
+    super.initState();
+
+    _future = _fetch();
+
+    periodoNotifier.addListener(_reload);
+  }
 
   @override
   void dispose() {
     periodoNotifier.removeListener(_reload);
+
     super.dispose();
   }
 
   Future<PassageirosOverview> _fetch() {
-  return _service.getOverview();
-}
+    return _service.getOverview();
+  }
 
   void _reload() {
-  setState(() {
-    _future = _fetch();
-  });
-}
+    setState(() {
+      _future = _fetch();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +55,9 @@ void initState() {
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         }
 
         if (snapshot.hasError) {
@@ -72,7 +80,9 @@ void initState() {
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: _reload,
-                    child: const Text('Tentar novamente'),
+                    child: const Text(
+                      'Tentar novamente',
+                    ),
                   ),
                 ],
               ),
@@ -80,13 +90,18 @@ void initState() {
           );
         }
 
-        return _Content(data: snapshot.data!);
+        return _Content(
+          data: snapshot.data!,
+          onRefresh: _reload,
+        );
       },
     );
   }
 }
 
-String _refAnterior(Periodo periodo) {
+String _refAnterior(
+  Periodo periodo,
+) {
   switch (periodo) {
     case Periodo.total:
       return 'todos os dados';
@@ -101,8 +116,12 @@ String _refAnterior(Periodo periodo) {
 
 class _Content extends StatelessWidget {
   final PassageirosOverview data;
+  final VoidCallback onRefresh;
 
-  const _Content({required this.data});
+  const _Content({
+    required this.data,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -111,121 +130,245 @@ class _Content extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, box) {
         final largura = box.maxWidth;
-        final padding = largura < 700 ? 16.0 : 24.0;
+
+        final padding = largura < 700
+            ? 16.0
+            : 24.0;
+
         const gap = 16.0;
-        final colunas = largura >= 1000 ? 4 : (largura >= 500 ? 2 : 1);
+
+        final colunas = largura >= 1000
+            ? 4
+            : largura >= 500
+                ? 2
+                : 1;
+
         final larguraCartao =
-            (largura - padding * 2 - gap * (colunas - 1)) / colunas;
+            (
+              largura
+              - padding * 2
+              - gap * (colunas - 1)
+            ) /
+            colunas;
 
         final cards = <Widget>[
           _Kpi(
             title: 'TOTAL DE PASSAGEIROS',
             icon: Icons.people_outline,
-            value: fmtCompact(data.totalPassageiros),
+            value: fmtCompact(
+              data.totalPassageiros,
+            ),
             footer: _variacao(
               context,
               data.totalVariacao,
-              _refAnterior(periodoNotifier.value),
+              _refAnterior(
+                periodoNotifier.value,
+              ),
             ),
           ),
+
           _Kpi(
             title: '% PAGANTES',
             icon: Icons.payments_outlined,
-            value: data.pctPagantes == null
-                ? '--'
-                : '${fmtDec(data.pctPagantes)}%',
+            value:
+                data.pctPagantes == null
+                    ? '--'
+                    : '${fmtDec(data.pctPagantes)}%',
             footer: _nota(
               context,
-              '${fmtCompact(data.qtdPagantes)} passagens registradas',
+              '${fmtCompact(data.qtdPagantes)} '
+              'passagens registradas',
             ),
           ),
+
           _Kpi(
             title: '% GRATUIDADES',
-            icon: Icons.confirmation_number_outlined,
-            value: data.pctGratuidades == null
-                ? '--'
-                : '${fmtDec(data.pctGratuidades)}%',
+            icon:
+                Icons.confirmation_number_outlined,
+            value:
+                data.pctGratuidades == null
+                    ? '--'
+                    : '${fmtDec(data.pctGratuidades)}%',
             footer: _nota(
               context,
-              '${fmtCompact(data.qtdGratuidades)} acessos livres',
+              '${fmtCompact(data.qtdGratuidades)} '
+              'acessos livres',
             ),
           ),
+
           _Kpi(
             title: 'PICO DE DEMANDA',
             icon: Icons.schedule,
-            value: data.picoFaixa ?? '--',
+            value:
+                data.picoFaixa ?? '--',
             footer: _nota(
               context,
-              'Média de ${fmtCompact(data.picoMediaHora)} p/ hora',
+              data.picoMediaHora == null
+                  ? '--'
+                  : '${fmtCompact(data.picoMediaHora)} '
+                      'passageiros no dia',
             ),
           ),
         ];
 
-        final chart = DemandChart(serie: data.serie);
-        final donut = TariffDonut(pctPagantes: data.pctPagantes);
+        final chart = DemandChart(
+          serie: data.serie,
+        );
+
+        final donut = TariffDonut(
+          pctPagantes: data.pctPagantes,
+        );
 
         return SingleChildScrollView(
-          padding: EdgeInsets.all(padding),
+          padding: EdgeInsets.all(
+            padding,
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
             children: [
-              Text(
-                'Demanda e Perfil de Passageiros',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: cores.onSurface,
-                ),
+              PageHeader(
+                title:
+                    'Demanda e Perfil de Passageiros',
+                subtitle:
+                    'Monitoramento de fluxo diário '
+                    'e distribuição de categorias tarifárias.',
+                onRefresh: onRefresh,
+                onExport: () {
+                  exportarRelatorio(
+                    context,
+                    'passageiros-'
+                    '${periodoNotifier.mesReferencia}'
+                    '.csv',
+                    [
+                      [
+                        'Indicador',
+                        'Valor',
+                      ],
+                      [
+                        'Total de passageiros',
+                        data.totalPassageiros,
+                      ],
+                      [
+                        '% Pagantes',
+                        data.pctPagantes,
+                      ],
+                      [
+                        'Quantidade pagantes',
+                        data.qtdPagantes,
+                      ],
+                      [
+                        '% Gratuidades',
+                        data.pctGratuidades,
+                      ],
+                      [
+                        'Quantidade gratuidades',
+                        data.qtdGratuidades,
+                      ],
+                      [
+                        'Pico de demanda',
+                        data.picoFaixa,
+                      ],
+                      [
+                        'Volume no pico',
+                        data.picoMediaHora,
+                      ],
+
+                      [],
+                      [
+                        'Data',
+                        'Passageiros',
+                      ],
+
+                      for (
+                        final ponto
+                        in data.serie
+                      )
+                        [
+                          ponto.rotulo,
+                          ponto.volume,
+                        ],
+                    ],
+                  );
+                },
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Monitoramento de fluxo diário e distribuição de '
-                'categorias tarifárias.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: cores.onSurfaceVariant,
-                ),
+
+              const SizedBox(
+                height: 20,
               ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.download, size: 16),
-                label: const Text('Exportar Relatório'),
-              ),
-              const SizedBox(height: 20),
+
               Wrap(
                 spacing: gap,
                 runSpacing: gap,
                 children: [
-                  for (final card in cards)
-                    SizedBox(width: larguraCartao, child: card),
+                  for (
+                    final card
+                    in cards
+                  )
+                    SizedBox(
+                      width:
+                          larguraCartao,
+                      child:
+                          card,
+                    ),
                 ],
               ),
-              const SizedBox(height: 20),
+
+              const SizedBox(
+                height: 20,
+              ),
+
               if (largura >= 1000)
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       flex: 5,
-                      child: SizedBox(height: 440, child: chart),
+                      child: SizedBox(
+                        height: 440,
+                        child: chart,
+                      ),
                     ),
-                    const SizedBox(width: 20),
+
+                    const SizedBox(
+                      width: 20,
+                    ),
+
                     Expanded(
                       flex: 3,
-                      child: SizedBox(height: 440, child: donut),
+                      child: SizedBox(
+                        height: 440,
+                        child: donut,
+                      ),
                     ),
                   ],
                 )
               else ...[
-                SizedBox(height: 400, child: chart),
-                const SizedBox(height: 16),
-                SizedBox(height: 400, child: donut),
+                SizedBox(
+                  height: 400,
+                  child: chart,
+                ),
+
+                const SizedBox(
+                  height: 16,
+                ),
+
+                SizedBox(
+                  height: 400,
+                  child: donut,
+                ),
               ],
-              const SizedBox(height: 20),
+
+              const SizedBox(
+                height: 20,
+              ),
+
               CategoryTable(
-                categorias: data.categorias,
-                onVerRelatorio: () {},
+                categorias:
+                    data.categorias,
+                onVerRelatorio:
+                    () {},
               ),
             ],
           ),
@@ -235,12 +378,17 @@ class _Content extends StatelessWidget {
   }
 }
 
-Widget _nota(BuildContext context, String texto) {
+Widget _nota(
+  BuildContext context,
+  String texto,
+) {
   return Text(
     texto,
     style: TextStyle(
       fontSize: 11,
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
+      color: Theme.of(context)
+          .colorScheme
+          .onSurfaceVariant,
     ),
   );
 }
@@ -250,27 +398,58 @@ Widget _variacao(
   double? valor,
   String referencia,
 ) {
-  if (valor == null) return _nota(context, '--');
+  if (valor == null) {
+    return _nota(
+      context,
+      '--',
+    );
+  }
 
-  final escuro = Theme.of(context).brightness == Brightness.dark;
-  final positivo = valor >= 0;
+  final escuro =
+      Theme.of(context).brightness
+      == Brightness.dark;
+
+  final positivo =
+      valor >= 0;
 
   final cor = positivo
-      ? (escuro ? const Color(0xFF86EFAC) : AppColors.green)
-      : (escuro ? const Color(0xFFFCA5A5) : AppColors.red);
+      ? (
+          escuro
+              ? const Color(
+                  0xFF86EFAC,
+                )
+              : AppColors.green
+        )
+      : (
+          escuro
+              ? const Color(
+                  0xFFFCA5A5,
+                )
+              : AppColors.red
+        );
 
   return Row(
     children: [
       Icon(
-        positivo ? Icons.trending_up : Icons.trending_down,
+        positivo
+            ? Icons.trending_up
+            : Icons.trending_down,
         size: 14,
         color: cor,
       ),
-      const SizedBox(width: 4),
+
+      const SizedBox(
+        width: 4,
+      ),
+
       Flexible(
         child: Text(
-          '${fmtPercent(valor)} vs $referencia',
-          style: TextStyle(fontSize: 11, color: cor),
+          '${fmtPercent(valor)} '
+          'vs $referencia',
+          style: TextStyle(
+            fontSize: 11,
+            color: cor,
+          ),
         ),
       ),
     ],
@@ -291,44 +470,76 @@ class _Kpi extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final cores = Theme.of(context).colorScheme;
+  Widget build(
+    BuildContext context,
+  ) {
+    final cores =
+        Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(context),
+      padding:
+          const EdgeInsets.all(
+        20,
+      ),
+      decoration:
+          cardDecoration(
+        context,
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
+                  style:
+                      TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: cores.onSurfaceVariant,
+                    fontWeight:
+                        FontWeight.w700,
+                    color:
+                        cores
+                            .onSurfaceVariant,
                   ),
                 ),
               ),
-              Icon(icon, size: 20, color: cores.primary),
+
+              Icon(
+                icon,
+                size: 20,
+                color:
+                    cores.primary,
+              ),
             ],
           ),
-          const SizedBox(height: 12),
+
+          const SizedBox(
+            height: 12,
+          ),
+
           FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
+            fit:
+                BoxFit.scaleDown,
+            alignment:
+                Alignment.centerLeft,
             child: Text(
               value,
               style: TextStyle(
                 fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: cores.onSurface,
+                fontWeight:
+                    FontWeight.w800,
+                color:
+                    cores.onSurface,
               ),
             ),
           ),
-          const SizedBox(height: 8),
+
+          const SizedBox(
+            height: 8,
+          ),
+
           footer,
         ],
       ),
