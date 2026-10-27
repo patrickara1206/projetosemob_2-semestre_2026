@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/exportacao.dart';
 import '../core/formatters.dart';
 import '../core/state.dart';
 import '../models/dashboard_overview.dart';
@@ -7,6 +8,7 @@ import '../services/dashboard_service.dart';
 import '../widgets/anomaly_card.dart';
 import '../widgets/intelligence_card.dart';
 import '../widgets/kpi_card.dart';
+import '../widgets/page_header.dart';
 import '../widgets/volume_chart.dart';
 
 class OverviewPage extends StatefulWidget {
@@ -18,18 +20,22 @@ class OverviewPage extends StatefulWidget {
 
 class _OverviewPageState extends State<OverviewPage> {
   final _service = DashboardService();
+
   late Future<DashboardOverview> _future;
 
   @override
   void initState() {
     super.initState();
+
     _future = _fetch();
+
     periodoNotifier.addListener(_reload);
   }
 
   @override
   void dispose() {
     periodoNotifier.removeListener(_reload);
+
     super.dispose();
   }
 
@@ -49,7 +55,9 @@ class _OverviewPageState extends State<OverviewPage> {
       future: _future,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         }
 
         if (snap.hasError) {
@@ -65,11 +73,16 @@ class _OverviewPageState extends State<OverviewPage> {
                     size: 40,
                   ),
                   const SizedBox(height: 8),
-                  Text('${snap.error}', textAlign: TextAlign.center),
+                  Text(
+                    '${snap.error}',
+                    textAlign: TextAlign.center,
+                  ),
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: _reload,
-                    child: const Text('Tentar novamente'),
+                    child: const Text(
+                      'Tentar novamente',
+                    ),
                   ),
                 ],
               ),
@@ -77,7 +90,10 @@ class _OverviewPageState extends State<OverviewPage> {
           );
         }
 
-        return _Content(data: snap.data!);
+        return _Content(
+          data: snap.data!,
+          onRefresh: _reload,
+        );
       },
     );
   }
@@ -85,91 +101,143 @@ class _OverviewPageState extends State<OverviewPage> {
 
 class _Content extends StatelessWidget {
   final DashboardOverview data;
+  final VoidCallback onRefresh;
 
-  const _Content({required this.data});
+  const _Content({
+    required this.data,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final esquema = Theme.of(context).colorScheme;
-
     return LayoutBuilder(
       builder: (context, box) {
         final largura = box.maxWidth;
+
         final wide = largura >= 1100;
-        final padding = largura < 700 ? 16.0 : 24.0;
+
+        final padding = largura < 700
+            ? 16.0
+            : 24.0;
+
         const gap = 16.0;
 
         final colunas = largura >= 1100
             ? 5
             : largura >= 700
-            ? 3
-            : largura >= 400
-            ? 2
-            : 1;
+                ? 3
+                : largura >= 400
+                    ? 2
+                    : 1;
 
         final larguraCartao =
-            (largura - padding * 2 - gap * (colunas - 1)) / colunas;
+            (
+              largura
+              - padding * 2
+              - gap * (colunas - 1)
+            ) /
+            colunas;
 
         final kpis = [
           KpiCard(
             title: 'Quilometragem',
             icon: Icons.route_outlined,
-            value: fmtInt(data.quilometragem.valor),
+            value: fmtInt(
+              data.quilometragem.valor,
+            ),
             unit: 'km',
-            variation: data.quilometragem.variacao,
+            variation:
+                data.quilometragem.variacao,
           ),
           KpiCard(
             title: 'Viagens',
             icon: Icons.directions_bus_outlined,
-            value: fmtInt(data.viagens.valor),
-            variation: data.viagens.variacao,
+            value: fmtInt(
+              data.viagens.valor,
+            ),
+            variation:
+                data.viagens.variacao,
           ),
           KpiCard(
-            title: 'Passageiros\npagantes',
+            title:
+                'Passageiros\npagantes',
             icon: Icons.groups_outlined,
-            value: fmtInt(data.passageirosPagantes.valor),
-            variation: data.passageirosPagantes.variacao,
+            value: fmtInt(
+              data.passageirosPagantes.valor,
+            ),
+            variation:
+                data.passageirosPagantes
+                    .variacao,
           ),
           KpiCard(
-            title: 'Passageiros\nnão pagantes',
+            title:
+                'Passageiros\nnão pagantes',
             icon: Icons.badge_outlined,
-            value: fmtInt(data.passageirosNaoPagantes.valor),
-            variation: data.passageirosNaoPagantes.variacao,
+            value: fmtInt(
+              data.passageirosNaoPagantes
+                  .valor,
+            ),
+            variation:
+                data.passageirosNaoPagantes
+                    .variacao,
           ),
           KpiCard(
-            title: 'Indicador\nfinanceiro',
+            title:
+                'Indicador\nfinanceiro',
             icon: Icons.payments_outlined,
             prefix: 'R\$',
-            value: fmtInt(data.financeiro.valor),
-            variation: data.financeiro.variacao,
+            value: fmtInt(
+              data.financeiro.valor,
+            ),
+            variation:
+                data.financeiro.variacao,
           ),
         ];
 
-        final grafico = VolumeChart(serie: data.serie);
+        final grafico = VolumeChart(
+          serie: data.serie,
+        );
 
         final lateral = Column(
           children: [
-            IntelligenceCard(data: data.inteligencia),
+            IntelligenceCard(
+              data: data.inteligencia,
+            ),
+
             const SizedBox(height: 16),
+
             AnomalyPanel(
               anomalias: data.anomalias,
               onTapItem: (anomalia) {
                 showDialog<void>(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(anomalia.titulo),
-                    content: Text(
-                      'Observado: ${anomalia.observado}\n'
-                      'Esperado: ${anomalia.esperado}\n'
-                      'Desvio: ${fmtPercent(anomalia.desvio)}',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Fechar'),
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text(
+                        anomalia.titulo,
                       ),
-                    ],
-                  ),
+                      content: Text(
+                        'Observado: '
+                        '${anomalia.observado}\n'
+                        'Esperado: '
+                        '${anomalia.esperado}\n'
+                        'Desvio: '
+                        '${fmtPercent(anomalia.desvio)}',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(
+                              context,
+                            ).pop();
+                          },
+                          child: const Text(
+                            'Fechar',
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 );
               },
             ),
@@ -177,72 +245,105 @@ class _Content extends StatelessWidget {
         );
 
         return SingleChildScrollView(
-          padding: EdgeInsets.all(padding),
+          padding: EdgeInsets.all(
+            padding,
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
             children: [
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 16,
-                runSpacing: 12,
-                children: [
-                  Text(
+              PageHeader(
+                title:
                     'Visão Geral da Operação',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: esquema.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    periodoNotifier.value == Periodo.total
+                subtitle:
+                    periodoNotifier.value
+                            == Periodo.total
                         ? 'Todos os dados disponíveis'
                         : '${periodoNotifier.value.label} • '
-                              '${periodoNotifier.mesReferencia}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: esquema.onSurfaceVariant,
-                    ),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'A exportação ainda não está disponível.',
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.download, size: 16),
-                    label: const Text('Exportar Relatório'),
-                  ),
-                ],
+                            '${periodoNotifier.mesReferencia}',
+                onRefresh: onRefresh,
+                onExport: () {
+                  exportarRelatorio(
+                    context,
+                    'visao-geral-'
+                    '${periodoNotifier.mesReferencia}'
+                    '.csv',
+                    [
+                      [
+                        'Indicador',
+                        'Valor',
+                      ],
+                      [
+                        'Quilometragem',
+                        data.quilometragem
+                            .valor,
+                      ],
+                      [
+                        'Viagens',
+                        data.viagens.valor,
+                      ],
+                      [
+                        'Passageiros pagantes',
+                        data
+                            .passageirosPagantes
+                            .valor,
+                      ],
+                      [
+                        'Passageiros não pagantes',
+                        data
+                            .passageirosNaoPagantes
+                            .valor,
+                      ],
+                      [
+                        'Indicador financeiro',
+                        data.financeiro.valor,
+                      ],
+                    ],
+                  );
+                },
               ),
+
               const SizedBox(height: 20),
+
               Wrap(
                 spacing: gap,
                 runSpacing: gap,
                 children: [
                   for (final kpi in kpis)
-                    SizedBox(width: larguraCartao, child: kpi),
+                    SizedBox(
+                      width: larguraCartao,
+                      child: kpi,
+                    ),
                 ],
               ),
+
               const SizedBox(height: 20),
+
               if (wide)
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 3, child: grafico),
-                    const SizedBox(width: 20),
-                    Expanded(flex: 2, child: lateral),
+                    Expanded(
+                      flex: 3,
+                      child: grafico,
+                    ),
+
+                    const SizedBox(
+                      width: 20,
+                    ),
+
+                    Expanded(
+                      flex: 2,
+                      child: lateral,
+                    ),
                   ],
                 )
               else ...[
                 grafico,
+
                 const SizedBox(height: 16),
+
                 lateral,
               ],
             ],
