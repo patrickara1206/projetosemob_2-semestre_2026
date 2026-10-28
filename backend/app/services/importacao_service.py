@@ -1,7 +1,6 @@
 import hashlib
 import json
 from io import BytesIO
-from pathlib import Path
 from zipfile import ZipFile, BadZipFile
 
 from app.core.relatorios_config import RELATORIOS
@@ -11,6 +10,7 @@ from app.repositories.importacao_repository import (
     criar_importacao,
     atualizar_importacao,
     limpar_cache_disponibilidade,
+    limpar_dados_importacao_com_erro,
 )
 from app.repositories.dados_relatorio_repository import inserir_dados_relatorio
 from app.repositories.operacao_repository import inserir_operacao
@@ -39,6 +39,7 @@ from app.services.validacao_importacao_service import (
     validar_periodo_relatorio,
     detectar_tipo_por_nome,
 )
+from app.services.relatorio_zip_service import preparar_relatorio_zip
 
 # Mapeamento de configuração para cada relatório estruturado
 CONFIG_IMPORTACAO = {
@@ -104,11 +105,37 @@ def calcular_hash(conteudo):
     return hashlib.sha256(conteudo).hexdigest()
 
 
-def verificar_arquivo_duplicado(conteudo):
+class ArquivoJaImportadoError(ValueError):
+    def __init__(self, importacao):
+        super().__init__("Este arquivo já foi importado.")
+        self.importacao = importacao
+
+
+def _validar_importacao_existente(existentes, referencia):
+    if not existentes:
+        return None
+    for existente in existentes:
+        if any(
+            existente.get(campo) is not None and existente[campo] != valor
+            for campo, valor in referencia.items()
+        ):
+            raise ValueError(
+                "O mesmo arquivo já possui uma importação com tipo, mês ou período "
+                "diferente. Verifique a referência original antes de importá-lo novamente."
+            )
+        if existente.get("status") not in {"erro", "processando"}:
+            raise ArquivoJaImportadoError(existente)
+        if existente.get("status") == "processando":
+            raise ValueError("Este arquivo já possui uma importação em andamento.")
+    return existentes[0]
+
+
+def verificar_arquivo_duplicado(conteudo, tipo_relatorio, mes, tipo_periodo):
     hash_arquivo = calcular_hash(conteudo)
     existente = buscar_importacao_por_hash(hash_arquivo)
-    if existente:
-        raise ValueError("Este arquivo já foi importado.")
+    _validar_importacao_existente(existente, {
+        "tipo_relatorio": tipo_relatorio, "mes_referencia": mes, "tipo_periodo": tipo_periodo,
+    })
     return hash_arquivo
 
 
@@ -119,6 +146,22 @@ def iniciar_importacao(
     tipo_periodo,
     hash_arquivo,
 ):
+    referencia = {
+        "tipo_relatorio": tipo_relatorio, "mes_referencia": mes, "tipo_periodo": tipo_periodo,
+    }
+    existente = _validar_importacao_existente(buscar_importacao_por_hash(hash_arquivo), referencia)
+    if existente is not None:
+        # Reutiliza o mesmo hash e ID, sem duplicar lotes gravados antes da falha.
+        atualizar_importacao(existente["id"], {
+            **referencia, "nome_arquivo": nome_arquivo,
+            "status": "processando", "erro_mensagem": None, "quantidade_registros": 0,
+        })
+        try:
+            limpar_dados_importacao_com_erro(existente["id"], tipo_relatorio)
+        except Exception as erro:
+            registrar_erro_importacao(existente["id"], erro)
+            raise
+        return existente
     return criar_importacao(
         {
             "nome_arquivo": nome_arquivo,
@@ -184,15 +227,17 @@ def _importar_estruturado(
     nome_arquivo,
     mes,
     tipo_periodo="mensal",
+    df_original=None,
 ):
     spec = CONFIG_IMPORTACAO[tipo_relatorio]
-    df_original = ler_tabela_html_bytes(conteudo, indice=spec["indice"])
-    validar_tipo_relatorio(df=df_original, tipo_relatorio=tipo_relatorio, nome_arquivo=nome_arquivo)
+    if df_original is None:
+        df_original = ler_tabela_html_bytes(conteudo, indice=spec["indice"])
+        validar_tipo_relatorio(df=df_original, tipo_relatorio=tipo_relatorio, nome_arquivo=nome_arquivo)
 
     df = spec["normalizar"](df_original, mes, tipo_periodo)
     validar_dados(df, mes, tipo_periodo, nome_arquivo)
 
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(conteudo, tipo_relatorio, mes, tipo_periodo)
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
         tipo_relatorio=tipo_relatorio,
@@ -256,7 +301,7 @@ def importar_generico(
     mes,
     tipo_periodo="mensal",
 ):
-    hash_arquivo = verificar_arquivo_duplicado(conteudo)
+    hash_arquivo = verificar_arquivo_duplicado(conteudo, tipo_relatorio, mes, tipo_periodo)
     importacao = iniciar_importacao(
         nome_arquivo=nome_arquivo,
         tipo_relatorio=tipo_relatorio,
@@ -303,6 +348,7 @@ def importar_relatorio(
     nome_arquivo,
     mes,
     tipo_periodo="mensal",
+    df_original=None,
 ):
     if tipo_relatorio not in RELATORIOS:
         raise ValueError(f"Tipo de relatório inválido: {tipo_relatorio}")
@@ -314,6 +360,7 @@ def importar_relatorio(
             nome_arquivo=nome_arquivo,
             mes=mes,
             tipo_periodo=tipo_periodo,
+            df_original=df_original,
         )
 
     return importar_generico(
@@ -354,29 +401,37 @@ def importar_zip(
             total_importados = 0
             total_erros = 0
             total_ignorados = 0
+            total_ja_importados = 0
+            total_sem_dados = 0
             total_registros = 0
 
             for item in arquivos_html:
-                nome_html = Path(item.filename).name
-                tipo_relatorio = identificar_tipo_relatorio(nome_html)
-
-                if tipo_relatorio is None:
-                    total_ignorados += 1
-                    resultados.append({
-                        "arquivo": nome_html,
-                        "status": "ignorado",
-                        "motivo": "Não foi possível identificar o tipo do relatório.",
-                    })
-                    continue
-
-                conteudo_html = arquivo_zip.read(item)
+                nome_html = item.filename.replace("\\", "/")
+                tipo_relatorio = None
                 try:
+                    conteudo_html = arquivo_zip.read(item)
+                    tipo_relatorio, df, mes_html, periodo_html = preparar_relatorio_zip(
+                        conteudo_html, nome_html, mes, tipo_periodo
+                    )
+                    if df.empty and tipo_relatorio.startswith("viagens_nao_"):
+                        total_sem_dados += 1
+                        resultados.append({
+                            "arquivo": nome_html,
+                            "tipo_relatorio": tipo_relatorio,
+                            "mes_referencia": mes_html,
+                            "tipo_periodo": periodo_html,
+                            "status": "sem_dados",
+                            "registros": 0,
+                            "mensagem": "Relatório de ocorrências com cabeçalho válido e sem registros.",
+                        })
+                        continue
                     resultado = importar_relatorio(
                         tipo_relatorio=tipo_relatorio,
                         conteudo=conteudo_html,
                         nome_arquivo=nome_html,
-                        mes=mes,
-                        tipo_periodo=tipo_periodo,
+                        mes=mes_html,
+                        tipo_periodo=periodo_html,
+                        df_original=df,
                     )
                     qtd = resultado.get("registros", 0)
                     total_importados += 1
@@ -384,8 +439,22 @@ def importar_zip(
                     resultados.append({
                         "arquivo": nome_html,
                         "tipo_relatorio": tipo_relatorio,
+                        "mes_referencia": mes_html,
+                        "tipo_periodo": periodo_html,
                         "status": "sucesso",
                         "registros": qtd,
+                        "observacoes": df.attrs.get("observacoes_importacao", []),
+                    })
+                except ArquivoJaImportadoError as erro:
+                    total_ja_importados += 1
+                    resultados.append({
+                        "arquivo": nome_html,
+                        "tipo_relatorio": tipo_relatorio,
+                        "mes_referencia": mes_html,
+                        "tipo_periodo": periodo_html,
+                        "status": "ja_importado",
+                        "mensagem": str(erro),
+                        "importacao_id": erro.importacao["id"],
                     })
                 except Exception as erro:
                     total_erros += 1
@@ -397,9 +466,15 @@ def importar_zip(
                     })
 
             return {
+                "status": (
+                    "sucesso" if total_erros == 0
+                    else "parcial" if total_importados + total_ja_importados + total_sem_dados > 0 else "erro"
+                ),
                 "arquivo_zip": nome_arquivo,
                 "arquivos_encontrados": len(arquivos_html),
                 "arquivos_importados": total_importados,
+                "arquivos_ja_importados": total_ja_importados,
+                "arquivos_sem_dados": total_sem_dados,
                 "arquivos_com_erro": total_erros,
                 "arquivos_ignorados": total_ignorados,
                 "total_registros": total_registros,

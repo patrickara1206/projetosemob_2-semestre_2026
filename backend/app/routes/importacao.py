@@ -41,10 +41,7 @@ async def importar_pasta_zipada(
             tipo_periodo=tipo_periodo,
         )
 
-        return {
-            "status": "sucesso",
-            **resultado,
-        }
+        return resultado
 
     except ValueError as erro:
         raise HTTPException(

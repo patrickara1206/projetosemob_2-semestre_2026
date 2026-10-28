@@ -3,12 +3,16 @@ from io import BytesIO
 import pandas as pd
 
 
-def ler_tabela_html_bytes(conteudo, indice=1):
-    tabelas = pd.read_html(
+def ler_tabelas_html_bytes(conteudo):
+    return pd.read_html(
         BytesIO(conteudo),
         thousands=".",
         decimal=",",
     )
+
+
+def ler_tabela_html_bytes(conteudo, indice=1):
+    tabelas = ler_tabelas_html_bytes(conteudo)
 
     if len(tabelas) <= indice:
         raise ValueError(f"Tabela {indice} não encontrada no arquivo enviado.")

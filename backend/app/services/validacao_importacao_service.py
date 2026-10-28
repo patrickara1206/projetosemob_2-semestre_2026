@@ -22,12 +22,12 @@ def normalizar_colunas(df):
 
 
 def preparar_nome_arquivo(nome_arquivo):
-    nome = os.path.basename(nome_arquivo).lower()
+    nome = os.path.basename(nome_arquivo.replace("\\", "/")).lower()
     if nome.endswith(".html"):
         nome = nome[:-5]
     elif nome.endswith(".htm"):
         nome = nome[:-4]
-    return nome
+    return normalizar_nome_coluna(nome)
 
 
 def detectar_tipo_por_nome(nome_arquivo):
@@ -45,13 +45,13 @@ def detectar_tipo_por_nome(nome_arquivo):
     if "resumo_fxhr" in nome or ("resumo" in nome and ("fxhr" in nome or "faixa" in nome)):
         return "resumo_faixa_horaria"
 
-    if "_fxhr" in nome or "faixa_horaria" in nome or "faixahr" in nome:
+    if "fxhr" in nome or "faixa_horaria" in nome or "faixahr" in nome:
         return "faixa_horaria"
 
-    if "_linhas" in nome or "linhas" in nome:
+    if "linhas" in nome or "resumo_por_linha" in nome:
         return "linhas"
 
-    if "_fcv" in nome or "fcv" in nome:
+    if "fcv" in nome or "fator_de_cumprimento_de_viagem" in nome:
         return "fcv"
 
     if "_viagens" in nome or "viagens" in nome:
@@ -60,10 +60,10 @@ def detectar_tipo_por_nome(nome_arquivo):
     if nome.startswith("passageiros") or "passageiros" in nome:
         return "passageiros"
 
-    if nome.startswith("saldos") or "saldos" in nome or "financeiro" in nome:
+    if "saldo" in nome or "financeiro" in nome or "venda_x_utilizacao" in nome:
         return "financeiro"
 
-    if re.fullmatch(r"(mensal|quinzenal)_\d{6}", nome) or nome.startswith("mensal_") or nome.startswith("quinzenal_"):
+    if re.fullmatch(r"(mensal|quinzenal)_\d{6}", nome) or "resumo_geral" in nome or "operacao" in nome:
         return "operacao"
 
     return None
@@ -86,9 +86,13 @@ def detectar_tipo_por_estrutura(df):
         return None
 
     if quantidade == 4:
+        if "linha" in colunas:
+            return "linhas"
+        if colunas & {"faixa_horaria", "fx_hor", "fx_hr"}:
+            return "resumo_faixa_horaria"
         segunda_coluna = df.iloc[:, 1].astype(str)
         proporcao_faixa = segunda_coluna.str.contains(
-            r"^\s*\d{1,2}\s*(?:h|hs|:00)?\s*$",
+            r"^\s*\d{1,2}\s*(?:h|hs|:00)\s*$",
             case=False,
             regex=True,
             na=False,
@@ -186,8 +190,6 @@ def validar_periodo_relatorio(df, tipo_periodo, nome_arquivo=""):
                 f"O período selecionado ('{selecionado}') não corresponde ao arquivo. "
                 f"O documento identificado é '{encontrado}'."
             )
-        return
-
     if "data" not in df.columns:
         raise ValueError("Não foi possível validar o período do relatório.")
 

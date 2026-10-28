@@ -36,6 +36,21 @@ def atualizar_importacao(importacao_id, dados):
     return resposta.data
 
 
+def limpar_dados_importacao_com_erro(importacao_id, tipo_relatorio):
+    """Remove somente os lotes parciais da importação que será retomada."""
+    tabelas = {
+        "operacao", "passageiros", "financeiro", "fcv", "linhas",
+        "resumo_faixa_horaria", "faixa_horaria", "viagens",
+    }
+    if tipo_relatorio.startswith("viagens_nao_"):
+        tabela = "viagens_ocorrencias"
+    elif tipo_relatorio in tabelas:
+        tabela = tipo_relatorio
+    else:
+        tabela = "dados_relatorio"
+    supabase.table(tabela).delete().eq("importacao_id", importacao_id).execute()
+
+
 def _consultar_periodos_tabela(tabela):
     resposta = (
         supabase.table(tabela)
