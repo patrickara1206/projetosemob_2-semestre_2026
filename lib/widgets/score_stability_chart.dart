@@ -13,39 +13,54 @@ class ScoreStabilityChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
+    return LayoutBuilder(
+      builder: (context, box) {
+        final isMobile = box.maxWidth < 500;
+
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 14 : 20),
+          decoration: cardDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text('ESTABILIDADE DO SCORE (7 DIAS)',
-                    style: TextStyle(
-                        fontSize: 12,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'ESTABILIDADE DO SCORE (7 DIAS)',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: isMobile ? 11 : 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                        color: const Color(0xFF374151),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.more_vert, size: 18, color: AppColors.muted),
+                ],
               ),
-              Icon(Icons.more_vert, size: 18, color: AppColors.muted),
+              SizedBox(height: isMobile ? 12 : 16),
+              Expanded(
+                child: serie.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Sem dados para o período selecionado',
+                          style: TextStyle(color: AppColors.muted),
+                        ),
+                      )
+                    : _chart(isMobile),
+              ),
             ],
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: serie.isEmpty
-                ? const Center(
-                    child: Text('Sem dados para o período selecionado',
-                        style: TextStyle(color: AppColors.muted)))
-                : _chart(),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _chart() {
+  Widget _chart(bool isMobile) {
     final n = serie.length;
+    final interval = isMobile ? (n > 5 ? 2.0 : 1.0) : 1.0;
 
     return LineChart(
       LineChartData(
@@ -68,24 +83,31 @@ class ScoreStabilityChart extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 32,
+              reservedSize: isMobile ? 26 : 32,
               interval: 0.2,
-              getTitlesWidget: (v, meta) => Text(v.toStringAsFixed(1),
-                  style: const TextStyle(fontSize: 10, color: AppColors.muted)),
+              getTitlesWidget: (v, meta) => Text(
+                v.toStringAsFixed(1),
+                style: const TextStyle(fontSize: 9, color: AppColors.muted),
+              ),
             ),
           ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: 1,
+              interval: interval,
+              reservedSize: 26,
               getTitlesWidget: (v, meta) {
                 final i = v.toInt();
                 if (i < 0 || i >= n) return const SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(serie[i].rotulo,
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.muted)),
+                  child: Text(
+                    serie[i].rotulo,
+                    style: const TextStyle(
+                      fontSize: 9,
+                      color: AppColors.muted,
+                    ),
+                  ),
                 );
               },
             ),
@@ -98,7 +120,7 @@ class ScoreStabilityChart extends StatelessWidget {
             ],
             isCurved: false,
             color: _line,
-            barWidth: 4,
+            barWidth: isMobile ? 3 : 4,
             belowBarData: BarAreaData(
               show: true,
               color: _line.withOpacity(0.06),
@@ -107,9 +129,9 @@ class ScoreStabilityChart extends StatelessWidget {
               show: true,
               checkToShowDot: (spot, _) => serie[spot.x.toInt()].destaque,
               getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
-                radius: 6,
+                radius: isMobile ? 4 : 6,
                 color: Colors.white,
-                strokeWidth: 3,
+                strokeWidth: 2.5,
                 strokeColor: _line,
               ),
             ),

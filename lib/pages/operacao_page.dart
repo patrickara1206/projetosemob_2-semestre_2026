@@ -48,16 +48,22 @@ class _OperacaoPageState extends State<OperacaoPage> {
         }
         if (snap.hasError) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, color: AppColors.red, size: 40),
-                const SizedBox(height: 8),
-                Text('${snap.error}'),
-                const SizedBox(height: 12),
-                FilledButton(
-                    onPressed: _reload, child: const Text('Tentar novamente')),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline,
+                      color: AppColors.red, size: 40),
+                  const SizedBox(height: 8),
+                  Text('${snap.error}', textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: _reload,
+                    child: const Text('Tentar novamente'),
+                  ),
+                ],
+              ),
             ),
           );
         }
@@ -75,11 +81,15 @@ class _Content extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, box) {
       final w = box.maxWidth;
-      final pad = w < 700 ? 16.0 : 24.0;
-      const gap = 16.0;
-      final cols = w >= 900 ? 3 : (w >= 600 ? 2 : 1);
-      final itemW = (w - pad * 2 - gap * (cols - 1)) / cols;
+      final isMobile = w < 600;
       final wide = w >= 900;
+      final pad = isMobile ? 16.0 : 24.0;
+      final gap = isMobile ? 12.0 : 16.0;
+      final cols = w >= 900 ? 3 : (w >= 540 ? 2 : 1);
+      final availableWidth = w - (pad * 2);
+      final itemW = cols == 1
+          ? availableWidth
+          : (availableWidth - (gap * (cols - 1))) / cols;
 
       final cards = [
         _ViagensCard(data: data),
@@ -87,9 +97,11 @@ class _Content extends StatelessWidget {
         _QuilometragemCard(data: data),
       ];
 
+      final chartHeight = isMobile ? 280.0 : 340.0;
+
       final charts = [
-        KmBarChart(dados: data.kmMensal),
-        HourlyChart(dados: data.viagensHora),
+        SizedBox(height: chartHeight, child: KmBarChart(dados: data.kmMensal)),
+        SizedBox(height: chartHeight, child: HourlyChart(dados: data.viagensHora)),
       ];
 
       return SingleChildScrollView(
@@ -97,40 +109,75 @@ class _Content extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Desempenho da Operação',
-                          style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.navy)),
-                      const SizedBox(height: 4),
-                      ValueListenableBuilder<Periodo>(
-                        valueListenable: periodoNotifier,
-                        builder: (_, p, __) => Text(
-                          'Monitoramento de viagens, pontualidade e métricas '
-                          'de frota (${p.label}).',
-                          style: const TextStyle(
-                              fontSize: 12, color: AppColors.muted),
-                        ),
-                      ),
-                    ],
-                  ),
+            if (isMobile) ...[
+              const Text(
+                'Desempenho da Operação',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.navy,
                 ),
-                OutlinedButton.icon(
+              ),
+              const SizedBox(height: 4),
+              ValueListenableBuilder<Periodo>(
+                valueListenable: periodoNotifier,
+                builder: (_, p, __) => Text(
+                  'Monitoramento de viagens, pontualidade e métricas de frota (${p.label}).',
+                  style: const TextStyle(fontSize: 11, color: AppColors.muted),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
                   onPressed: () {
                     // TODO: exportar relatório (endpoint do backend)
                   },
                   icon: const Icon(Icons.download, size: 16),
                   label: const Text('Exportar Relatório'),
                 ),
-              ],
-            ),
+              ),
+            ] else ...[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Desempenho da Operação',
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.navy,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        ValueListenableBuilder<Periodo>(
+                          valueListenable: periodoNotifier,
+                          builder: (_, p, __) => Text(
+                            'Monitoramento de viagens, pontualidade e métricas '
+                            'de frota (${p.label}).',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.muted,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // TODO: exportar relatório (endpoint do backend)
+                    },
+                    icon: const Icon(Icons.download, size: 16),
+                    label: const Text('Exportar Relatório'),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 20),
             Wrap(
               spacing: gap,
@@ -177,13 +224,16 @@ class _CardBase extends StatelessWidget {
   final String title;
   final IconData icon;
   final Widget child;
-  const _CardBase(
-      {required this.title, required this.icon, required this.child});
+  const _CardBase({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,13 +241,16 @@ class _CardBase extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(title,
-                    style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
+                ),
               ),
-              Icon(icon, size: 20, color: AppColors.muted),
+              Icon(icon, size: 18, color: AppColors.muted),
             ],
           ),
           const SizedBox(height: 12),
@@ -226,14 +279,22 @@ class _ViagensCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(fmtInt(data.viagensRealizadas),
-                  style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.navy)),
-              Text(' / ${fmtInt(data.viagensProgramadas)} prog.',
-                  style: const TextStyle(
-                      fontSize: 12, color: AppColors.muted)),
+              Text(
+                fmtInt(data.viagensRealizadas),
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.navy,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '/ ${fmtInt(data.viagensProgramadas)} prog.',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -289,11 +350,14 @@ class _PontualidadeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(p == null ? '--' : '${fmtDec(p)}%',
-              style: const TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.navy)),
+          Text(
+            p == null ? '--' : '${fmtDec(p)}%',
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: AppColors.navy,
+            ),
+          ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -311,24 +375,30 @@ class _PontualidadeCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (v != null)
-                      Icon(negativo ? Icons.arrow_downward : Icons.arrow_upward,
-                          size: 12,
-                          color: negativo
-                              ? const Color(0xFFB7791F)
-                              : AppColors.green),
+                      Icon(
+                        negativo ? Icons.arrow_downward : Icons.arrow_upward,
+                        size: 12,
+                        color: negativo
+                            ? const Color(0xFFB7791F)
+                            : AppColors.green,
+                      ),
                     const SizedBox(width: 2),
-                    Text(v == null ? '--' : '${fmtPercent(v)} vs mês ant.',
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: negativo
-                                ? const Color(0xFFB7791F)
-                                : AppColors.green)),
+                    Text(
+                      v == null ? '--' : '${fmtPercent(v)} vs mês ant.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: negativo
+                            ? const Color(0xFFB7791F)
+                            : AppColors.green,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Text(metaTxt,
-                  style:
-                      const TextStyle(fontSize: 11, color: AppColors.muted)),
+              Text(
+                metaTxt,
+                style: const TextStyle(fontSize: 11, color: AppColors.muted),
+              ),
             ],
           ),
         ],
@@ -396,17 +466,23 @@ class _KmRow extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(label,
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: strong ? FontWeight.w600 : FontWeight.w400,
-                      color: strong ? AppColors.text : AppColors.muted)),
-            ),
-            Text('${fmtInt(value)} km',
+              child: Text(
+                label,
                 style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: strong ? FontWeight.w800 : FontWeight.w400,
-                    color: strong ? AppColors.navy : AppColors.muted)),
+                  fontSize: 12,
+                  fontWeight: strong ? FontWeight.w600 : FontWeight.w400,
+                  color: strong ? AppColors.text : AppColors.muted,
+                ),
+              ),
+            ),
+            Text(
+              '${fmtInt(value)} km',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: strong ? FontWeight.w800 : FontWeight.w400,
+                color: strong ? AppColors.navy : AppColors.muted,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),

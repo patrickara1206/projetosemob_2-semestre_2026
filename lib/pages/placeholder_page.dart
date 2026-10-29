@@ -8,13 +8,22 @@ class PlaceholderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Text(title,
-          style: const TextStyle(
-              fontSize: 26,
+    return LayoutBuilder(
+      builder: (context, box) {
+        final isMobile = box.maxWidth < 600;
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(isMobile ? 16 : 24),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: isMobile ? 20 : 26,
               fontWeight: FontWeight.w800,
-              color: AppColors.navy)),
+              color: AppColors.navy,
+            ),
+          ),
+        );
+      },
     );
   }
 }

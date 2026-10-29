@@ -10,58 +10,90 @@ class VolumeChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, box) {
+        final isMobile = box.maxWidth < 500;
+
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 14 : 20),
+          decoration: cardDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('VOLUME DE VIAGENS VS MODELO',
-                        style: TextStyle(
+              Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'VOLUME DE VIAGENS VS MODELO',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF374151))),
-                    SizedBox(height: 2),
-                    Text('Série temporal com detecção de anomalias',
-                        style:
-                            TextStyle(fontSize: 11, color: AppColors.muted)),
-                  ],
-                ),
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Série temporal com detecção de anomalias',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.filter_list, size: 20),
+                    onPressed: () {},
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.more_vert, size: 20),
+                    onPressed: () {},
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
               ),
-              IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
-              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+              const SizedBox(height: 8),
+              const Align(
+                alignment: Alignment.centerRight,
+                child: _Legend(),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: serie.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Sem dados para o período selecionado',
+                          style: TextStyle(color: AppColors.muted),
+                        ),
+                      )
+                    : _buildChart(isMobile),
+              ),
             ],
           ),
-          const SizedBox(height: 8),
-          const Align(alignment: Alignment.centerRight, child: _Legend()),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 320,
-            child: serie.isEmpty
-                ? const Center(
-                    child: Text('Sem dados para o período selecionado',
-                        style: TextStyle(color: AppColors.muted)))
-                : _buildChart(),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildChart() {
+  Widget _buildChart(bool isMobile) {
     final realizado = <FlSpot>[];
     final esperado = <FlSpot>[];
     for (var i = 0; i < serie.length; i++) {
       realizado.add(FlSpot(i.toDouble(), serie[i].realizado));
       esperado.add(FlSpot(i.toDouble(), serie[i].esperado));
     }
-    final interval = serie.length <= 6 ? 1.0 : (serie.length / 6).ceilToDouble();
+
+    final maxDivisions = isMobile ? 4 : 6;
+    final interval = serie.length <= maxDivisions
+        ? 1.0
+        : (serie.length / maxDivisions).ceilToDouble();
 
     return LineChart(
       LineChartData(
@@ -74,16 +106,19 @@ class VolumeChart extends StatelessWidget {
               const FlLine(color: AppColors.border, strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           rightTitles:
               const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 44,
+              reservedSize: isMobile ? 36 : 44,
               getTitlesWidget: (v, meta) => Text(
-                v >= 1000 ? '${(v / 1000).toStringAsFixed(1)}k' : '${v.toInt()}',
-                style: const TextStyle(fontSize: 10, color: AppColors.muted),
+                v >= 1000
+                    ? '${(v / 1000).toStringAsFixed(1)}k'
+                    : '${v.toInt()}',
+                style: const TextStyle(fontSize: 9, color: AppColors.muted),
               ),
             ),
           ),
@@ -91,14 +126,19 @@ class VolumeChart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               interval: interval,
+              reservedSize: 26,
               getTitlesWidget: (v, meta) {
                 final i = v.toInt();
                 if (i < 0 || i >= serie.length) return const SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(serie[i].rotulo,
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.muted)),
+                  child: Text(
+                    serie[i].rotulo,
+                    style: const TextStyle(
+                      fontSize: 9,
+                      color: AppColors.muted,
+                    ),
+                  ),
                 );
               },
             ),
@@ -119,7 +159,7 @@ class VolumeChart extends StatelessWidget {
             spots: realizado,
             isCurved: true,
             color: AppColors.navy,
-            barWidth: 3,
+            barWidth: isMobile ? 2.5 : 3,
             belowBarData: BarAreaData(
               show: true,
               color: AppColors.navy.withOpacity(0.04),
@@ -129,7 +169,7 @@ class VolumeChart extends StatelessWidget {
               checkToShowDot: (spot, _) => serie[spot.x.toInt()].anomalia,
               getDotPainter: (spot, percent, bar, index) =>
                   FlDotCirclePainter(
-                radius: 5,
+                radius: isMobile ? 4 : 5,
                 color: AppColors.red,
                 strokeWidth: 2,
                 strokeColor: Colors.white,
@@ -151,21 +191,31 @@ class _Legend extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             mark,
-            const SizedBox(width: 6),
-            Text(text,
-                style: const TextStyle(fontSize: 10, color: Color(0xFF374151))),
-            const SizedBox(width: 14),
+            const SizedBox(width: 5),
+            Text(
+              text,
+              style: const TextStyle(fontSize: 10, color: Color(0xFF374151)),
+            ),
+            const SizedBox(width: 10),
           ],
         );
 
     return Wrap(
+      alignment: WrapAlignment.end,
+      runSpacing: 4,
       children: [
-        item(Container(width: 16, height: 3, color: AppColors.navy),
-            'REALIZADO'),
-        item(Container(width: 16, height: 2, color: const Color(0xFFB0B7C3)),
-            'ESPERADO'),
         item(
-            const Icon(Icons.circle, size: 8, color: AppColors.red), 'ANOMALIA'),
+          Container(width: 14, height: 3, color: AppColors.navy),
+          'REALIZADO',
+        ),
+        item(
+          Container(width: 14, height: 2, color: const Color(0xFFB0B7C3)),
+          'ESPERADO',
+        ),
+        item(
+          const Icon(Icons.circle, size: 8, color: AppColors.red),
+          'ANOMALIA',
+        ),
       ],
     );
   }

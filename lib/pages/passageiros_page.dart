@@ -48,16 +48,22 @@ class _PassageirosPageState extends State<PassageirosPage> {
         }
         if (snap.hasError) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, color: AppColors.red, size: 40),
-                const SizedBox(height: 8),
-                Text('${snap.error}'),
-                const SizedBox(height: 12),
-                FilledButton(
-                    onPressed: _reload, child: const Text('Tentar novamente')),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline,
+                      color: AppColors.red, size: 40),
+                  const SizedBox(height: 8),
+                  Text('${snap.error}', textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: _reload,
+                    child: const Text('Tentar novamente'),
+                  ),
+                ],
+              ),
             ),
           );
         }
@@ -88,11 +94,18 @@ class _Content extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, box) {
       final w = box.maxWidth;
-      final pad = w < 700 ? 16.0 : 24.0;
-      const gap = 16.0;
-      final cols = w >= 1000 ? 4 : (w >= 500 ? 2 : 1);
-      final itemW = (w - pad * 2 - gap * (cols - 1)) / cols;
+      final isMobile = w < 600;
+      final pad = isMobile ? 16.0 : 24.0;
+      final gap = isMobile ? 12.0 : 16.0;
+      final cols = w >= 1000 ? 4 : (w >= 540 ? 2 : 1);
+      final availableWidth = w - (pad * 2);
+      final itemW = cols == 1
+          ? availableWidth
+          : (availableWidth - (gap * (cols - 1))) / cols;
       final wide = w >= 1000;
+
+      final chartHeight = isMobile ? 300.0 : 440.0;
+      final donutHeight = isMobile ? 320.0 : 440.0;
 
       final chart = DemandChart(serie: data.serie);
       final donut = TariffDonut(pctPagantes: data.pctPagantes);
@@ -140,36 +153,67 @@ class _Content extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Demanda e Perfil de Passageiros',
-                          style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.navy)),
-                      SizedBox(height: 4),
-                      Text(
-                        'Monitoramento de fluxo diário e distribuição de '
-                        'categorias tarifárias.',
-                        style: TextStyle(fontSize: 12, color: AppColors.muted),
-                      ),
-                    ],
-                  ),
+            if (isMobile) ...[
+              const Text(
+                'Demanda e Perfil de Passageiros',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.navy,
                 ),
-                OutlinedButton.icon(
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Monitoramento de fluxo diário e distribuição de categorias tarifárias.',
+                style: TextStyle(fontSize: 11, color: AppColors.muted),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
                   onPressed: () {
                     // TODO: exportar relatório (endpoint do backend)
                   },
                   icon: const Icon(Icons.download, size: 16),
                   label: const Text('Exportar Relatório'),
                 ),
-              ],
-            ),
+              ),
+            ] else ...[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Demanda e Perfil de Passageiros',
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.navy,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Monitoramento de fluxo diário e distribuição de '
+                          'categorias tarifárias.',
+                          style:
+                              TextStyle(fontSize: 12, color: AppColors.muted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // TODO: exportar relatório (endpoint do backend)
+                    },
+                    icon: const Icon(Icons.download, size: 16),
+                    label: const Text('Exportar Relatório'),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 20),
             Wrap(
               spacing: gap,
@@ -183,15 +227,21 @@ class _Content extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(flex: 5, child: SizedBox(height: 440, child: chart)),
+                  Expanded(
+                    flex: 5,
+                    child: SizedBox(height: chartHeight, child: chart),
+                  ),
                   const SizedBox(width: 20),
-                  Expanded(flex: 3, child: SizedBox(height: 440, child: donut)),
+                  Expanded(
+                    flex: 3,
+                    child: SizedBox(height: donutHeight, child: donut),
+                  ),
                 ],
               )
             else ...[
-              SizedBox(height: 400, child: chart),
+              SizedBox(height: chartHeight, child: chart),
               const SizedBox(height: 16),
-              SizedBox(height: 400, child: donut),
+              SizedBox(height: donutHeight, child: donut),
             ],
             const SizedBox(height: 20),
             CategoryTable(
@@ -207,8 +257,11 @@ class _Content extends StatelessWidget {
   }
 }
 
-Widget _nota(String t) =>
-    Text(t, style: const TextStyle(fontSize: 11, color: AppColors.muted));
+Widget _nota(String t) => Text(
+      t,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(fontSize: 11, color: AppColors.muted),
+    );
 
 Widget _variacao(double? v, String ref) {
   if (v == null) return _nota('--');
@@ -219,9 +272,12 @@ Widget _variacao(double? v, String ref) {
       Icon(up ? Icons.trending_up : Icons.trending_down,
           size: 14, color: color),
       const SizedBox(width: 4),
-      Flexible(
-        child: Text('${fmtPercent(v)} vs $ref',
-            style: TextStyle(fontSize: 11, color: color)),
+      Expanded(
+        child: Text(
+          '${fmtPercent(v)} vs $ref',
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 11, color: color),
+        ),
       ),
     ],
   );
@@ -245,7 +301,7 @@ class _Kpi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,26 +309,34 @@ class _Kpi extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(title,
-                    style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                child: Text(
+                  title,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                  ),
+                ),
               ),
-              Icon(icon, size: 20, color: iconColor),
+              const SizedBox(width: 4),
+              Icon(icon, size: 18, color: iconColor),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(value,
-                style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.navy)),
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                color: AppColors.navy,
+              ),
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           footer,
         ],
       ),

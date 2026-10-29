@@ -12,53 +12,78 @@ class HourlyChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, box) {
+        final isMobile = box.maxWidth < 600;
+
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 14 : 20),
+          decoration: cardDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Expanded(
-                child: Text('RELAÇÃO VIAGENS / HORA DO DIA',
-                    style: TextStyle(
-                        fontSize: 12,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'RELAÇÃO VIAGENS / HORA DO DIA',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: isMobile ? 11 : 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                        color: const Color(0xFF374151),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F3F6),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Média Dia Útil',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppColors.muted,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F3F6),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text('Média Dia Útil',
-                    style: TextStyle(fontSize: 10, color: AppColors.muted)),
+              SizedBox(height: isMobile ? 12 : 16),
+              SizedBox(
+                height: isMobile ? 240 : 290,
+                child: dados.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Sem dados para o período selecionado',
+                          style: TextStyle(color: AppColors.muted),
+                        ),
+                      )
+                    : _chart(isMobile),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 290,
-            child: dados.isEmpty
-                ? const Center(
-                    child: Text('Sem dados para o período selecionado',
-                        style: TextStyle(color: AppColors.muted)))
-                : _chart(),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _chart() {
+  Widget _chart(bool isMobile) {
     final spots = [
       for (var i = 0; i < dados.length; i++)
         FlSpot(i.toDouble(), dados[i].viagens)
     ];
-    final interval = dados.length <= 6 ? 1.0 : (dados.length / 6).ceilToDouble();
+
+    final maxDivisions = isMobile ? 4 : 6;
+    final interval = dados.length <= maxDivisions
+        ? 1.0
+        : (dados.length / maxDivisions).ceilToDouble();
 
     return LineChart(
       LineChartData(
@@ -77,23 +102,33 @@ class HourlyChart extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 36,
-              getTitlesWidget: (v, meta) => Text('${v.toInt()}',
-                  style: const TextStyle(fontSize: 10, color: AppColors.muted)),
+              reservedSize: isMobile ? 30 : 36,
+              getTitlesWidget: (v, meta) => Text(
+                '${v.toInt()}',
+                style: const TextStyle(
+                  fontSize: 9,
+                  color: AppColors.muted,
+                ),
+              ),
             ),
           ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
               interval: interval,
+              reservedSize: 24,
               getTitlesWidget: (v, meta) {
                 final i = v.toInt();
                 if (i < 0 || i >= dados.length) return const SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(dados[i].rotulo,
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.muted)),
+                  child: Text(
+                    dados[i].rotulo,
+                    style: const TextStyle(
+                      fontSize: 9,
+                      color: AppColors.muted,
+                    ),
+                  ),
                 );
               },
             ),
@@ -104,7 +139,7 @@ class HourlyChart extends StatelessWidget {
             spots: spots,
             isCurved: true,
             color: _line,
-            barWidth: 5,
+            barWidth: isMobile ? 3.5 : 5,
             belowBarData: BarAreaData(
               show: true,
               color: _line.withOpacity(0.06),
@@ -112,10 +147,11 @@ class HourlyChart extends StatelessWidget {
             dotData: FlDotData(
               show: true,
               checkToShowDot: (spot, _) => dados[spot.x.toInt()].pico,
-              getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
-                radius: 5,
+              getDotPainter: (spot, percent, bar, index) =>
+                  FlDotCirclePainter(
+                radius: isMobile ? 4 : 5,
                 color: Colors.white,
-                strokeWidth: 2.5,
+                strokeWidth: 2,
                 strokeColor: _line,
               ),
             ),

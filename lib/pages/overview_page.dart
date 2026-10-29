@@ -34,11 +34,10 @@ class _OverviewPageState extends State<OverviewPage> {
     super.dispose();
   }
 
-  Future<DashboardOverview> _fetch() =>
-    _service.getOverview(
-      periodo: periodoNotifier.value.api,
-      mes: '2026-08',
-    );
+  Future<DashboardOverview> _fetch() => _service.getOverview(
+        periodo: periodoNotifier.value.api,
+        mes: '2026-08',
+      );
 
   void _reload() => setState(() => _future = _fetch());
 
@@ -52,16 +51,22 @@ class _OverviewPageState extends State<OverviewPage> {
         }
         if (snap.hasError) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, color: AppColors.red, size: 40),
-                const SizedBox(height: 8),
-                Text('${snap.error}'),
-                const SizedBox(height: 12),
-                FilledButton(
-                    onPressed: _reload, child: const Text('Tentar novamente')),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline,
+                      color: AppColors.red, size: 40),
+                  const SizedBox(height: 8),
+                  Text('${snap.error}', textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: _reload,
+                    child: const Text('Tentar novamente'),
+                  ),
+                ],
+              ),
             ),
           );
         }
@@ -79,6 +84,7 @@ class _Content extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, box) {
       final w = box.maxWidth;
+      final isMobile = w < 600;
       final wide = w >= 1100;
 
       final kpis = [
@@ -116,12 +122,19 @@ class _Content extends StatelessWidget {
         ),
       ];
 
-      final cols = w >= 1100 ? 5 : (w >= 700 ? 3 : 2);
-      const gap = 16.0;
-      final pad = w < 700 ? 16.0 : 24.0;
-      final itemW = (w - pad * 2 - gap * (cols - 1)) / cols;
+      final cols = w >= 1100 ? 5 : (w >= 700 ? 3 : (w >= 480 ? 2 : 1));
+      final gap = isMobile ? 12.0 : 16.0;
+      final pad = isMobile ? 16.0 : 24.0;
+      final availableWidth = w - (pad * 2);
+      final itemW = cols == 1
+          ? availableWidth
+          : (availableWidth - (gap * (cols - 1))) / cols;
 
-      final chart = VolumeChart(serie: data.serie);
+      final chart = SizedBox(
+        height: isMobile ? 320 : 420,
+        child: VolumeChart(serie: data.serie),
+      );
+
       final side = Column(
         children: [
           IntelligenceCard(data: data.inteligencia),
@@ -140,24 +153,49 @@ class _Content extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                const Expanded(
-                  child: Text('Visão Geral da Operação',
-                      style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.navy)),
+            if (isMobile) ...[
+              const Text(
+                'Visão Geral da Operação',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.navy,
                 ),
-                OutlinedButton.icon(
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
                   onPressed: () {
                     // TODO: exportar relatório (endpoint do backend)
                   },
                   icon: const Icon(Icons.download, size: 16),
                   label: const Text('Exportar Relatório'),
                 ),
-              ],
-            ),
+              ),
+            ] else ...[
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Visão Geral da Operação',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.navy,
+                      ),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // TODO: exportar relatório (endpoint do backend)
+                    },
+                    icon: const Icon(Icons.download, size: 16),
+                    label: const Text('Exportar Relatório'),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 20),
             Wrap(
               spacing: gap,

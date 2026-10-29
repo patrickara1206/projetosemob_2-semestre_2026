@@ -25,59 +25,97 @@ class CategoryTable extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Detalhamento de Categorias',
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF374151))),
+                      Text(
+                        'Detalhamento de Categorias',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF374151),
+                        ),
+                      ),
                       SizedBox(height: 2),
-                      Text('Estrutura preparada para expansão de perfis tarifários',
-                          style:
-                              TextStyle(fontSize: 11, color: AppColors.muted)),
+                      Text(
+                        'Estrutura para perfis tarifários',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.muted,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 TextButton(
                   onPressed: onVerRelatorio,
-                  child: const Text('VER RELATÓRIO COMPLETO →',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.navy)),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  child: const Text(
+                    'RELATÓRIO →',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.navy,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          LayoutBuilder(builder: (context, box) {
-            final width = math.max(box.maxWidth, 600.0);
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: width,
-                child: Column(
-                  children: [
-                    const _Header(),
-                    if (categorias.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text('Nenhuma categoria no período',
-                            style: TextStyle(color: AppColors.muted)),
-                      )
-                    else
+          LayoutBuilder(
+            builder: (context, box) {
+              final isMobile = box.maxWidth < 600;
+
+              if (categorias.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      'Nenhuma categoria no período',
+                      style: TextStyle(color: AppColors.muted),
+                    ),
+                  ),
+                );
+              }
+
+              if (isMobile) {
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: categorias.length,
+                  separatorBuilder: (_, __) =>
+                      const Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, i) => _MobileCategoryCard(
+                    item: categorias[i],
+                    zebra: i.isOdd,
+                  ),
+                );
+              }
+
+              final width = math.max(box.maxWidth, 600.0);
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: width,
+                  child: Column(
+                    children: [
+                      const _Header(),
                       for (var i = 0; i < categorias.length; i++)
                         _DataRow(item: categorias[i], zebra: i.isOdd),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -95,11 +133,14 @@ class _Header extends StatelessWidget {
           flex: flex,
           child: Align(
             alignment: a,
-            child: Text(t,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700)),
+            child: Text(
+              t,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         );
 
@@ -125,8 +166,6 @@ class _DataRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ativo = item.status == 'ativo';
-
     return Container(
       color: zebra ? const Color(0xFFF8F9FC) : Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -134,50 +173,127 @@ class _DataRow extends StatelessWidget {
         children: [
           Expanded(
             flex: _flex[0],
-            child: Text(item.nome,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.navy)),
+            child: Text(
+              item.nome,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.navy,
+              ),
+            ),
           ),
           Expanded(
             flex: _flex[1],
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text(fmtInt(item.volume),
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.text)),
+              child: Text(
+                fmtInt(item.volume),
+                style: const TextStyle(fontSize: 12, color: AppColors.text),
+              ),
             ),
           ),
           Expanded(
             flex: _flex[2],
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text('${fmtDec(item.percentual)}%',
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.text)),
+              child: Text(
+                '${fmtDec(item.percentual)}%',
+                style: const TextStyle(fontSize: 12, color: AppColors.text),
+              ),
             ),
           ),
           Expanded(
             flex: _flex[3],
             child: Align(
               alignment: Alignment.center,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(
-                  color: ativo ? AppColors.greenSoft : AppColors.border,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(ativo ? 'ATIVO' : 'INATIVO',
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: ativo ? AppColors.green : AppColors.muted)),
-              ),
+              child: _StatusBadge(status: item.status),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MobileCategoryCard extends StatelessWidget {
+  final CategoriaTarifaria item;
+  final bool zebra;
+
+  const _MobileCategoryCard({required this.item, required this.zebra});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: zebra ? const Color(0xFFF8F9FC) : Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  item.nome,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.navy,
+                  ),
+                ),
+              ),
+              _StatusBadge(status: item.status),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Volume: ${fmtInt(item.volume)}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.text,
+                ),
+              ),
+              Text(
+                '${fmtDec(item.percentual)}% do total',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.muted,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String status;
+
+  const _StatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final ativo = status == 'ativo';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: ativo ? AppColors.greenSoft : AppColors.border,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        ativo ? 'ATIVO' : 'INATIVO',
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: ativo ? AppColors.green : AppColors.muted,
+        ),
       ),
     );
   }

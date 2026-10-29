@@ -10,51 +10,70 @@ class KmBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, box) {
+        final isMobile = box.maxWidth < 600;
+
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 14 : 20),
+          decoration: cardDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Expanded(
-                child: Text('EVOLUÇÃO DA QUILOMETRAGEM MENSAL',
-                    style: TextStyle(
-                        fontSize: 12,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'EVOLUÇÃO DA QUILOMETRAGEM MENSAL',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: isMobile ? 11 : 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                        color: const Color(0xFF374151),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.more_vert, size: 20),
+                    onPressed: () {},
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
               ),
-              IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: isMobile ? 220 : 260,
+                child: dados.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Sem dados para o período selecionado',
+                          style: TextStyle(color: AppColors.muted),
+                        ),
+                      )
+                    : _chart(isMobile),
+              ),
+              SizedBox(height: isMobile ? 8 : 12),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _Dot(color: AppColors.navy, label: 'Produtiva'),
+                  SizedBox(width: 20),
+                  _Dot(color: AppColors.cyan, label: 'Morta'),
+                ],
+              ),
             ],
           ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 260,
-            child: dados.isEmpty
-                ? const Center(
-                    child: Text('Sem dados para o período selecionado',
-                        style: TextStyle(color: AppColors.muted)))
-                : _chart(),
-          ),
-          const SizedBox(height: 12),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _Dot(color: AppColors.navy, label: 'Produtiva'),
-              SizedBox(width: 20),
-              _Dot(color: AppColors.cyan, label: 'Morta'),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _chart() {
+  Widget _chart(bool isMobile) {
     final maxTotal = dados
         .map((d) => d.produtiva + d.morta)
         .reduce((a, b) => a > b ? a : b);
+
+    final rodWidth = isMobile ? (dados.length > 6 ? 14.0 : 18.0) : 26.0;
 
     return BarChart(
       BarChartData(
@@ -75,24 +94,29 @@ class KmBarChart extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 44,
+              reservedSize: isMobile ? 34 : 44,
               getTitlesWidget: (v, meta) => Text(
                 v >= 1000 ? '${(v / 1000).round()}k' : '${v.toInt()}',
-                style: const TextStyle(fontSize: 10, color: AppColors.muted),
+                style: const TextStyle(fontSize: 9, color: AppColors.muted),
               ),
             ),
           ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              reservedSize: 24,
               getTitlesWidget: (v, meta) {
                 final i = v.toInt();
                 if (i < 0 || i >= dados.length) return const SizedBox();
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(dados[i].rotulo,
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.muted)),
+                  child: Text(
+                    dados[i].rotulo,
+                    style: const TextStyle(
+                      fontSize: 9,
+                      color: AppColors.muted,
+                    ),
+                  ),
                 );
               },
             ),
@@ -105,14 +129,20 @@ class KmBarChart extends StatelessWidget {
               barRods: [
                 BarChartRodData(
                   toY: dados[i].produtiva + dados[i].morta,
-                  width: 26,
+                  width: rodWidth,
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(3)),
                   rodStackItems: [
                     BarChartRodStackItem(
-                        0, dados[i].produtiva, AppColors.navy),
-                    BarChartRodStackItem(dados[i].produtiva,
-                        dados[i].produtiva + dados[i].morta, AppColors.cyan),
+                      0,
+                      dados[i].produtiva,
+                      AppColors.navy,
+                    ),
+                    BarChartRodStackItem(
+                      dados[i].produtiva,
+                      dados[i].produtiva + dados[i].morta,
+                      AppColors.cyan,
+                    ),
                   ],
                 ),
               ],
@@ -131,11 +161,14 @@ class _Dot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(Icons.circle, size: 8, color: color),
         const SizedBox(width: 6),
-        Text(label,
-            style: const TextStyle(fontSize: 11, color: Color(0xFF374151))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Color(0xFF374151)),
+        ),
       ],
     );
   }

@@ -10,81 +10,106 @@ class MlFlowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
+    return LayoutBuilder(
+      builder: (context, box) {
+        final isMobile = box.maxWidth < 500;
+
+        return Container(
+          padding: EdgeInsets.all(isMobile ? 14 : 20),
+          decoration: cardDecoration(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text('FLUXO DE DADOS & INFERÊNCIA',
-                    style: TextStyle(
-                        fontSize: 12,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'FLUXO DE DADOS & INFERÊNCIA',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: isMobile ? 11 : 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151))),
+                        color: const Color(0xFF374151),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.fullscreen,
+                    size: 18,
+                    color: AppColors.muted,
+                  ),
+                ],
               ),
-              Icon(Icons.fullscreen, size: 18, color: AppColors.muted),
-            ],
-          ),
-          Expanded(
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    _Node(
-                      label: 'Dados\nOperação',
-                      icon: Icons.storage_outlined,
-                      fill: Color(0xFFEEF0FA),
-                      border: AppColors.navy,
-                      iconColor: AppColors.navy,
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minWidth: math.max(0.0, box.maxWidth - (isMobile ? 28 : 40)),
+                      ),
+                      child: Center(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              _Node(
+                                label: 'Dados\nOperação',
+                                icon: Icons.storage_outlined,
+                                fill: Color(0xFFEEF0FA),
+                                border: AppColors.navy,
+                                iconColor: AppColors.navy,
+                              ),
+                              _Link(),
+                              _Node(
+                                label: 'Tratamento',
+                                icon: Icons.filter_alt_outlined,
+                                fill: Color(0xFFEEF0FA),
+                                border: AppColors.navy,
+                                iconColor: AppColors.navy,
+                              ),
+                              _Link(),
+                              _Node(
+                                label: 'Modelo ML',
+                                icon: Icons.psychology_outlined,
+                                fill: AppColors.navy,
+                                border: AppColors.navy,
+                                iconColor: Colors.white,
+                                diamond: true,
+                                bold: true,
+                              ),
+                              _Link(),
+                              _Node(
+                                label: 'Detecção',
+                                icon: Icons.search,
+                                fill: AppColors.orangeSoft,
+                                border: AppColors.orange,
+                                iconColor: AppColors.orange,
+                              ),
+                              _Link(),
+                              _Node(
+                                label: 'Score / Painel',
+                                icon: Icons.speed,
+                                fill: AppColors.primary,
+                                border: AppColors.primary,
+                                iconColor: Colors.white,
+                                bold: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                    _Link(),
-                    _Node(
-                      label: 'Tratamento',
-                      icon: Icons.filter_alt_outlined,
-                      fill: Color(0xFFEEF0FA),
-                      border: AppColors.navy,
-                      iconColor: AppColors.navy,
-                    ),
-                    _Link(),
-                    _Node(
-                      label: 'Modelo ML',
-                      icon: Icons.psychology_outlined,
-                      fill: AppColors.navy,
-                      border: AppColors.navy,
-                      iconColor: Colors.white,
-                      diamond: true,
-                      bold: true,
-                    ),
-                    _Link(),
-                    _Node(
-                      label: 'Detecção',
-                      icon: Icons.search,
-                      fill: AppColors.orangeSoft,
-                      border: AppColors.orange,
-                      iconColor: AppColors.orange,
-                    ),
-                    _Link(),
-                    _Node(
-                      label: 'Score / Painel',
-                      icon: Icons.speed,
-                      fill: AppColors.primary,
-                      border: AppColors.primary,
-                      iconColor: Colors.white,
-                      bold: true,
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -149,17 +174,20 @@ class _Node extends StatelessWidget {
     }
 
     return SizedBox(
-      width: 80,
+      width: 76,
       child: Column(
         children: [
           SizedBox(height: 64, child: shape),
           const SizedBox(height: 6),
-          Text(label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
-                  color: bold ? AppColors.navy : AppColors.muted)),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+              color: bold ? AppColors.navy : AppColors.muted,
+            ),
+          ),
         ],
       ),
     );
@@ -172,7 +200,7 @@ class _Link extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 24,
+      width: 20,
       height: 64,
       child: Center(
         child: Container(height: 1.5, color: AppColors.border),
