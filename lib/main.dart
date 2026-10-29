@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/acessibilidade.dart';
 import 'core/auth_state.dart';
 import 'core/theme.dart';
 
@@ -15,7 +17,15 @@ import 'pages/placeholder_page.dart';
 import 'pages/importacao_page.dart';
 
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Expõe os textos da tela para leitores de tela (e ajuda o VLibras na web).
+  SemanticsBinding.instance.ensureSemantics();
+
+  // Recupera fonte/contraste salvos da última vez.
+  await carregarAcessibilidade();
+
   runApp(
     const SemobApp(),
   );
@@ -156,6 +166,16 @@ class SemobApp
 
       routerConfig:
           _router,
+
+      // Botão flutuante de acessibilidade + fonte maior e alto contraste.
+      builder: (
+        context,
+        child,
+      ) {
+        return AcessibilidadeLayer(
+          child: child,
+        );
+      },
     );
   }
 }
