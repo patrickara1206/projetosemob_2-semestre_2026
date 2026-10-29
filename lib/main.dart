@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
+import 'core/acessibilidade.dart';
 import 'package:go_router/go_router.dart';
 import 'core/login_splash.dart';
 
@@ -19,6 +21,8 @@ import 'pages/passageiros_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  SemanticsBinding.instance.ensureSemantics();
+  await carregarAcessibilidade();
   await carregarEstadoLogin();
 
   runApp(const SemobApp());
@@ -119,6 +123,7 @@ class SemobApp extends StatelessWidget {
           ),
           themeMode: modo,
           routerConfig: _router,
+          builder: (context, child) => AcessibilidadeLayer(child: child),
         );
       },
     );
