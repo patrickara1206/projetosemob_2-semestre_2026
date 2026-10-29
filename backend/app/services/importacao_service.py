@@ -18,7 +18,9 @@ from app.repositories.passageiros_repository import inserir_passageiros
 from app.repositories.financeiro_repository import inserir_financeiro
 from app.repositories.fcv_repository import inserir_fcv
 from app.repositories.linhas_repository import inserir_linhas
-from app.repositories.resumo_faixa_horaria_repository import inserir_resumo_faixa_horaria
+from app.repositories.resumo_faixa_horaria_repository import (
+    inserir_resumo_faixa_horaria,
+)
 from app.repositories.faixa_horaria_repository import inserir_faixa_horaria
 from app.repositories.viagens_repository import inserir_viagens
 from app.repositories.viagens_ocorrencias_repository import inserir_viagens_ocorrencias
@@ -84,17 +86,23 @@ CONFIG_IMPORTACAO = {
     },
     "viagens_nao_iniciadas": {
         "indice": 1,
-        "normalizar": lambda df, mes, tp: normalizar_viagens_ocorrencias(df, mes, tp, "nao_iniciada"),
+        "normalizar": lambda df, mes, tp: normalizar_viagens_ocorrencias(
+            df, mes, tp, "nao_iniciada"
+        ),
         "inserir": inserir_viagens_ocorrencias,
     },
     "viagens_nao_realizadas": {
         "indice": 1,
-        "normalizar": lambda df, mes, tp: normalizar_viagens_ocorrencias(df, mes, tp, "nao_realizada"),
+        "normalizar": lambda df, mes, tp: normalizar_viagens_ocorrencias(
+            df, mes, tp, "nao_realizada"
+        ),
         "inserir": inserir_viagens_ocorrencias,
     },
     "viagens_nao_terminadas": {
         "indice": 1,
-        "normalizar": lambda df, mes, tp: normalizar_viagens_ocorrencias(df, mes, tp, "nao_terminada"),
+        "normalizar": lambda df, mes, tp: normalizar_viagens_ocorrencias(
+            df, mes, tp, "nao_terminada"
+        ),
         "inserir": inserir_viagens_ocorrencias,
     },
 }
@@ -187,7 +195,9 @@ def _importar_estruturado(
 ):
     spec = CONFIG_IMPORTACAO[tipo_relatorio]
     df_original = ler_tabela_html_bytes(conteudo, indice=spec["indice"])
-    validar_tipo_relatorio(df=df_original, tipo_relatorio=tipo_relatorio, nome_arquivo=nome_arquivo)
+    validar_tipo_relatorio(
+        df=df_original, tipo_relatorio=tipo_relatorio, nome_arquivo=nome_arquivo
+    )
 
     df = spec["normalizar"](df_original, mes, tipo_periodo)
     validar_dados(df, mes, tipo_periodo, nome_arquivo)
@@ -218,11 +228,15 @@ def importar_operacao(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
 
 
 def importar_passageiros(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    return _importar_estruturado("passageiros", conteudo, nome_arquivo, mes, tipo_periodo)
+    return _importar_estruturado(
+        "passageiros", conteudo, nome_arquivo, mes, tipo_periodo
+    )
 
 
 def importar_financeiro(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    return _importar_estruturado("financeiro", conteudo, nome_arquivo, mes, tipo_periodo)
+    return _importar_estruturado(
+        "financeiro", conteudo, nome_arquivo, mes, tipo_periodo
+    )
 
 
 def importar_fcv(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
@@ -234,19 +248,27 @@ def importar_linhas(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
 
 
 def importar_resumo_faixa_horaria(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    return _importar_estruturado("resumo_faixa_horaria", conteudo, nome_arquivo, mes, tipo_periodo)
+    return _importar_estruturado(
+        "resumo_faixa_horaria", conteudo, nome_arquivo, mes, tipo_periodo
+    )
 
 
 def importar_faixa_horaria(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    return _importar_estruturado("faixa_horaria", conteudo, nome_arquivo, mes, tipo_periodo)
+    return _importar_estruturado(
+        "faixa_horaria", conteudo, nome_arquivo, mes, tipo_periodo
+    )
 
 
 def importar_viagens(conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
     return _importar_estruturado("viagens", conteudo, nome_arquivo, mes, tipo_periodo)
 
 
-def importar_viagens_ocorrencias(tipo_relatorio, tipo_ocorrencia, conteudo, nome_arquivo, mes, tipo_periodo="mensal"):
-    return _importar_estruturado(tipo_relatorio, conteudo, nome_arquivo, mes, tipo_periodo)
+def importar_viagens_ocorrencias(
+    tipo_relatorio, tipo_ocorrencia, conteudo, nome_arquivo, mes, tipo_periodo="mensal"
+):
+    return _importar_estruturado(
+        tipo_relatorio, conteudo, nome_arquivo, mes, tipo_periodo
+    )
 
 
 def importar_generico(
@@ -329,76 +351,214 @@ def importar_relatorio(
 identificar_tipo_relatorio = detectar_tipo_por_nome
 
 
+def identificar_contexto_zip(caminho):
+    caminho_normalizado = caminho.replace("\\", "/")
+
+    partes = [parte for parte in caminho_normalizado.split("/") if parte]
+
+    mes = None
+    tipo_periodo = None
+
+    mapa_meses = {
+        "janeiro": "01",
+        "fevereiro": "02",
+        "marco": "03",
+        "março": "03",
+        "abril": "04",
+        "maio": "05",
+        "junho": "06",
+        "julho": "07",
+        "agosto": "08",
+        "setembro": "09",
+        "outubro": "10",
+        "novembro": "11",
+        "dezembro": "12",
+    }
+
+    for parte in partes:
+        texto = parte.lower()
+
+        for nome_mes, numero_mes in mapa_meses.items():
+            if nome_mes in texto:
+                numeros = "".join(
+                    caractere for caractere in texto if caractere.isdigit()
+                )
+
+                if len(numeros) >= 4:
+                    ano = numeros[-4:]
+                    mes = f"{ano}-{numero_mes}"
+
+        if texto == "mensal":
+            tipo_periodo = "mensal"
+
+        elif texto == "quinzenal":
+            tipo_periodo = "quinzenal"
+
+    return mes, tipo_periodo
+
+
 def importar_zip(
     conteudo,
     nome_arquivo,
-    mes,
-    tipo_periodo="mensal",
+    mes=None,
+    tipo_periodo=None,
 ):
     try:
         zip_buffer = BytesIO(conteudo)
+
         with ZipFile(zip_buffer) as arquivo_zip:
             arquivos_html = [
                 item
                 for item in arquivo_zip.infolist()
                 if (
                     not item.is_dir()
-                    and item.filename.lower().endswith((".html", ".htm"))
+                    and item.filename.lower().endswith(
+                        (".html", ".htm")
+                    )
                 )
             ]
 
             if not arquivos_html:
-                raise ValueError("O arquivo ZIP não contém relatórios HTML.")
+                raise ValueError(
+                    "O arquivo ZIP não contém relatórios HTML."
+                )
 
             resultados = []
+
             total_importados = 0
             total_erros = 0
             total_ignorados = 0
             total_registros = 0
 
             for item in arquivos_html:
-                nome_html = Path(item.filename).name
-                tipo_relatorio = identificar_tipo_relatorio(nome_html)
+                nome_html = Path(
+                    item.filename
+                ).name
+
+                tipo_relatorio = (
+                    identificar_tipo_relatorio(
+                        nome_html
+                    )
+                )
+
+                # Tenta identificar automaticamente
+                # mês e período pelo caminho interno
+                # do arquivo dentro do ZIP.
+                (
+                    mes_arquivo,
+                    periodo_arquivo,
+                ) = identificar_contexto_zip(
+                    item.filename
+                )
 
                 if tipo_relatorio is None:
                     total_ignorados += 1
-                    resultados.append({
-                        "arquivo": nome_html,
-                        "status": "ignorado",
-                        "motivo": "Não foi possível identificar o tipo do relatório.",
-                    })
+
+                    resultados.append(
+                        {
+                            "arquivo": nome_html,
+                            "caminho": item.filename,
+                            "status": "ignorado",
+                            "motivo": (
+                                "Não foi possível identificar "
+                                "o tipo do relatório."
+                            ),
+                        }
+                    )
+
                     continue
 
-                conteudo_html = arquivo_zip.read(item)
+                if mes_arquivo is None:
+                    total_erros += 1
+
+                    resultados.append(
+                        {
+                            "arquivo": nome_html,
+                            "caminho": item.filename,
+                            "tipo_relatorio": tipo_relatorio,
+                            "status": "erro",
+                            "mensagem": (
+                                "Não foi possível identificar "
+                                "o mês pelo caminho do arquivo "
+                                "dentro do ZIP."
+                            ),
+                        }
+                    )
+
+                    continue
+
+                if periodo_arquivo is None:
+                    total_erros += 1
+
+                    resultados.append(
+                        {
+                            "arquivo": nome_html,
+                            "caminho": item.filename,
+                            "tipo_relatorio": tipo_relatorio,
+                            "status": "erro",
+                            "mensagem": (
+                                "Não foi possível identificar "
+                                "o período pelo caminho do arquivo "
+                                "dentro do ZIP."
+                            ),
+                        }
+                    )
+
+                    continue
+
+                conteudo_html = arquivo_zip.read(
+                    item
+                )
+
                 try:
                     resultado = importar_relatorio(
                         tipo_relatorio=tipo_relatorio,
                         conteudo=conteudo_html,
                         nome_arquivo=nome_html,
-                        mes=mes,
-                        tipo_periodo=tipo_periodo,
+                        mes=mes_arquivo,
+                        tipo_periodo=periodo_arquivo,
                     )
-                    qtd = resultado.get("registros", 0)
+
+                    qtd = resultado.get(
+                        "registros",
+                        0,
+                    )
+
                     total_importados += 1
                     total_registros += qtd
-                    resultados.append({
-                        "arquivo": nome_html,
-                        "tipo_relatorio": tipo_relatorio,
-                        "status": "sucesso",
-                        "registros": qtd,
-                    })
+
+                    resultados.append(
+                        {
+                            "arquivo": nome_html,
+                            "caminho": item.filename,
+                            "tipo_relatorio": tipo_relatorio,
+                            "mes_referencia": mes_arquivo,
+                            "tipo_periodo": periodo_arquivo,
+                            "status": "sucesso",
+                            "registros": qtd,
+                        }
+                    )
+
                 except Exception as erro:
                     total_erros += 1
-                    resultados.append({
-                        "arquivo": nome_html,
-                        "tipo_relatorio": tipo_relatorio,
-                        "status": "erro",
-                        "mensagem": str(erro),
-                    })
+
+                    resultados.append(
+                        {
+                            "arquivo": nome_html,
+                            "caminho": item.filename,
+                            "tipo_relatorio": tipo_relatorio,
+                            "mes_referencia": mes_arquivo,
+                            "tipo_periodo": periodo_arquivo,
+                            "status": "erro",
+                            "mensagem": str(erro),
+                        }
+                    )
 
             return {
                 "arquivo_zip": nome_arquivo,
-                "arquivos_encontrados": len(arquivos_html),
+                "arquivos_encontrados": len(
+                    arquivos_html
+                ),
                 "arquivos_importados": total_importados,
                 "arquivos_com_erro": total_erros,
                 "arquivos_ignorados": total_ignorados,
@@ -407,4 +567,6 @@ def importar_zip(
             }
 
     except BadZipFile:
-        raise ValueError("O arquivo enviado não é um ZIP válido.")
+        raise ValueError(
+            "O arquivo enviado não é um ZIP válido."
+        )
