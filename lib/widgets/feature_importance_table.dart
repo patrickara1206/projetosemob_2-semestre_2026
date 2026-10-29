@@ -22,29 +22,66 @@ class FeatureImportanceTable extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(20),
+          Padding(
+            padding: EdgeInsets.all(16),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     'EXPLICAÇÃO GLOBAL (FEATURE IMPORTANCE)',
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF374151),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
+                SizedBox(width: 8),
                 Text(
                   'Top 5 Fatores',
-                  style: TextStyle(fontSize: 11, color: AppColors.muted),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
           ),
           LayoutBuilder(
             builder: (context, box) {
+              final isMobile = box.maxWidth < 600;
+
+              if (features.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      'Sem dados do modelo',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              if (isMobile) {
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: features.length,
+                  separatorBuilder: (_, __) =>
+                      Divider(height: 1, color: AppColors.border),
+                  itemBuilder: (context, i) => _MobileFeatureCard(
+                    item: features[i],
+                    maxPeso: maxPeso,
+                    color: _barColors[math.min(i, _barColors.length - 1)],
+                    zebra: i.isOdd,
+                  ),
+                );
+              }
+
               final width = math.max(box.maxWidth, 560.0);
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -52,24 +89,14 @@ class FeatureImportanceTable extends StatelessWidget {
                   width: width,
                   child: Column(
                     children: [
-                      const _Header(),
-                      if (features.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Text(
-                            'Sem dados do modelo',
-                            style: TextStyle(color: AppColors.muted),
-                          ),
-                        )
-                      else
-                        for (var i = 0; i < features.length; i++)
-                          _DataRow(
-                            item: features[i],
-                            maxPeso: maxPeso,
-                            color:
-                                _barColors[math.min(i, _barColors.length - 1)],
-                            zebra: i.isOdd,
-                          ),
+                      _Header(),
+                      for (var i = 0; i < features.length; i++)
+                        _DataRow(
+                          item: features[i],
+                          maxPeso: maxPeso,
+                          color: _barColors[math.min(i, _barColors.length - 1)],
+                          zebra: i.isOdd,
+                        ),
                     ],
                   ),
                 ),
@@ -103,7 +130,7 @@ class _Header extends StatelessWidget {
         alignment: a,
         child: Text(
           t,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -113,8 +140,8 @@ class _Header extends StatelessWidget {
     );
 
     return Container(
-      color: AppColors.navy,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      color: Theme.of(context).colorScheme.onSurface,
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
         children: [
           cell('Feature', _flex[0], Alignment.centerLeft),
@@ -147,18 +174,18 @@ class _DataRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: zebra ? const Color(0xFFF8F9FC) : Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      color: zebra ? Color(0xFFF8F9FC) : Colors.white,
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(
         children: [
           Expanded(
             flex: _flex[0],
             child: Text(
               item.nome,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.navy,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -167,14 +194,17 @@ class _DataRow extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F3F6),
+                  color: Color(0xFFF1F3F6),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   item.categoria,
-                  style: const TextStyle(fontSize: 10, color: AppColors.muted),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),
@@ -182,14 +212,14 @@ class _DataRow extends StatelessWidget {
           Expanded(
             flex: _flex[2],
             child: Padding(
-              padding: const EdgeInsets.only(right: 24),
+              padding: EdgeInsets.only(right: 24),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
                   value: maxPeso == 0 ? null : item.peso / maxPeso,
                   minHeight: 6,
                   color: color,
-                  backgroundColor: const Color(0xFFF1F3F6),
+                  backgroundColor: Color(0xFFF1F3F6),
                 ),
               ),
             ),
@@ -200,8 +230,83 @@ class _DataRow extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: Text(
                 fmtDec(item.peso, digits: 2),
-                style: const TextStyle(fontSize: 12, color: AppColors.text),
+                style: TextStyle(fontSize: 12, color: AppColors.text),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MobileFeatureCard extends StatelessWidget {
+  final FeatureImportance item;
+  final double maxPeso;
+  final Color color;
+  final bool zebra;
+
+  const _MobileFeatureCard({
+    required this.item,
+    required this.maxPeso,
+    required this.color,
+    required this.zebra,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: zebra ? Color(0xFFF8F9FC) : Colors.white,
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  item.nome,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Color(0xFFF1F3F6),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  item.categoria,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                fmtDec(item.peso, digits: 2),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.text,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: maxPeso == 0 ? null : item.peso / maxPeso,
+              minHeight: 6,
+              color: color,
+              backgroundColor: Color(0xFFF1F3F6),
             ),
           ),
         ],

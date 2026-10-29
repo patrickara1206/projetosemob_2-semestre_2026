@@ -6,10 +6,10 @@ import '../core/theme.dart';
 class KpiCard extends StatelessWidget {
   final String title;
   final IconData icon;
-  final String value;
-  final String? unit;
-  final String? prefix;
-  final double? variation;
+  final String value; // já formatado (ex.: "42.500" ou "--")
+  final String? unit; // "km"
+  final String? prefix; // "R$"
+  final double? variation; // %
 
   const KpiCard({
     super.key,
@@ -23,10 +23,8 @@ class KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final esquema = Theme.of(context).colorScheme;
-
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,56 +35,61 @@ class KpiCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   title.toUpperCase(),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: esquema.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 4),
               Icon(
                 icon,
-                size: 20,
-                color: esquema.onSurfaceVariant,
+                size: 18,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              if (prefix != null)
-                Text(
-                  '$prefix ',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: esquema.onSurface,
+          SizedBox(height: 10),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                if (prefix != null)
+                  Text(
+                    '$prefix ',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
-                ),
-              Flexible(
-                child: Text(
+                Text(
                   value,
-                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
-                    color: esquema.onSurface,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
-              ),
-              if (unit != null)
-                Text(
-                  ' $unit',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: esquema.onSurfaceVariant,
+                if (unit != null)
+                  Text(
+                    ' $unit',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6),
           _Variation(variation),
         ],
       ),
@@ -96,29 +99,30 @@ class KpiCard extends StatelessWidget {
 
 class _Variation extends StatelessWidget {
   final double? v;
-
   const _Variation(this.v);
 
   @override
   Widget build(BuildContext context) {
-    final esquema = Theme.of(context).colorScheme;
-    final escuro = Theme.of(context).brightness == Brightness.dark;
-
-    if (v == null || v == 0) {
+    if (v == null) {
       return Text(
-        v == null ? '--' : '— Estável',
+        '--',
         style: TextStyle(
           fontSize: 11,
-          color: esquema.onSurfaceVariant,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       );
     }
-
+    if (v == 0) {
+      return Text(
+        '— Estável',
+        style: TextStyle(
+          fontSize: 11,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
     final up = v! > 0;
-    final color = up
-        ? (escuro ? const Color(0xFF86EFAC) : AppColors.green)
-        : (escuro ? const Color(0xFFFCA5A5) : AppColors.red);
-
+    final color = up ? AppColors.green : AppColors.red;
     return Row(
       children: [
         Icon(
@@ -126,10 +130,11 @@ class _Variation extends StatelessWidget {
           size: 12,
           color: color,
         ),
-        const SizedBox(width: 4),
-        Flexible(
+        SizedBox(width: 2),
+        Expanded(
           child: Text(
             '${fmtPercent(v)} vs anterior',
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(fontSize: 11, color: color),
           ),
         ),

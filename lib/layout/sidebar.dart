@@ -29,47 +29,51 @@ class Sidebar extends StatelessWidget {
     return Container(
       color: AppColors.sidebar,
       child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 28),
-              child: Row(
-                children: [
-                  Image.asset(
-                    'assets/images/brasao_sao_caetano.png',
-                    width: 48,
-                    height: 48,
-                    fit: BoxFit.contain,
-                    semanticLabel: 'Brasão de São Caetano do Sul',
-                  ),
-                  const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'SEMOB-SCS',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 28),
+                child: Row(
+                  children: [
+                    Image.asset(
+                      'assets/images/brasao_sao_caetano.png',
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.contain,
+                      semanticLabel: 'Brasão de São Caetano do Sul',
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'SEMOB-SCS',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            'Gestão de Mobilidade',
+                            style: TextStyle(
+                              color: Color(0xFFB8C4E0),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'Gestão de Mobilidade',
-                        style: TextStyle(
-                          color: Color(0xFFB8C4E0),
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            for (final item in _items)
-              _SidebarTile(item: item, selected: item.path == current),
-          ],
+              for (final item in _items)
+                _SidebarTile(item: item, selected: item.path == current),
+            ],
+          ),
         ),
       ),
     );
@@ -101,12 +105,16 @@ class _SidebarTile extends StatelessWidget {
               children: [
                 Icon(item.icon, color: Colors.white, size: 20),
                 const SizedBox(width: 12),
-                Text(
-                  item.label,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                Expanded(
+                  child: Text(
+                    item.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    ),
                   ),
                 ),
               ],

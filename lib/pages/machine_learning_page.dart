@@ -45,22 +45,25 @@ class _MachineLearningPageState extends State<MachineLearningPage> {
       future: _future,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (snap.hasError) {
           return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, color: AppColors.red, size: 40),
-                const SizedBox(height: 8),
-                Text('${snap.error}'),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: _reload,
-                  child: const Text('Tentar novamente'),
-                ),
-              ],
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline, color: AppColors.red, size: 40),
+                  SizedBox(height: 8),
+                  Text('${snap.error}', textAlign: TextAlign.center),
+                  SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: _reload,
+                    child: Text('Tentar novamente'),
+                  ),
+                ],
+              ),
             ),
           );
         }
@@ -79,10 +82,14 @@ class _Content extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, box) {
         final w = box.maxWidth;
-        final pad = w < 700 ? 16.0 : 24.0;
-        const gap = 16.0;
-        final cols = w >= 1000 ? 4 : (w >= 500 ? 2 : 1);
-        final itemW = (w - pad * 2 - gap * (cols - 1)) / cols;
+        final isMobile = w < 600;
+        final pad = isMobile ? 16.0 : 24.0;
+        final gap = isMobile ? 12.0 : 16.0;
+        final cols = w >= 1000 ? 4 : (w >= 540 ? 2 : 1);
+        final availableWidth = w - (pad * 2);
+        final itemW = cols == 1
+            ? availableWidth
+            : (availableWidth - (gap * (cols - 1))) / cols;
         final wide = w >= 1000;
 
         final cards = [
@@ -91,14 +98,14 @@ class _Content extends StatelessWidget {
             icon: Icons.bar_chart,
             iconColor: AppColors.primary,
             value: fmtCompact(data.previsoes),
-            footer: _variacao(data.previsoesVariacao),
+            footer: _variacao(context, data.previsoesVariacao),
           ),
           _Kpi(
             title: 'ANOMALIAS IDENTIFICADAS',
             icon: Icons.warning_amber_rounded,
             iconColor: AppColors.red,
             value: fmtInt(data.anomalias24h),
-            footer: _nota('Nas últimas 24 horas'),
+            footer: _nota(context, 'Nas últimas 24 horas'),
           ),
           _Kpi(
             title: 'SCORE MÉDIO CONFIANÇA',
@@ -106,6 +113,7 @@ class _Content extends StatelessWidget {
             iconColor: AppColors.primary,
             value: fmtDec(data.scoreMedio, digits: 2),
             footer: _nota(
+              context,
               data.scoreMeta == null
                   ? '--'
                   : 'Target: > ${fmtDec(data.scoreMeta, digits: 2)}',
@@ -121,9 +129,10 @@ class _Content extends StatelessWidget {
           ),
         ];
 
-        final flow = const SizedBox(height: 320, child: MlFlowCard());
+        final cardHeight = isMobile ? 280.0 : 320.0;
+        final flow = SizedBox(height: cardHeight, child: MlFlowCard());
         final stability = SizedBox(
-          height: 320,
+          height: cardHeight,
           child: ScoreStabilityChart(serie: data.scoreSerie),
         );
         final table = FeatureImportanceTable(features: data.features);
@@ -134,53 +143,111 @@ class _Content extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                runSpacing: 12,
-                spacing: 12,
-                children: [
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Status do Motor de Inferência',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.navy,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Monitoramento contínuo do pipeline de Machine Learning '
-                        'e saúde dos modelos preditivos.',
-                        style: TextStyle(fontSize: 12, color: AppColors.muted),
-                      ),
-                    ],
+              if (isMobile) ...[
+                Text(
+                  'Status do Motor de Inferência',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.history, size: 16),
-                        label: const Text('Histórico'),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Monitoramento contínuo do pipeline de Machine Learning e saúde dos modelos preditivos.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          // TODO: abrir histórico de treinamentos
+                        },
+                        icon: Icon(Icons.history, size: 16),
+                        label: Text('Histórico'),
                       ),
-                      const SizedBox(width: 10),
-                      FilledButton.icon(
-                        onPressed: () {},
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          // TODO: chamar endpoint de re-treino (back end)
+                        },
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primary,
+                          padding: EdgeInsets.symmetric(horizontal: 8),
                         ),
-                        icon: const Icon(Icons.play_arrow, size: 16),
-                        label: const Text('Re-treinar Modelo'),
+                        icon: Icon(Icons.play_arrow, size: 16),
+                        label: Text(
+                          'Re-treinar',
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Status do Motor de Inferência',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Monitoramento contínuo do pipeline de Machine Learning '
+                            'e saúde dos modelos preditivos.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            // TODO: abrir histórico de treinamentos
+                          },
+                          icon: Icon(Icons.history, size: 16),
+                          label: Text('Histórico'),
+                        ),
+                        SizedBox(width: 10),
+                        FilledButton.icon(
+                          onPressed: () {
+                            // TODO: chamar endpoint de re-treino (back end)
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                          ),
+                          icon: Icon(Icons.play_arrow, size: 16),
+                          label: Text('Re-treinar Modelo'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+              SizedBox(height: 20),
               Wrap(
                 spacing: gap,
                 runSpacing: gap,
@@ -188,36 +255,36 @@ class _Content extends StatelessWidget {
                   for (final c in cards) SizedBox(width: itemW, child: c),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               if (wide)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(child: flow),
-                    const SizedBox(width: 20),
+                    SizedBox(width: 20),
                     Expanded(child: stability),
                   ],
                 )
               else ...[
                 flow,
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 stability,
               ],
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               if (wide)
                 IntrinsicHeight(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Expanded(flex: 3, child: table),
-                      const SizedBox(width: 20),
+                      SizedBox(width: 20),
                       Expanded(flex: 2, child: logs),
                     ],
                   ),
                 )
               else ...[
                 table,
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 logs,
               ],
             ],
@@ -228,11 +295,17 @@ class _Content extends StatelessWidget {
   }
 }
 
-Widget _nota(String t) =>
-    Text(t, style: const TextStyle(fontSize: 11, color: AppColors.muted));
+Widget _nota(BuildContext context, String t) => Text(
+  t,
+  overflow: TextOverflow.ellipsis,
+  style: TextStyle(
+    fontSize: 11,
+    color: Theme.of(context).colorScheme.onSurfaceVariant,
+  ),
+);
 
-Widget _variacao(double? v) {
-  if (v == null) return _nota('--');
+Widget _variacao(BuildContext context, double? v) {
+  if (v == null) return _nota(context, '--');
   final up = v >= 0;
   final color = up ? AppColors.green : AppColors.red;
   return Row(
@@ -242,10 +315,11 @@ Widget _variacao(double? v) {
         size: 14,
         color: color,
       ),
-      const SizedBox(width: 4),
-      Flexible(
+      SizedBox(width: 4),
+      Expanded(
         child: Text(
           '${fmtPercent(v)} vs semana anterior',
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(fontSize: 11, color: color),
         ),
       ),
@@ -259,7 +333,7 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (status == null) return _nota('--');
+    if (status == null) return _nota(context, '--');
 
     late final String label;
     late final Color fg;
@@ -272,7 +346,7 @@ class _StatusChip extends StatelessWidget {
         break;
       case 'atencao':
         label = 'Status: Atenção';
-        fg = const Color(0xFFB7791F);
+        fg = Color(0xFFB7791F);
         bg = AppColors.orangeSoft;
         break;
       default:
@@ -284,7 +358,7 @@ class _StatusChip extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(10),
@@ -293,7 +367,7 @@ class _StatusChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.check, size: 11, color: fg),
-            const SizedBox(width: 4),
+            SizedBox(width: 4),
             Text(label, style: TextStyle(fontSize: 10, color: fg)),
           ],
         ),
@@ -322,10 +396,10 @@ class _Kpi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: cardDecoration().copyWith(
-        color: tinted ? const Color(0xFFEAF1FB) : AppColors.card,
-      ),
+      padding: EdgeInsets.all(16),
+      decoration: cardDecoration(
+        context,
+      ).copyWith(color: tinted ? Color(0xFFEAF1FB) : AppColors.card),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -334,30 +408,32 @@ class _Kpi extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF374151),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
-              Icon(icon, size: 20, color: iconColor),
+              SizedBox(width: 4),
+              Icon(icon, size: 18, color: iconColor),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 10),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 28,
+              style: TextStyle(
+                fontSize: 26,
                 fontWeight: FontWeight.w800,
-                color: AppColors.navy,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 6),
           footer,
         ],
       ),

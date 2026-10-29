@@ -123,16 +123,13 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Importar dados',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 8),
@@ -157,26 +154,17 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
                 value: 'operacao',
                 child: Text('Operação geral'),
               ),
-              DropdownMenuItem(
-                value: 'fcv',
-                child: Text('FCV'),
-              ),
+              DropdownMenuItem(value: 'fcv', child: Text('FCV')),
               DropdownMenuItem(
                 value: 'faixa_horaria',
                 child: Text('Faixa horária'),
               ),
-              DropdownMenuItem(
-                value: 'linhas',
-                child: Text('Linhas'),
-              ),
+              DropdownMenuItem(value: 'linhas', child: Text('Linhas')),
               DropdownMenuItem(
                 value: 'resumo_faixa_horaria',
                 child: Text('Resumo por faixa horária'),
               ),
-              DropdownMenuItem(
-                value: 'viagens',
-                child: Text('Viagens'),
-              ),
+              DropdownMenuItem(value: 'viagens', child: Text('Viagens')),
               DropdownMenuItem(
                 value: 'viagens_nao_iniciadas',
                 child: Text('Viagens não iniciadas'),
@@ -219,18 +207,9 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
           DropdownButton<String>(
             value: mes,
             items: const [
-              DropdownMenuItem(
-                value: '2026-07',
-                child: Text('Julho/2026'),
-              ),
-              DropdownMenuItem(
-                value: '2026-08',
-                child: Text('Agosto/2026'),
-              ),
-              DropdownMenuItem(
-                value: '2026-09',
-                child: Text('Setembro/2026'),
-              ),
+              DropdownMenuItem(value: '2026-07', child: Text('Julho/2026')),
+              DropdownMenuItem(value: '2026-08', child: Text('Agosto/2026')),
+              DropdownMenuItem(value: '2026-09', child: Text('Setembro/2026')),
             ],
             onChanged: carregando
                 ? null
@@ -253,14 +232,8 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
           DropdownButton<String>(
             value: tipoPeriodo,
             items: const [
-              DropdownMenuItem(
-                value: 'mensal',
-                child: Text('Mensal'),
-              ),
-              DropdownMenuItem(
-                value: 'quinzenal',
-                child: Text('Quinzenal'),
-              ),
+              DropdownMenuItem(value: 'mensal', child: Text('Mensal')),
+              DropdownMenuItem(value: 'quinzenal', child: Text('Quinzenal')),
             ],
             onChanged: carregando
                 ? null
@@ -282,15 +255,11 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.upload_file),
             label: Text(
-              carregandoHtml
-                  ? 'Importando...'
-                  : 'Selecionar e importar HTML',
+              carregandoHtml ? 'Importando...' : 'Selecionar e importar HTML',
             ),
           ),
 
@@ -302,15 +271,11 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.folder_zip_outlined),
             label: Text(
-              carregandoZip
-                  ? 'Importando...'
-                  : 'Selecionar e importar ZIP',
+              carregandoZip ? 'Importando...' : 'Selecionar e importar ZIP',
             ),
           ),
 
@@ -322,25 +287,17 @@ class _ImportacaoPageState extends State<ImportacaoPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: sucesso
-                    ? Colors.green.shade50
-                    : Colors.red.shade50,
+                color: sucesso ? Colors.green.shade50 : Colors.red.shade50,
                 border: Border.all(
-                  color: sucesso
-                      ? Colors.green.shade300
-                      : Colors.red.shade300,
+                  color: sucesso ? Colors.green.shade300 : Colors.red.shade300,
                 ),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    sucesso
-                        ? Icons.check_circle
-                        : Icons.error_outline,
-                    color: sucesso
-                        ? Colors.green
-                        : Colors.red,
+                    sucesso ? Icons.check_circle : Icons.error_outline,
+                    color: sucesso ? Colors.green : Colors.red,
                   ),
 
                   const SizedBox(width: 12),
