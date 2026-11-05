@@ -23,6 +23,7 @@ class AppShell extends StatelessWidget {
               : null,
           body: SafeArea(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (!compact) SizedBox(width: 240, child: Sidebar()),
                 Expanded(
