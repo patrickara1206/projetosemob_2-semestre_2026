@@ -6,7 +6,6 @@ import '../core/state.dart';
 import '../core/theme.dart';
 import '../models/passageiros_overview.dart';
 import '../services/passageiros_service.dart';
-import '../widgets/category_table.dart';
 import '../widgets/demand_chart.dart';
 import '../widgets/page_header.dart';
 import '../widgets/tariff_donut.dart';
@@ -359,17 +358,6 @@ class _Content extends StatelessWidget {
                   child: donut,
                 ),
               ],
-
-              const SizedBox(
-                height: 20,
-              ),
-
-              CategoryTable(
-                categorias:
-                    data.categorias,
-                onVerRelatorio:
-                    () {},
-              ),
             ],
           ),
         );

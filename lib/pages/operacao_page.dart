@@ -6,7 +6,6 @@ import '../core/state.dart';
 import '../core/theme.dart';
 import '../models/operacao_overview.dart';
 import '../services/operacao_service.dart';
-import '../widgets/anomaly_table.dart';
 import '../widgets/hourly_chart.dart';
 import '../widgets/km_bar_chart.dart';
 import '../widgets/page_header.dart';
@@ -538,19 +537,6 @@ class _Content extends StatelessWidget {
 
                 viagensChart,
               ],
-
-              const SizedBox(
-                height: 20,
-              ),
-
-              AnomalyTable(
-                anomalias:
-                    data.anomalias,
-                onAction:
-                    (anomalia) {},
-                onVerTodas:
-                    () {},
-              ),
             ],
           ),
         );

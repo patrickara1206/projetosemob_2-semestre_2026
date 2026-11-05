@@ -5,7 +5,6 @@ import '../core/formatters.dart';
 import '../core/state.dart';
 import '../models/dashboard_overview.dart';
 import '../services/dashboard_service.dart';
-import '../widgets/anomaly_card.dart';
 import '../widgets/intelligence_card.dart';
 import '../widgets/kpi_card.dart';
 import '../widgets/page_header.dart';
@@ -202,44 +201,6 @@ class _Content extends StatelessWidget {
           children: [
             IntelligenceCard(
               data: data.inteligencia,
-            ),
-
-            const SizedBox(height: 16),
-
-            AnomalyPanel(
-              anomalias: data.anomalias,
-              onTapItem: (anomalia) {
-                showDialog<void>(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text(
-                        anomalia.titulo,
-                      ),
-                      content: Text(
-                        'Observado: '
-                        '${anomalia.observado}\n'
-                        'Esperado: '
-                        '${anomalia.esperado}\n'
-                        'Desvio: '
-                        '${fmtPercent(anomalia.desvio)}',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(
-                              context,
-                            ).pop();
-                          },
-                          child: const Text(
-                            'Fechar',
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
             ),
           ],
         );
