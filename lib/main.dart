@@ -13,7 +13,6 @@ import 'pages/configuracoes_page.dart';
 import 'pages/financeiro_page.dart';
 import 'pages/importacao_page.dart';
 import 'pages/login_page.dart';
-import 'pages/machine_learning_page.dart';
 import 'pages/operacao_page.dart';
 import 'pages/overview_page.dart';
 import 'pages/passageiros_page.dart';
@@ -75,22 +74,11 @@ final _router = GoRouter(
 
         _route('/passageiros', const PassageirosPage()),
 
-        _route(
-          '/financeiro',
-          const FinanceiroPage(),
-        ),
+        _route('/financeiro', const FinanceiroPage()),
 
-        _route('/machine-learning', const MachineLearningPage()),
+        _route('/importacao', const ImportacaoPage()),
 
-        _route(
-          '/importacao',
-          const ImportacaoPage(),
-        ),
-
-        _route(
-          '/configuracoes',
-          const ConfiguracoesPage(),
-        ),
+        _route('/configuracoes', const ConfiguracoesPage()),
       ],
     ),
   ],
@@ -118,9 +106,7 @@ class SemobApp extends StatelessWidget {
           title: 'SEMOB-SCS',
           debugShowCheckedModeBanner: false,
           theme: buildTheme(),
-          darkTheme: buildTheme(
-            brightness: Brightness.dark,
-          ),
+          darkTheme: buildTheme(brightness: Brightness.dark),
           themeMode: modo,
           routerConfig: _router,
           builder: (context, child) => AcessibilidadeLayer(child: child),

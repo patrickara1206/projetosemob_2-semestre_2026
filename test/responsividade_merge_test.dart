@@ -51,11 +51,16 @@ void main() {
           ),
         );
         await tester.pump(const Duration(milliseconds: 500));
-        if (size.width < 900) {
-          tester.state<ScaffoldState>(find.byType(Scaffold).first).openDrawer();
-          await tester.pump(const Duration(milliseconds: 500));
-        }
+        expect(find.byType(Sidebar).hitTestable(), findsNothing);
+        expect(find.text('SEMOB-SCS'), findsOneWidget);
+        await tester.tap(find.text('MENU'));
+        await tester.pump(const Duration(milliseconds: 500));
         expect(find.byType(Sidebar), findsOneWidget);
+        expect(find.text('Machine Learning'), findsNothing);
+        expect(find.text('SEMOB-SCS').hitTestable(), findsOneWidget);
+        await tester.tap(find.text('MENU'));
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(find.byType(Sidebar).hitTestable(), findsNothing);
         expect(tester.takeException(), isNull, reason: '$size');
         await tester.pumpWidget(const SizedBox());
       }, () => client);

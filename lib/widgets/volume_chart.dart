@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'futuristic_chart_panel.dart';
 
 import '../core/theme.dart';
 import '../models/dashboard_overview.dart';
@@ -61,9 +62,9 @@ class VolumeChart extends StatelessWidget {
       (total, ponto) => total + ponto.esperado,
     );
 
-    return Container(
+    return FuturisticChartPanel(
       padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(context),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -234,7 +235,7 @@ class VolumeChart extends StatelessWidget {
         lineTouchData: LineTouchData(
           enabled: true,
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) => esquema.inverseSurface,
+            getTooltipColor: (_) => chartTooltipBackground,
             fitInsideHorizontally: true,
             fitInsideVertically: true,
             maxContentWidth: 220,
@@ -249,7 +250,7 @@ class VolumeChart extends StatelessWidget {
                   '${serie[indice].rotulo}'
                   ' · $titulo: ${_numero(ponto.y)}',
                   TextStyle(
-                    color: esquema.onInverseSurface,
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -263,9 +264,13 @@ class VolumeChart extends StatelessWidget {
             spots: realizados,
             isCurved: true,
             curveSmoothness: 0.15,
-            color: azul,
-            barWidth: 2.5,
-            belowBarData: BarAreaData(show: false),
+            gradient: chartLineGradient(azul),
+            shadow: chartLineGlow(azul),
+            barWidth: 3,
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: chartAreaGradient(azul),
+            ),
             dotData: const FlDotData(show: false),
           ),
           LineChartBarData(
@@ -273,7 +278,8 @@ class VolumeChart extends StatelessWidget {
             isCurved: true,
             curveSmoothness: 0.15,
             color: laranja,
-            barWidth: 1.8,
+            shadow: chartLineGlow(laranja),
+            barWidth: 2,
             dashArray: [6, 5],
             dotData: const FlDotData(show: false),
           ),

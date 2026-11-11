@@ -2,8 +2,10 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'futuristic_chart_panel.dart';
 
 import '../core/theme.dart';
+import '../core/formatters.dart';
 import '../models/passageiros_overview.dart';
 
 /// Evolução diária de demanda.
@@ -11,10 +13,7 @@ import '../models/passageiros_overview.dart';
 class DemandChart extends StatelessWidget {
   final List<DemandaPonto> serie;
 
-  const DemandChart({
-    super.key,
-    required this.serie,
-  });
+  const DemandChart({super.key, required this.serie});
 
   static const _line = Color(0xFF0B5FB0);
   static const _leftReserved = 40.0;
@@ -26,39 +25,31 @@ class DemandChart extends StatelessWidget {
       builder: (context, box) {
         final isMobile = box.maxWidth < 600;
 
-        return Container(
-          padding: EdgeInsets.all(
-            isMobile ? 12 : 20,
-          ),
-          decoration: cardDecoration(context),
+        return FuturisticChartPanel(
+          padding: EdgeInsets.all(isMobile ? 12 : 20),
+
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
                 width: double.infinity,
                 child: Wrap(
-                  alignment:
-                      WrapAlignment.spaceBetween,
-                  crossAxisAlignment:
-                      WrapCrossAlignment.center,
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 12,
                   runSpacing: 8,
                   children: [
                     Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'EVOLUÇÃO DIÁRIA DE DEMANDA',
                           style: TextStyle(
-                            fontSize:
-                                isMobile ? 11 : 12,
-                            fontWeight:
-                                FontWeight.w700,
-                            color:
-                                Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                            fontSize: isMobile ? 11 : 12,
+                            fontWeight: FontWeight.w700,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -66,10 +57,9 @@ class DemandChart extends StatelessWidget {
                           'Volume de passageiros no período selecionado',
                           style: TextStyle(
                             fontSize: 10,
-                            color:
-                                Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -79,9 +69,7 @@ class DemandChart extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(
-                height: isMobile ? 10 : 16,
-              ),
+              SizedBox(height: isMobile ? 10 : 16),
 
               Expanded(
                 child: serie.isEmpty
@@ -89,10 +77,9 @@ class DemandChart extends StatelessWidget {
                         child: Text(
                           'Sem dados para o período selecionado',
                           style: TextStyle(
-                            color:
-                                Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       )
@@ -110,33 +97,16 @@ class DemandChart extends StatelessWidget {
       builder: (context, box) {
         final n = serie.length;
 
-        final maxVol =
-            serie.map((e) => e.volume).reduce(math.max);
+        final maxVol = serie.map((e) => e.volume).reduce(math.max);
 
-        final maxY =
-            maxVol <= 0
-                ? 1.0
-                : maxVol * 1.15;
+        final maxY = maxVol <= 0 ? 1.0 : maxVol * 1.15;
 
-        final interval =
-            isMobile
-                ? (
-                    n <= 4
-                        ? 1.0
-                        : (n / 3).ceilToDouble()
-                  )
-                : (
-                    n <= 6
-                        ? 1.0
-                        : (n / 6).ceilToDouble()
-                  );
+        final interval = isMobile
+            ? (n <= 4 ? 1.0 : (n / 3).ceilToDouble())
+            : (n <= 6 ? 1.0 : (n / 6).ceilToDouble());
 
         final spots = [
-          for (var i = 0; i < n; i++)
-            FlSpot(
-              i.toDouble(),
-              serie[i].volume,
-            ),
+          for (var i = 0; i < n; i++) FlSpot(i.toDouble(), serie[i].volume),
         ];
 
         return LineChart(
@@ -146,55 +116,37 @@ class DemandChart extends StatelessWidget {
             minY: 0,
             maxY: maxY,
 
-            borderData: FlBorderData(
-              show: false,
-            ),
+            borderData: FlBorderData(show: false),
 
             gridData: FlGridData(
               drawVerticalLine: false,
-              getDrawingHorizontalLine:
-                  (_) => FlLine(
-                    color: AppColors.border,
-                    strokeWidth: 1,
-                  ),
+              getDrawingHorizontalLine: (_) =>
+                  FlLine(color: AppColors.border, strokeWidth: 1),
             ),
 
             titlesData: FlTitlesData(
-              topTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: false,
-                ),
-              ),
+              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
 
               rightTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: false,
-                ),
+                sideTitles: SideTitles(showTitles: false),
               ),
 
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: _leftReserved,
-                  getTitlesWidget: (
-                    v,
-                    meta,
-                  ) {
+                  getTitlesWidget: (v, meta) {
                     final k = v / 1000;
 
-                    final txt =
-                        v == 0
-                            ? '0'
-                            : '${k == k.roundToDouble() ? k.toInt() : k.toStringAsFixed(1)}k';
+                    final txt = v == 0
+                        ? '0'
+                        : '${k == k.roundToDouble() ? k.toInt() : k.toStringAsFixed(1)}k';
 
                     return Text(
                       txt,
                       style: TextStyle(
                         fontSize: 9,
-                        color:
-                            Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     );
                   },
@@ -206,32 +158,20 @@ class DemandChart extends StatelessWidget {
                   showTitles: true,
                   reservedSize: _bottomReserved,
                   interval: interval,
-                  getTitlesWidget: (
-                    v,
-                    meta,
-                  ) {
+                  getTitlesWidget: (v, meta) {
                     final i = v.toInt();
 
-                    if (
-                      i < 0
-                      || i >= n
-                    ) {
+                    if (i < 0 || i >= n) {
                       return const SizedBox();
                     }
 
                     return Padding(
-                      padding:
-                          const EdgeInsets.only(
-                        top: 8,
-                      ),
+                      padding: const EdgeInsets.only(top: 8),
                       child: Text(
                         serie[i].rotulo,
                         style: TextStyle(
                           fontSize: 9,
-                          color:
-                              Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     );
@@ -240,25 +180,38 @@ class DemandChart extends StatelessWidget {
               ),
             ),
 
+            lineTouchData: LineTouchData(
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipColor: (_) => chartTooltipBackground,
+                fitInsideHorizontally: true,
+                fitInsideVertically: true,
+                getTooltipItems: (points) => points.map((point) {
+                  final index = point.x.round().clamp(0, serie.length - 1);
+                  return LineTooltipItem(
+                    '${serie[index].rotulo} · ${fmtInt(point.y)}',
+                    const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
             lineBarsData: [
               LineChartBarData(
                 spots: spots,
                 isCurved: true,
-                color: _line,
-                barWidth:
-                    isMobile ? 3 : 5,
+                gradient: chartLineGradient(_line),
+                shadow: chartLineGlow(_line),
+                barWidth: isMobile ? 3 : 5,
 
                 belowBarData: BarAreaData(
                   show: true,
-                  color:
-                      _line.withOpacity(
-                    0.06,
-                  ),
+                  gradient: chartAreaGradient(_line),
                 ),
 
-                dotData: FlDotData(
-                  show: false,
-                ),
+                dotData: FlDotData(show: false),
               ),
             ],
           ),
@@ -273,27 +226,17 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget item(
-      Color color,
-      String texto,
-    ) {
+    Widget item(Color color, String texto) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.circle,
-            size: 8,
-            color: color,
-          ),
+          Icon(Icons.circle, size: 8, color: color),
           const SizedBox(width: 4),
           Text(
             texto,
             style: TextStyle(
               fontSize: 10,
-              color:
-                  Theme.of(context)
-                      .colorScheme
-                      .onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -303,12 +246,7 @@ class _Legend extends StatelessWidget {
     return Wrap(
       spacing: 12,
       runSpacing: 4,
-      children: [
-        item(
-          const Color(0xFF0B5FB0),
-          'Volume',
-        ),
-      ],
+      children: [item(const Color(0xFF0B5FB0), 'Volume')],
     );
   }
 }

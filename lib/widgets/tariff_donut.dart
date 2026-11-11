@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'futuristic_chart_panel.dart';
 
 import '../core/formatters.dart';
 import '../core/theme.dart';
@@ -25,9 +26,9 @@ class TariffDonut extends StatelessWidget {
         final radius = isMobile ? 22.0 : 28.0;
         final centerRadius = isMobile ? 48.0 : 62.0;
 
-        return Container(
+        return FuturisticChartPanel(
           padding: EdgeInsets.all(isMobile ? 14 : 20),
-          decoration: cardDecoration(context),
+
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -67,7 +68,7 @@ class TariffDonut extends StatelessWidget {
                               PieChart(
                                 PieChartData(
                                   startDegreeOffset: -90,
-                                  sectionsSpace: 0,
+                                  sectionsSpace: 2,
                                   centerSpaceRadius: centerRadius,
                                   sections: p == null
                                       ? [
@@ -81,7 +82,9 @@ class TariffDonut extends StatelessWidget {
                                       : [
                                           PieChartSectionData(
                                             value: p,
-                                            color: _pagantes,
+                                            gradient: chartBarGradient(
+                                              _pagantes,
+                                            ),
                                             radius: radius,
                                             showTitle: false,
                                           ),
