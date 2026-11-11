@@ -1,7 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'futuristic_chart_panel.dart';
 
 import '../core/theme.dart';
+import '../core/formatters.dart';
 import '../models/operacao_overview.dart';
 
 class HourlyChart extends StatelessWidget {
@@ -16,9 +18,9 @@ class HourlyChart extends StatelessWidget {
       builder: (context, box) {
         final isMobile = box.maxWidth < 600;
 
-        return Container(
+        return FuturisticChartPanel(
           padding: EdgeInsets.all(isMobile ? 14 : 20),
-          decoration: cardDecoration(context),
+
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -133,15 +135,34 @@ class HourlyChart extends StatelessWidget {
             ),
           ),
         ),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (_) => chartTooltipBackground,
+            fitInsideHorizontally: true,
+            fitInsideVertically: true,
+            getTooltipItems: (points) => points.map((point) {
+              final index = point.x.round().clamp(0, dados.length - 1);
+              return LineTooltipItem(
+                '${dados[index].rotulo} · ${fmtInt(point.y)}',
+                const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              );
+            }).toList(),
+          ),
+        ),
         lineBarsData: [
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: _line,
+            gradient: chartLineGradient(_line),
+            shadow: chartLineGlow(_line),
             barWidth: isMobile ? 3.5 : 5,
             belowBarData: BarAreaData(
               show: true,
-              color: _line.withOpacity(0.06),
+              gradient: chartAreaGradient(_line),
             ),
             dotData: FlDotData(
               show: true,

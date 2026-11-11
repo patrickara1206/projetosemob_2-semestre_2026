@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/theme.dart';
+import 'sidebar_waves.dart';
 
 class _NavItem {
   final String label;
@@ -15,7 +16,6 @@ const _items = [
   _NavItem('Operação', Icons.directions_bus_outlined, '/operacao'),
   _NavItem('Passageiros', Icons.groups_outlined, '/passageiros'),
   _NavItem('Financeiro', Icons.payments_outlined, '/financeiro'),
-  _NavItem('Machine Learning', Icons.psychology_outlined, '/machine-learning'),
   _NavItem('Importar dados', Icons.upload_file_outlined, '/importacao'),
 ];
 
@@ -28,53 +28,22 @@ class Sidebar extends StatelessWidget {
 
     return Container(
       color: AppColors.sidebar,
-      child: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 28),
-                child: Row(
-                  children: [
-                    Image.asset(
-                      'assets/images/brasao_sao_caetano.png',
-                      width: 48,
-                      height: 48,
-                      fit: BoxFit.contain,
-                      semanticLabel: 'Brasão de São Caetano do Sul',
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'SEMOB-SCS',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            'Gestão de Mobilidade',
-                            style: TextStyle(
-                              color: Color(0xFFB8C4E0),
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+      child: Stack(
+        children: [
+          const Positioned.fill(child: SidebarWaves()),
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  for (final item in _items)
+                    _SidebarTile(item: item, selected: item.path == current),
+                ],
               ),
-              for (final item in _items)
-                _SidebarTile(item: item, selected: item.path == current),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

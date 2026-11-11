@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'futuristic_chart_panel.dart';
 
 import '../core/formatters.dart';
 import '../core/theme.dart';
@@ -8,10 +9,7 @@ import '../models/financeiro_overview.dart';
 class FinanceiroDetalhes extends StatelessWidget {
   final List<DiaFinanceiro> dias;
 
-  const FinanceiroDetalhes({
-    super.key,
-    required this.dias,
-  });
+  const FinanceiroDetalhes({super.key, required this.dias});
 
   @override
   Widget build(BuildContext context) {
@@ -32,15 +30,9 @@ class FinanceiroDetalhes extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, box) {
-        final grafico = SizedBox(
-          height: 400,
-          child: _grafico(context),
-        );
+        final grafico = SizedBox(height: 400, child: _grafico(context));
 
-        final tabela = SizedBox(
-          height: 400,
-          child: _tabela(context),
-        );
+        final tabela = SizedBox(height: 400, child: _tabela(context));
 
         if (box.maxWidth >= 1000) {
           return Row(
@@ -53,22 +45,12 @@ class FinanceiroDetalhes extends StatelessWidget {
           );
         }
 
-        return Column(
-          children: [
-            grafico,
-            const SizedBox(height: 16),
-            tabela,
-          ],
-        );
+        return Column(children: [grafico, const SizedBox(height: 16), tabela]);
       },
     );
   }
 
-  Widget _legenda(
-    BuildContext context,
-    Color cor,
-    String titulo,
-  ) {
+  Widget _legenda(BuildContext context, Color cor, String titulo) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -89,13 +71,9 @@ class FinanceiroDetalhes extends StatelessWidget {
     final cores = Theme.of(context).colorScheme;
     final escuro = Theme.of(context).brightness == Brightness.dark;
 
-    final azul = escuro
-        ? const Color(0xFF60A5FA)
-        : const Color(0xFF2563EB);
+    final azul = escuro ? const Color(0xFF60A5FA) : const Color(0xFF2563EB);
 
-    final laranja = escuro
-        ? const Color(0xFFFB923C)
-        : const Color(0xFFEA580C);
+    final laranja = escuro ? const Color(0xFFFB923C) : const Color(0xFFEA580C);
 
     final vendas = <FlSpot>[];
     final utilizacao = <FlSpot>[];
@@ -144,16 +122,15 @@ class FinanceiroDetalhes extends StatelessWidget {
         ? (menorValor / intervaloY).floor() * intervaloY
         : 0.0;
 
-    final maxY =
-        (maiorValor / intervaloY).ceil() * intervaloY + intervaloY;
+    final maxY = (maiorValor / intervaloY).ceil() * intervaloY + intervaloY;
 
     final intervaloX = dias.length <= 6
         ? 1.0
         : ((dias.length - 1) / 5).ceilToDouble();
 
-    return Container(
+    return FuturisticChartPanel(
       padding: const EdgeInsets.all(20),
-      decoration: cardDecoration(context),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -168,10 +145,7 @@ class FinanceiroDetalhes extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             'Valores em reais dos relatórios importados',
-            style: TextStyle(
-              fontSize: 12,
-              color: cores.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 12, color: cores.onSurfaceVariant),
           ),
           const SizedBox(height: 14),
           Wrap(
@@ -260,7 +234,7 @@ class FinanceiroDetalhes extends StatelessWidget {
                       ),
                       lineTouchData: LineTouchData(
                         touchTooltipData: LineTouchTooltipData(
-                          getTooltipColor: (_) => cores.inverseSurface,
+                          getTooltipColor: (_) => chartTooltipBackground,
                           fitInsideHorizontally: true,
                           fitInsideVertically: true,
                           maxContentWidth: 220,
@@ -274,10 +248,7 @@ class FinanceiroDetalhes extends StatelessWidget {
                               return LineTooltipItem(
                                 '${dias[indice].rotulo}'
                                 ' · $titulo: ${fmtMoney(ponto.y)}',
-                                TextStyle(
-                                  color: cores.onInverseSurface,
-                                  fontSize: 12,
-                                ),
+                                TextStyle(color: Colors.white, fontSize: 12),
                               );
                             }).toList();
                           },
@@ -287,7 +258,12 @@ class FinanceiroDetalhes extends StatelessWidget {
                         LineChartBarData(
                           spots: vendas,
                           isCurved: false,
-                          color: azul,
+                          gradient: chartLineGradient(azul),
+                          shadow: chartLineGlow(azul),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: chartAreaGradient(azul),
+                          ),
                           barWidth: 3,
                           dotData: const FlDotData(show: true),
                         ),
@@ -295,6 +271,7 @@ class FinanceiroDetalhes extends StatelessWidget {
                           spots: utilizacao,
                           isCurved: false,
                           color: laranja,
+                          shadow: chartLineGlow(laranja),
                           barWidth: 2,
                           dashArray: [6, 4],
                           dotData: const FlDotData(show: false),
@@ -306,10 +283,7 @@ class FinanceiroDetalhes extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Toque ou passe o mouse para consultar os valores.',
-            style: TextStyle(
-              fontSize: 11,
-              color: cores.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 11, color: cores.onSurfaceVariant),
           ),
         ],
       ),
@@ -336,10 +310,7 @@ class FinanceiroDetalhes extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '${dias.length} dias com registros',
-            style: TextStyle(
-              fontSize: 12,
-              color: cores.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 12, color: cores.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -350,9 +321,7 @@ class FinanceiroDetalhes extends StatelessWidget {
                   columnSpacing: 20,
                   dividerThickness: 1,
                   border: TableBorder(
-                    horizontalInside: BorderSide(
-                      color: cores.outlineVariant,
-                    ),
+                    horizontalInside: BorderSide(color: cores.outlineVariant),
                   ),
                   headingRowColor: WidgetStatePropertyAll<Color>(
                     cores.surfaceContainerHighest,
@@ -368,14 +337,8 @@ class FinanceiroDetalhes extends StatelessWidget {
                   ),
                   columns: const [
                     DataColumn(label: Text('Data')),
-                    DataColumn(
-                      label: Text('Vendas'),
-                      numeric: true,
-                    ),
-                    DataColumn(
-                      label: Text('Utilização'),
-                      numeric: true,
-                    ),
+                    DataColumn(label: Text('Vendas'), numeric: true),
+                    DataColumn(label: Text('Utilização'), numeric: true),
                     DataColumn(
                       label: Text('Crédito circulante'),
                       numeric: true,
@@ -393,9 +356,7 @@ class FinanceiroDetalhes extends StatelessWidget {
                           DataCell(Text(dias[i].rotulo)),
                           DataCell(Text(fmtMoney(dias[i].vendas))),
                           DataCell(Text(fmtMoney(dias[i].utilizacao))),
-                          DataCell(
-                            Text(fmtMoney(dias[i].creditoCirculante)),
-                          ),
+                          DataCell(Text(fmtMoney(dias[i].creditoCirculante))),
                         ],
                       ),
                   ],

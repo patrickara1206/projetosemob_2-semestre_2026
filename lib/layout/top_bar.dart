@@ -319,14 +319,6 @@ class _TopBarState extends State<TopBar> {
       ),
       child: Row(
         children: [
-          if (widget.compact)
-            Builder(
-              builder: (ctx) => IconButton(
-                tooltip: 'Abrir menu',
-                icon: const Icon(Icons.menu),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              ),
-            ),
           Expanded(
             child: Text(
               'Dashboard Operacional',
