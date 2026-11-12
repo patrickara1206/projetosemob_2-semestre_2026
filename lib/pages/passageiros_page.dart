@@ -9,6 +9,7 @@ import '../services/passageiros_service.dart';
 import '../widgets/demand_chart.dart';
 import '../widgets/page_header.dart';
 import '../widgets/tariff_donut.dart';
+import '../widgets/tabela_dados.dart';
 
 class PassageirosPage extends StatefulWidget {
   const PassageirosPage({super.key});
@@ -358,6 +359,28 @@ class _Content extends StatelessWidget {
                   child: donut,
                 ),
               ],
+              const SizedBox(height: 24),
+
+              TabelaDados(
+                key: ValueKey(
+                  '${periodoNotifier.value.api}-'
+                  '${periodoNotifier.mesReferencia}',
+                ),
+                titulo: 'Demanda diária de passageiros',
+                colunas: const [
+                  'Data',
+                  'Total de passageiros',
+                  'Anomalia',
+                ],
+                linhas: [
+                  for (final ponto in data.serie)
+                    [
+                      ponto.rotulo,
+                      fmtInt(ponto.volume),
+                      ponto.anomalia ? 'Sim' : 'Não',
+                    ],
+                ],
+              ),
             ],
           ),
         );

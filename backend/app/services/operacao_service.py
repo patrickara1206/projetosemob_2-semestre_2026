@@ -261,6 +261,7 @@ def obter_overview_operacao(
             }
             for row in km_por_mes.itertuples()
         ]
+        
     else:
         km_mensal = [
             {
@@ -269,6 +270,23 @@ def obter_overview_operacao(
                 "morta": km_morta,
             }
         ]
+    registros_diarios = []
+
+    for row in df.sort_values("data").itertuples():
+        registros_diarios.append({
+        "data": row.data.strftime("%d/%m/%Y"),
+        "veiculos": int(row.veiculos) if pd.notna(row.veiculos) else None,
+        "viagens_programadas": int(row.viagens_programadas)
+            if pd.notna(row.viagens_programadas) else None,
+        "viagens_realizadas": int(row.viagens_realizadas)
+            if pd.notna(row.viagens_realizadas) else None,
+        "km_produtiva": float(row.km_produtiva)
+            if pd.notna(row.km_produtiva) else None,
+        "km_morta": float(row.km_morta)
+            if pd.notna(row.km_morta) else None,
+    })
+        
+    
 
     return {
         "total_viagens": {
@@ -288,4 +306,5 @@ def obter_overview_operacao(
         "serie_viagens": serie,
         "viagens_por_hora": (viagens_por_hora),
         "anomalias": [],
+        "registros_diarios": registros_diarios,
     }

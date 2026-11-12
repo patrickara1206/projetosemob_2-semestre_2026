@@ -9,6 +9,7 @@ import '../services/operacao_service.dart';
 import '../widgets/hourly_chart.dart';
 import '../widgets/km_bar_chart.dart';
 import '../widgets/page_header.dart';
+import '../widgets/tabela_dados.dart';
 
 class OperacaoPage extends StatefulWidget {
   const OperacaoPage({super.key});
@@ -54,9 +55,7 @@ class _OperacaoPageState extends State<OperacaoPage> {
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasError) {
@@ -72,16 +71,11 @@ class _OperacaoPageState extends State<OperacaoPage> {
                     size: 40,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    '${snapshot.error}',
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('${snapshot.error}', textAlign: TextAlign.center),
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: _reload,
-                    child: const Text(
-                      'Tentar novamente',
-                    ),
+                    child: const Text('Tentar novamente'),
                   ),
                 ],
               ),
@@ -89,10 +83,7 @@ class _OperacaoPageState extends State<OperacaoPage> {
           );
         }
 
-        return _Content(
-          data: snapshot.data!,
-          onRefresh: _reload,
-        );
+        return _Content(data: snapshot.data!, onRefresh: _reload);
       },
     );
   }
@@ -102,117 +93,69 @@ class _Content extends StatelessWidget {
   final OperacaoOverview data;
   final VoidCallback onRefresh;
 
-  const _Content({
-    required this.data,
-    required this.onRefresh,
-  });
+  const _Content({required this.data, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
     final cores = Theme.of(context).colorScheme;
 
-    final escuro =
-        Theme.of(context).brightness == Brightness.dark;
+    final escuro = Theme.of(context).brightness == Brightness.dark;
 
-    final verde = escuro
-        ? const Color(0xFF86EFAC)
-        : AppColors.green;
+    final verde = escuro ? const Color(0xFF86EFAC) : AppColors.green;
 
     return LayoutBuilder(
       builder: (context, box) {
         final largura = box.maxWidth;
 
-        final padding = largura < 700
-            ? 16.0
-            : 24.0;
+        final padding = largura < 700 ? 16.0 : 24.0;
 
         const gap = 16.0;
 
         final colunas = largura >= 900
             ? 3
             : largura >= 600
-                ? 2
-                : 1;
+            ? 2
+            : 1;
 
         final larguraCartao =
-            (
-              largura
-              - padding * 2
-              - gap * (colunas - 1)
-            ) /
-            colunas;
+            (largura - padding * 2 - gap * (colunas - 1)) / colunas;
 
         final execucao = data.execucao;
 
-        final pontualidade =
-            data.pontualidade;
+        final pontualidade = data.pontualidade;
 
-        final meta =
-            data.metaPontualidade;
+        final meta = data.metaPontualidade;
 
-        final variacao =
-            data.pontualidadeVariacao;
+        final variacao = data.pontualidadeVariacao;
 
-        final negativa =
-            (variacao ?? 0) < 0;
+        final negativa = (variacao ?? 0) < 0;
 
         final corVariacao = negativa
-            ? (
-                escuro
-                    ? const Color(0xFFFCD34D)
-                    : const Color(0xFF92400E)
-              )
+            ? (escuro ? const Color(0xFFFCD34D) : const Color(0xFF92400E))
             : verde;
 
         final fundoVariacao = negativa
-            ? (
-                escuro
-                    ? const Color(0xFF422E12)
-                    : AppColors.orangeSoft
-              )
-            : (
-                escuro
-                    ? const Color(0xFF15382A)
-                    : AppColors.greenSoft
-              );
+            ? (escuro ? const Color(0xFF422E12) : AppColors.orangeSoft)
+            : (escuro ? const Color(0xFF15382A) : AppColors.greenSoft);
 
         String textoMeta = '--';
 
-        if (
-          pontualidade != null
-          && meta != null
-        ) {
-          textoMeta =
-              pontualidade >= meta
-                  ? 'Meta atingida '
-                      '(${fmtDec(meta, digits: 0)}%)'
-                  : 'Abaixo da meta '
-                      '(${fmtDec(meta, digits: 0)}%)';
+        if (pontualidade != null && meta != null) {
+          textoMeta = pontualidade >= meta
+              ? 'Meta atingida '
+                    '(${fmtDec(meta, digits: 0)}%)'
+              : 'Abaixo da meta '
+                    '(${fmtDec(meta, digits: 0)}%)';
         }
 
-        final totalKm =
-            (data.kmProdutiva ?? 0)
-            +
-            (data.kmMorta ?? 0);
+        final totalKm = (data.kmProdutiva ?? 0) + (data.kmMorta ?? 0);
 
-        double? fracao(
-          double? valor,
-        ) {
-          if (
-            valor == null
-            || totalKm == 0
-          ) {
+        double? fracao(double? valor) {
+          if (valor == null || totalKm == 0) {
             return null;
           }
 
-          return (
-            valor / totalKm
-          )
-              .clamp(
-                0.0,
-                1.0,
-              )
-              .toDouble();
+          return (valor / totalKm).clamp(0.0, 1.0).toDouble();
         }
 
         final cards = <Widget>[
@@ -220,139 +163,87 @@ class _Content extends StatelessWidget {
             title: 'TOTAL DE VIAGENS',
             icon: Icons.route_outlined,
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  fmtInt(
-                    data.viagensRealizadas,
-                  ),
+                  fmtInt(data.viagensRealizadas),
                   style: TextStyle(
                     fontSize: 30,
-                    fontWeight:
-                        FontWeight.w800,
-                    color:
-                        cores.onSurface,
+                    fontWeight: FontWeight.w800,
+                    color: cores.onSurface,
                   ),
                 ),
 
                 Text(
                   '${fmtInt(data.viagensProgramadas)} '
                   'viagens programadas',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color:
-                        cores.onSurfaceVariant,
-                  ),
+                  style: TextStyle(fontSize: 12, color: cores.onSurfaceVariant),
                 ),
 
-                const SizedBox(
-                  height: 12,
-                ),
+                const SizedBox(height: 12),
 
                 ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(
-                    4,
-                  ),
-                  child:
-                      LinearProgressIndicator(
-                    value: execucao
-                        ?.clamp(
-                          0.0,
-                          1.0,
-                        )
-                        .toDouble(),
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: execucao?.clamp(0.0, 1.0).toDouble(),
                     minHeight: 6,
-                    color:
-                        AppColors.cyan,
-                    backgroundColor:
-                        cores
-                            .surfaceContainerHighest,
+                    color: AppColors.cyan,
+                    backgroundColor: cores.surfaceContainerHighest,
                   ),
                 ),
 
-                const SizedBox(
-                  height: 8,
-                ),
+                const SizedBox(height: 8),
 
                 Text(
                   execucao == null
                       ? '--'
                       : '${fmtDec(execucao * 100)}% Executado',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: verde,
-                  ),
+                  style: TextStyle(fontSize: 11, color: verde),
                 ),
               ],
             ),
           ),
 
           _CardBase(
-            title:
-                'ÍNDICE DE EXECUÇÃO',
+            title: 'ÍNDICE DE EXECUÇÃO',
             icon: Icons.schedule,
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  pontualidade == null
-                      ? '--'
-                      : '${fmtDec(pontualidade)}%',
+                  pontualidade == null ? '--' : '${fmtDec(pontualidade)}%',
                   style: TextStyle(
                     fontSize: 30,
-                    fontWeight:
-                        FontWeight.w800,
-                    color:
-                        cores.onSurface,
+                    fontWeight: FontWeight.w800,
+                    color: cores.onSurface,
                   ),
                 ),
 
-                const SizedBox(
-                  height: 12,
-                ),
+                const SizedBox(height: 12),
 
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 4,
                   ),
-                  decoration:
-                      BoxDecoration(
-                    color:
-                        fundoVariacao,
-                    borderRadius:
-                        BorderRadius.circular(
-                      6,
-                    ),
+                  decoration: BoxDecoration(
+                    color: fundoVariacao,
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     variacao == null
                         ? '--'
                         : '${fmtPercent(variacao)} '
-                            'vs mês ant.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color:
-                          corVariacao,
-                    ),
+                              'vs mês ant.',
+                    style: TextStyle(fontSize: 11, color: corVariacao),
                   ),
                 ),
 
-                const SizedBox(
-                  height: 8,
-                ),
+                const SizedBox(height: 8),
 
                 Text(
                   textoMeta,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color:
-                        cores.onSurfaceVariant,
-                  ),
+                  style: TextStyle(fontSize: 11, color: cores.onSurfaceVariant),
                 ),
               ],
             ),
@@ -364,68 +255,42 @@ class _Content extends StatelessWidget {
             child: Column(
               children: [
                 _KmRow(
-                  label:
-                      'Produtiva',
-                  value:
-                      data.kmProdutiva,
-                  fraction:
-                      fracao(
-                    data.kmProdutiva,
-                  ),
-                  color:
-                      cores.primary,
+                  label: 'Produtiva',
+                  value: data.kmProdutiva,
+                  fraction: fracao(data.kmProdutiva),
+                  color: cores.primary,
                 ),
 
-                const SizedBox(
-                  height: 18,
-                ),
+                const SizedBox(height: 18),
 
                 _KmRow(
-                  label:
-                      'Morta (Deslocamento)',
-                  value:
-                      data.kmMorta,
-                  fraction:
-                      fracao(
-                    data.kmMorta,
-                  ),
-                  color:
-                      AppColors.cyan,
+                  label: 'Morta (Deslocamento)',
+                  value: data.kmMorta,
+                  fraction: fracao(data.kmMorta),
+                  color: AppColors.cyan,
                 ),
               ],
             ),
           ),
         ];
 
-        final kmChart =
-            KmBarChart(
-          dados: data.kmMensal,
-        );
+        final kmChart = KmBarChart(dados: data.kmMensal);
 
-        final viagensChart =
-            HourlyChart(
-          dados: data.viagensHora,
-        );
+        final viagensChart = HourlyChart(dados: data.viagensHora);
 
         return SingleChildScrollView(
-          padding:
-              EdgeInsets.all(
-            padding,
-          ),
+          padding: EdgeInsets.all(padding),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PageHeader(
-                title:
-                    'Desempenho da Operação',
+                title: 'Desempenho da Operação',
                 subtitle:
                     'Monitoramento de viagens, '
                     'execução e métricas de frota '
                     '(${periodoNotifier.value.label}).',
 
-                onRefresh:
-                    onRefresh,
+                onRefresh: onRefresh,
 
                 onExport: () {
                   exportarRelatorio(
@@ -434,109 +299,86 @@ class _Content extends StatelessWidget {
                     '${periodoNotifier.mesReferencia}'
                     '.csv',
                     [
-                      [
-                        'Indicador',
-                        'Valor',
-                      ],
-                      [
-                        'Viagens realizadas',
-                        data
-                            .viagensRealizadas,
-                      ],
-                      [
-                        'Viagens programadas',
-                        data
-                            .viagensProgramadas,
-                      ],
-                      [
-                        'Índice de execução (%)',
-                        data
-                            .pontualidade,
-                      ],
-                      [
-                        'Quilometragem produtiva',
-                        data
-                            .kmProdutiva,
-                      ],
-                      [
-                        'Quilometragem morta',
-                        data
-                            .kmMorta,
-                      ],
+                      ['Indicador', 'Valor'],
+                      ['Viagens realizadas', data.viagensRealizadas],
+                      ['Viagens programadas', data.viagensProgramadas],
+                      ['Índice de execução (%)', data.pontualidade],
+                      ['Quilometragem produtiva', data.kmProdutiva],
+                      ['Quilometragem morta', data.kmMorta],
 
                       [],
-                      [
-                        'Faixa horária',
-                        'Média de viagens',
-                      ],
+                      ['Faixa horária', 'Média de viagens'],
 
-                      for (
-                        final hora
-                        in data.viagensHora
-                      )
-                        [
-                          hora.rotulo,
-                          hora.viagens,
-                        ],
+                      for (final hora in data.viagensHora)
+                        [hora.rotulo, hora.viagens],
                     ],
                   );
                 },
               ),
 
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
 
               Wrap(
                 spacing: gap,
                 runSpacing: gap,
                 children: [
-                  for (
-                    final card
-                    in cards
-                  )
-                    SizedBox(
-                      width:
-                          larguraCartao,
-                      child:
-                          card,
-                    ),
+                  for (final card in cards)
+                    SizedBox(width: larguraCartao, child: card),
                 ],
               ),
 
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
 
               if (largura >= 900)
                 Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child:
-                          kmChart,
-                    ),
+                    Expanded(child: kmChart),
 
-                    const SizedBox(
-                      width: 20,
-                    ),
+                    const SizedBox(width: 20),
 
-                    Expanded(
-                      child:
-                          viagensChart,
-                    ),
+                    Expanded(child: viagensChart),
                   ],
                 )
               else ...[
                 kmChart,
 
-                const SizedBox(
-                  height: 16,
-                ),
+                const SizedBox(height: 16),
 
                 viagensChart,
               ],
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                child: TabelaDados(
+                  key: ValueKey(
+                    '${periodoNotifier.value.api}-'
+                    '${periodoNotifier.mesReferencia}',
+                  ),
+                  titulo: 'Dados detalhados da operação',
+                  colunas: const [
+                    'Data',
+                    'Veículos',
+                    'Programadas',
+                    'Realizadas',
+                    'KM produtiva',
+                    'KM morta',
+                  ],
+                  linhas: [
+                    for (final registro in data.registrosDiarios)
+                      [
+                        registro.data,
+                        fmtInt(registro.veiculos),
+                        fmtInt(registro.programadas),
+                        fmtInt(registro.realizadas),
+                        fmtDec(registro.kmProdutiva),
+                        fmtDec(registro.kmMorta),
+                      ],
+                  ],
+                ),
+              ),
             ],
           ),
         );
@@ -557,55 +399,33 @@ class _CardBase extends StatelessWidget {
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    final cores =
-        Theme.of(context).colorScheme;
+  Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
 
     return Container(
-      padding:
-          const EdgeInsets.all(
-        20,
-      ),
-      decoration:
-          cardDecoration(
-        context,
-      ),
+      padding: const EdgeInsets.all(20),
+      decoration: cardDecoration(context),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Expanded(
                 child: Text(
                   title,
-                  style:
-                      TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    fontWeight:
-                        FontWeight.w700,
-                    color:
-                        cores
-                            .onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
+                    color: cores.onSurfaceVariant,
                   ),
                 ),
               ),
 
-              Icon(
-                icon,
-                size: 20,
-                color:
-                    cores
-                        .onSurfaceVariant,
-              ),
+              Icon(icon, size: 20, color: cores.onSurfaceVariant),
             ],
           ),
 
-          const SizedBox(
-            height: 12,
-          ),
+          const SizedBox(height: 12),
 
           child,
         ],
@@ -628,11 +448,8 @@ class _KmRow extends StatelessWidget {
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    final cores =
-        Theme.of(context).colorScheme;
+  Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
 
     return Column(
       children: [
@@ -641,49 +458,32 @@ class _KmRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style:
-                    TextStyle(
-                  fontSize: 12,
-                  color:
-                      cores.onSurface,
-                ),
+                style: TextStyle(fontSize: 12, color: cores.onSurface),
               ),
             ),
 
-            const SizedBox(
-              width: 8,
-            ),
+            const SizedBox(width: 8),
 
             Text(
               '${fmtInt(value)} km',
               style: TextStyle(
                 fontSize: 12,
-                fontWeight:
-                    FontWeight.w700,
-                color:
-                    cores.onSurface,
+                fontWeight: FontWeight.w700,
+                color: cores.onSurface,
               ),
             ),
           ],
         ),
 
-        const SizedBox(
-          height: 8,
-        ),
+        const SizedBox(height: 8),
 
         ClipRRect(
-          borderRadius:
-              BorderRadius.circular(
-            4,
-          ),
-          child:
-              LinearProgressIndicator(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
             value: fraction,
             minHeight: 5,
             color: color,
-            backgroundColor:
-                cores
-                    .surfaceContainerHighest,
+            backgroundColor: cores.surfaceContainerHighest,
           ),
         ),
       ],

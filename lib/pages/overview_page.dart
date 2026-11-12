@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 import '../core/exportacao.dart';
@@ -9,6 +10,7 @@ import '../widgets/intelligence_card.dart';
 import '../widgets/kpi_card.dart';
 import '../widgets/page_header.dart';
 import '../widgets/volume_chart.dart';
+import '../widgets/tabela_dados.dart';
 
 class OverviewPage extends StatefulWidget {
   const OverviewPage({super.key});
@@ -25,16 +27,13 @@ class _OverviewPageState extends State<OverviewPage> {
   @override
   void initState() {
     super.initState();
-
     _future = _fetch();
-
     periodoNotifier.addListener(_reload);
   }
 
   @override
   void dispose() {
     periodoNotifier.removeListener(_reload);
-
     super.dispose();
   }
 
@@ -79,9 +78,7 @@ class _OverviewPageState extends State<OverviewPage> {
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: _reload,
-                    child: const Text(
-                      'Tentar novamente',
-                    ),
+                    child: const Text('Tentar novamente'),
                   ),
                 ],
               ),
@@ -112,13 +109,8 @@ class _Content extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, box) {
         final largura = box.maxWidth;
-
         final wide = largura >= 1100;
-
-        final padding = largura < 700
-            ? 16.0
-            : 24.0;
-
+        final padding = largura < 700 ? 16.0 : 24.0;
         const gap = 16.0;
 
         final colunas = largura >= 1100
@@ -130,66 +122,40 @@ class _Content extends StatelessWidget {
                     : 1;
 
         final larguraCartao =
-            (
-              largura
-              - padding * 2
-              - gap * (colunas - 1)
-            ) /
-            colunas;
+            (largura - padding * 2 - gap * (colunas - 1)) / colunas;
 
         final kpis = [
           KpiCard(
             title: 'Quilometragem',
             icon: Icons.route_outlined,
-            value: fmtInt(
-              data.quilometragem.valor,
-            ),
+            value: fmtInt(data.quilometragem.valor),
             unit: 'km',
-            variation:
-                data.quilometragem.variacao,
+            variation: data.quilometragem.variacao,
           ),
           KpiCard(
             title: 'Viagens',
             icon: Icons.directions_bus_outlined,
-            value: fmtInt(
-              data.viagens.valor,
-            ),
-            variation:
-                data.viagens.variacao,
+            value: fmtInt(data.viagens.valor),
+            variation: data.viagens.variacao,
           ),
           KpiCard(
-            title:
-                'Passageiros\npagantes',
+            title: 'Passageiros\npagantes',
             icon: Icons.groups_outlined,
-            value: fmtInt(
-              data.passageirosPagantes.valor,
-            ),
-            variation:
-                data.passageirosPagantes
-                    .variacao,
+            value: fmtInt(data.passageirosPagantes.valor),
+            variation: data.passageirosPagantes.variacao,
           ),
           KpiCard(
-            title:
-                'Passageiros\nnão pagantes',
+            title: 'Passageiros\nnão pagantes',
             icon: Icons.badge_outlined,
-            value: fmtInt(
-              data.passageirosNaoPagantes
-                  .valor,
-            ),
-            variation:
-                data.passageirosNaoPagantes
-                    .variacao,
+            value: fmtInt(data.passageirosNaoPagantes.valor),
+            variation: data.passageirosNaoPagantes.variacao,
           ),
           KpiCard(
-            title:
-                'Indicador\nfinanceiro',
+            title: 'Indicador\nfinanceiro',
             icon: Icons.payments_outlined,
             prefix: 'R\$',
-            value: fmtInt(
-              data.financeiro.valor,
-            ),
-            variation:
-                data.financeiro.variacao,
+            value: fmtInt(data.financeiro.valor),
+            variation: data.financeiro.variacao,
           ),
         ];
 
@@ -206,29 +172,21 @@ class _Content extends StatelessWidget {
         );
 
         return SingleChildScrollView(
-          padding: EdgeInsets.all(
-            padding,
-          ),
+          padding: EdgeInsets.all(padding),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PageHeader(
-                title:
-                    'Visão Geral da Operação',
-                subtitle:
-                    periodoNotifier.value
-                            == Periodo.total
-                        ? 'Todos os dados disponíveis'
-                        : '${periodoNotifier.value.label} • '
-                            '${periodoNotifier.mesReferencia}',
+                title: 'Visão Geral da Operação',
+                subtitle: periodoNotifier.value == Periodo.total
+                    ? 'Todos os dados disponíveis'
+                    : '${periodoNotifier.value.label} • '
+                        '${periodoNotifier.mesReferencia}',
                 onRefresh: onRefresh,
                 onExport: () {
                   exportarRelatorio(
                     context,
-                    'visao-geral-'
-                    '${periodoNotifier.mesReferencia}'
-                    '.csv',
+                    'visao-geral-${periodoNotifier.mesReferencia}.csv',
                     [
                       [
                         'Indicador',
@@ -236,8 +194,7 @@ class _Content extends StatelessWidget {
                       ],
                       [
                         'Quilometragem',
-                        data.quilometragem
-                            .valor,
+                        data.quilometragem.valor,
                       ],
                       [
                         'Viagens',
@@ -245,15 +202,11 @@ class _Content extends StatelessWidget {
                       ],
                       [
                         'Passageiros pagantes',
-                        data
-                            .passageirosPagantes
-                            .valor,
+                        data.passageirosPagantes.valor,
                       ],
                       [
                         'Passageiros não pagantes',
-                        data
-                            .passageirosNaoPagantes
-                            .valor,
+                        data.passageirosNaoPagantes.valor,
                       ],
                       [
                         'Indicador financeiro',
@@ -263,9 +216,7 @@ class _Content extends StatelessWidget {
                   );
                 },
               ),
-
               const SizedBox(height: 20),
-
               Wrap(
                 spacing: gap,
                 runSpacing: gap,
@@ -277,23 +228,16 @@ class _Content extends StatelessWidget {
                     ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
               if (wide)
                 Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       flex: 3,
                       child: grafico,
                     ),
-
-                    const SizedBox(
-                      width: 20,
-                    ),
-
+                    const SizedBox(width: 20),
                     Expanded(
                       flex: 2,
                       child: lateral,
@@ -302,11 +246,32 @@ class _Content extends StatelessWidget {
                 )
               else ...[
                 grafico,
-
                 const SizedBox(height: 16),
-
                 lateral,
               ],
+              const SizedBox(height: 24),
+              TabelaDados(
+                key: ValueKey(
+                  '${periodoNotifier.value.api}-'
+                  '${periodoNotifier.mesReferencia}',
+                ),
+                titulo: 'Resumo diário da operação',
+                colunas: const [
+                  'Data',
+                  'Viagens programadas',
+                  'Viagens realizadas',
+                  'Diferença',
+                ],
+                linhas: [
+                  for (final ponto in data.serie)
+                    [
+                      ponto.rotulo,
+                      fmtInt(ponto.esperado),
+                      fmtInt(ponto.realizado),
+                      fmtInt(ponto.realizado - ponto.esperado),
+                    ],
+                ],
+              ),
             ],
           ),
         );
