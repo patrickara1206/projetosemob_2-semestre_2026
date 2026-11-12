@@ -346,8 +346,6 @@ class _TopBarState extends State<TopBar> {
               label: Text(_resumoFiltro()),
             ),
             const SizedBox(width: 16),
-            const _StatusChip(),
-            const SizedBox(width: 16),
             Icon(
               Icons.calendar_today_outlined,
               size: 20,
@@ -376,41 +374,6 @@ class _TopBarState extends State<TopBar> {
               escuro ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
             ),
             onPressed: alternarTema,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusChip extends StatelessWidget {
-  const _StatusChip();
-
-  @override
-  Widget build(BuildContext context) {
-    final escuro = Theme.of(context).brightness == Brightness.dark;
-
-    final fundo = escuro ? const Color(0xFF15382A) : const Color(0xFFE8F5E9);
-
-    final texto = escuro ? const Color(0xFF86EFAC) : AppColors.green;
-
-    final borda = escuro ? const Color(0xFF166534) : const Color(0xFFA5D6A7);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: fundo,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borda),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.circle, size: 8, color: texto),
-          const SizedBox(width: 6),
-          Text(
-            'Processamento do\nModelo: OK',
-            style: TextStyle(fontSize: 10, color: texto),
           ),
         ],
       ),
