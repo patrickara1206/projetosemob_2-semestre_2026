@@ -91,12 +91,18 @@ class _SiteHeader extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            left: narrow ? 190 : 260,
+            left: narrow ? 110 : 140,
+            right: narrow ? 190 : 280,
             child: ShaderMask(
               blendMode: BlendMode.dstIn,
               shaderCallback: (bounds) => const LinearGradient(
-                colors: [Colors.transparent, Colors.white],
-                stops: [0, 0.18],
+                colors: [
+                  Colors.transparent,
+                  Colors.white,
+                  Colors.white,
+                  Colors.transparent,
+                ],
+                stops: [0, 0.12, 0.82, 1],
               ).createShader(bounds),
               child: const SidebarWaves(horizontal: true),
             ),
@@ -105,52 +111,73 @@ class _SiteHeader extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: narrow ? 12 : 24),
             child: Row(
               children: [
-                RepaintBoundary(
-                  child: Image.asset(
-                    'assets/images/brasao_sao_caetano.png',
-                    width: narrow ? 40 : 48,
-                    height: 48,
-                    fit: BoxFit.contain,
-                    semanticLabel: 'Brasão de São Caetano do Sul',
-                    gaplessPlayback: true,
-                    filterQuality: FilterQuality.high,
+                TextButton.icon(
+                  onPressed: onMenu,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(0, 48),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
+                  icon: const Icon(Icons.menu, size: 26),
+                  label: const Text('MENU'),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'SEMOB-SCS',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: narrow ? 14 : 18,
-                        ),
-                      ),
-                      if (!narrow)
-                        const Text(
-                          'Gestão de Mobilidade',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Color(0xFFB8C4E0),
-                            fontSize: 12,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        RepaintBoundary(
+                          child: Image.asset(
+                            'assets/images/brasao_sao_caetano.png',
+                            width: narrow ? 48 : 58,
+                            height: narrow ? 56 : 64,
+                            fit: BoxFit.contain,
+                            semanticLabel: 'Brasão de São Caetano do Sul',
+                            gaplessPlayback: true,
+                            filterQuality: FilterQuality.high,
                           ),
                         ),
-                    ],
+                        const SizedBox(width: 12),
+                        Flexible(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'SEMOB-SCS',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: narrow ? 14 : 18,
+                                ),
+                              ),
+                              if (!narrow)
+                                const Text(
+                                  'Gestão de Mobilidade',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Color(0xFFB8C4E0),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                TextButton.icon(
-                  onPressed: onMenu,
-                  style: TextButton.styleFrom(foregroundColor: Colors.white),
-                  icon: const Icon(Icons.menu),
-                  label: const Text('MENU'),
                 ),
               ],
             ),
