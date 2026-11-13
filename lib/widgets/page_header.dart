@@ -80,22 +80,14 @@ class PageHeader extends StatelessWidget {
                         minimumSize: const Size(44, 44),
                         padding: EdgeInsets.zero,
                       ),
-                      child: const Icon(
-                        Icons.download_outlined,
-                        size: 19,
-                      ),
+                      child: const Icon(Icons.download_outlined, size: 19),
                     ),
                   )
                 else
                   OutlinedButton.icon(
                     onPressed: onExport,
-                    icon: const Icon(
-                      Icons.download_outlined,
-                      size: 18,
-                    ),
-                    label: const Text(
-                      'Exportar Relatório',
-                    ),
+                    icon: const Icon(Icons.download_outlined, size: 18),
+                    label: const Text('Exportar Relatório'),
                   ),
 
                 const SizedBox(width: 10),
@@ -104,8 +96,7 @@ class PageHeader extends StatelessWidget {
                   Tooltip(
                     message: 'Atualizar dados',
                     child: OutlinedButton(
-                      onPressed:
-                          refreshing ? null : onRefresh,
+                      onPressed: refreshing ? null : onRefresh,
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(44, 44),
                         padding: EdgeInsets.zero,
@@ -114,37 +105,22 @@ class PageHeader extends StatelessWidget {
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child:
-                                  CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(
-                              Icons.refresh,
-                              size: 19,
-                            ),
+                          : const Icon(Icons.refresh, size: 19),
                     ),
                   )
                 else
                   OutlinedButton.icon(
-                    onPressed:
-                        refreshing ? null : onRefresh,
+                    onPressed: refreshing ? null : onRefresh,
                     icon: refreshing
                         ? const SizedBox(
                             width: 16,
                             height: 16,
-                            child:
-                                CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Icon(
-                            Icons.refresh,
-                            size: 18,
-                          ),
-                    label: const Text(
-                      'Atualizar dados',
-                    ),
+                        : const Icon(Icons.refresh, size: 18),
+                    label: const Text('Atualizar dados'),
                   ),
               ],
             ),

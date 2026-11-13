@@ -261,7 +261,7 @@ def obter_overview_operacao(
             }
             for row in km_por_mes.itertuples()
         ]
-        
+
     else:
         km_mensal = [
             {
@@ -285,8 +285,8 @@ def obter_overview_operacao(
         "km_morta": float(row.km_morta)
             if pd.notna(row.km_morta) else None,
     })
-        
-    
+
+
 
     return {
         "total_viagens": {

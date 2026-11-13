@@ -1,44 +1,48 @@
 # Backend SEMOB-SCS
 
-Backend do Dashboard de Operação de Transporte da SEMOB de São Caetano do Sul.
+API FastAPI do dashboard de operação de transporte. Usa Pandas para
+tratar relatórios e Supabase para persistência.
 
-## Tecnologias
+## Estrutura
 
-- Python
-- FastAPI
-- Pandas
+- `app/routes`: endpoints e filtros de entrada.
+- `app/services`: regras de negócio e agregação dos indicadores.
+- `app/repositories`: consultas e persistência.
+- `app/readers`: leitura dos arquivos importados.
+- `app/database`: configuração do cliente Supabase.
+- `app/core`: configurações dos relatórios.
 
-## Instalação
+## Execução manual no Windows
 
-```bash
-python -m pip install -r requirements.txt
-
-## Execução local no Windows
-
-Copie `backend/.env.example` para `backend/.env` e configure suas credenciais Supabase.
-Na raiz do projeto, execute `INICIAR-SEMOB.cmd`. O iniciador prepara o ambiente Python,
-inicia a API na porta 8000 e abre Flutter na porta 8080. Se necessário, informe
-`-FlutterSdk "C:\src\flutter"` e portas alternativas com `-ApiPort 8004 -WebPort 8084`.
-O iniciador encerra apenas o backend que ele próprio abriu. Credenciais e logs locais
-permanecem ignorados pelo Git.
-
-A tela Configurações permite verificar a API e escolher o mês de referência das telas.
-Financeiro mantém os indicadores, gráficos diários e tabela existentes, com exportação CSV.
-Os endpoints overview aceitam `mes`, `periodo` (mes, semana, hoje ou personalizado),
-`inicio` e `fim`. Os períodos relativos usam o último dia disponível no mês.
-`/financeiro/overview` preserva o contrato com `dias_financeiros`; o endpoint adicional
-`/financeiro/dashboard` oferece busca e paginação. Relatórios mensais têm prioridade
-sobre quinzenais sobrepostos. Meses sem dados retornam indicadores ausentes e séries vazias.
-
-### Validação
+Na raiz do repositório:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt httpx
-.\.venv\Scripts\python.exe -m unittest discover -s test -p '*test.py'
-node --test test/web_bootstrap_test.js
-flutter analyze
-flutter test
-flutter build web
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+Copy-Item backend\.env.example backend\.env
 ```
 
-Os testes de API simulam o banco e não gravam registros no Supabase.
+Configure `SUPABASE_URL` e `SUPABASE_KEY` no arquivo `backend/.env`.
+Copie o exemplo somente ao criar a configuração; preserve um `.env`
+existente com credenciais válidas.
+
+Depois, ainda na raiz:
+
+```powershell
+cd backend
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+- Saúde da API: `http://127.0.0.1:8000/health`.
+- Documentação dos endpoints: `http://127.0.0.1:8000/docs`.
+
+Para executar backend e interface juntos, use `INICIAR-SEMOB.cmd` na
+raiz do projeto. Consulte o README principal para opções e testes.
+
+## Filtros dos resumos
+
+As rotas `overview` recebem `escopo` (`total`, `mes` ou `quinzena`).
+Para `mes` e `quinzena`, informe também `mes=AAAA-MM`.
+Exemplo: `/financeiro/overview?escopo=mes&mes=2026-08`.
+
+Credenciais e logs locais não devem ser adicionados ao repositório.

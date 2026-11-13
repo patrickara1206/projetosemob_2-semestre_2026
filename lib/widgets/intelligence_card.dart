@@ -7,25 +7,16 @@ import '../models/dashboard_overview.dart';
 class IntelligenceCard extends StatelessWidget {
   final InteligenciaOperacional data;
 
-  const IntelligenceCard({
-    super.key,
-    required this.data,
-  });
+  const IntelligenceCard({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
     final esquema = Theme.of(context).colorScheme;
     final escuro = Theme.of(context).brightness == Brightness.dark;
 
-    final azul = escuro
-        ? const Color(0xFF93C5FD)
-        : AppColors.primary;
-    final vermelho = escuro
-        ? const Color(0xFFFCA5A5)
-        : AppColors.red;
-    final laranja = escuro
-        ? const Color(0xFFFCD34D)
-        : const Color(0xFFB45309);
+    final azul = escuro ? const Color(0xFF93C5FD) : AppColors.primary;
+    final vermelho = escuro ? const Color(0xFFFCA5A5) : AppColors.red;
+    final laranja = escuro ? const Color(0xFFFCD34D) : const Color(0xFFB45309);
 
     final cumprimento = data.cumprimentoProgramacao == null
         ? '--'
@@ -39,11 +30,7 @@ class IntelligenceCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.auto_awesome,
-                color: esquema.primary,
-                size: 18,
-              ),
+              Icon(Icons.auto_awesome, color: esquema.primary, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -93,10 +80,7 @@ class IntelligenceCard extends StatelessWidget {
           Text(
             'Indicadores calculados por comparação entre '
             'viagens realizadas e programadas.',
-            style: TextStyle(
-              fontSize: 11,
-              color: esquema.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 11, color: esquema.onSurfaceVariant),
           ),
         ],
       ),
@@ -121,10 +105,7 @@ class _Metric extends StatelessWidget {
 
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 16,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         decoration: BoxDecoration(
           color: esquema.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(10),

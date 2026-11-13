@@ -49,9 +49,7 @@ class _TabelaDadosState extends State<TabelaDados> {
 
     final linhasFiltradas = widget.linhas.where((linha) {
       if (_termo.isEmpty) return true;
-      return linha.any(
-        (valor) => valor.toLowerCase().contains(_termo),
-      );
+      return linha.any((valor) => valor.toLowerCase().contains(_termo));
     }).toList();
 
     final totalPaginas = (linhasFiltradas.length / _registrosPorPagina).ceil();
@@ -82,7 +80,9 @@ class _TabelaDadosState extends State<TabelaDados> {
                   )
                 : Row(
                     children: [
-                      Expanded(child: _cabecalho(context, linhasFiltradas.length)),
+                      Expanded(
+                        child: _cabecalho(context, linhasFiltradas.length),
+                      ),
                       const SizedBox(width: 16),
                       SizedBox(width: 230, child: _campoPesquisa(cores)),
                     ],
@@ -95,8 +95,11 @@ class _TabelaDadosState extends State<TabelaDados> {
               child: Center(
                 child: Column(
                   children: [
-                    Icon(Icons.table_rows_outlined,
-                        size: 32, color: cores.onSurfaceVariant),
+                    Icon(
+                      Icons.table_rows_outlined,
+                      size: 32,
+                      color: cores.onSurfaceVariant,
+                    ),
                     const SizedBox(height: 10),
                     Text(
                       _termo.isEmpty
@@ -166,8 +169,9 @@ class _TabelaDadosState extends State<TabelaDados> {
                                         : '--',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      fontWeight:
-                                          c == 0 ? FontWeight.w600 : FontWeight.w400,
+                                      fontWeight: c == 0
+                                          ? FontWeight.w600
+                                          : FontWeight.w400,
                                       color: c == 0
                                           ? cores.onSurface
                                           : cores.onSurfaceVariant,
@@ -195,7 +199,10 @@ class _TabelaDadosState extends State<TabelaDados> {
                     linhasFiltradas.isEmpty
                         ? '0 registros'
                         : 'Mostrando ${inicio + 1}–$fim de ${linhasFiltradas.length}',
-                    style: TextStyle(fontSize: 12, color: cores.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: cores.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 IconButton(
@@ -241,7 +248,11 @@ class _TabelaDadosState extends State<TabelaDados> {
             color: cores.primary.withValues(alpha: 0.09),
             borderRadius: BorderRadius.circular(9),
           ),
-          child: Icon(Icons.table_chart_outlined, color: cores.primary, size: 20),
+          child: Icon(
+            Icons.table_chart_outlined,
+            color: cores.primary,
+            size: 20,
+          ),
         ),
         const SizedBox(width: 12),
         Flexible(

@@ -1,42 +1,94 @@
-# semob_dashboard
+# SEMOB-SCS
 
-A new Flutter project.
+Dashboard de operação de transporte de São Caetano do Sul, com interface
+Flutter, API FastAPI e persistência no Supabase.
 
-## Getting Started
+## Organização do projeto
 
-This project is a starting point for a Flutter application.
+```text
+lib/
+  core/           Tema, estado compartilhado e utilitários
+  layout/         Cabeçalho, menu e estrutura das páginas
+  models/         Modelos de dados da interface
+  pages/          Telas da aplicação
+  services/       Acesso à API
+  widgets/        Componentes reutilizáveis e gráficos
+backend/
+  app/
+    core/         Configurações dos relatórios
+    database/     Conexão com o banco
+    readers/      Leitura dos arquivos importados
+    repositories/ Acesso aos dados
+    routes/       Endpoints e validação dos filtros
+    services/     Regras de negócio e agregações
+scripts/          Inicialização local
+test/             Testes Flutter, Python e JavaScript
+assets/           Imagens da aplicação
+```
 
-A few resources to get you started if this is your first Flutter project:
+As pastas de plataforma (`android`, `ios`, `web`, `windows`, `linux` e
+`macos`) mantêm a estrutura do Flutter.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Execução no Windows
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Tenha Python e Flutter disponíveis no computador.
+2. Copie `backend/.env.example` para `backend/.env` e configure
+   `SUPABASE_URL` e `SUPABASE_KEY`.
+3. Na raiz do projeto, execute:
 
+   ```powershell
+   .\INICIAR-SEMOB.cmd
+   ```
 
-## Execução local no Windows
+O iniciador prepara o ambiente Python, inicia a API em
+`http://127.0.0.1:8000` e a interface em `http://127.0.0.1:8080`.
+Mantenha o terminal aberto durante o uso. Ao encerrar, o iniciador para
+somente o backend que ele próprio abriu.
 
-Copie `backend/.env.example` para `backend/.env` e configure suas credenciais Supabase.
-Na raiz do projeto, execute `INICIAR-SEMOB.cmd`. O iniciador prepara o ambiente Python,
-inicia a API na porta 8000 e abre Flutter na porta 8080. Se necessário, informe
-`-FlutterSdk "C:\src\flutter"` e portas alternativas com `-ApiPort 8004 -WebPort 8084`.
-O iniciador encerra apenas o backend que ele próprio abriu. Credenciais e logs locais
-permanecem ignorados pelo Git.
-
-A tela Configurações permite verificar a API e escolher o mês de referência das telas.
-Financeiro mantém os indicadores, gráficos diários e tabela existentes, com exportação CSV.
-Os endpoints overview aceitam `mes`, `periodo` (mes, semana, hoje ou personalizado),
-`inicio` e `fim`. Os períodos relativos usam o último dia disponível no mês.
-`/financeiro/overview` preserva o contrato com `dias_financeiros`; o endpoint adicional
-`/financeiro/dashboard` oferece busca e paginação. Relatórios mensais têm prioridade
-sobre quinzenais sobrepostos. Meses sem dados retornam indicadores ausentes e séries vazias.
-
-### Validação
+Para abrir o navegador manualmente:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt httpx
+.\INICIAR-SEMOB.cmd -Device web-server
+```
+
+Se necessário, informe o SDK ou portas alternativas:
+
+```powershell
+.\INICIAR-SEMOB.cmd -FlutterSdk "C:\src\flutter" -ApiPort 8004 -WebPort 8084
+```
+
+Credenciais, ambiente virtual, logs e configurações de `.semob-local/`
+são locais e permanecem ignorados pelo Git.
+
+## API e filtros
+
+A documentação interativa fica em `http://127.0.0.1:8000/docs`.
+As rotas de resumo aceitam `escopo=total`, `escopo=mes` ou
+`escopo=quinzena`. Os dois últimos exigem `mes` no formato `AAAA-MM`.
+
+Exemplo: `/dashboard/overview?escopo=mes&mes=2026-08`.
+
+`/financeiro/overview` inclui a série `dias_financeiros`.
+`/financeiro/dashboard` oferece também busca e paginação.
+Meses sem dados retornam indicadores ausentes e séries vazias.
+
+## Convenções de manutenção
+
+- Use `dart format lib test` para a formatação Dart.
+- Use quatro espaços para indentação Python e dois para Dart e YAML,
+  conforme `.editorconfig`.
+- Mantenha widgets reutilizáveis em `lib/widgets`, chamadas HTTP em
+  `lib/services` e regras de negócio em `backend/app/services`.
+- Mantenha o acesso ao banco em `backend/app/repositories`.
+- Preserve contratos da API, nomes dos campos e regras de cálculo em
+  alterações exclusivamente visuais ou de formatação.
+- Não versione credenciais, ambientes virtuais ou arquivos de compilação.
+
+## Validação
+
+Com as dependências preparadas:
+
+```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s test -p '*test.py'
 node --test test/web_bootstrap_test.js
 flutter analyze
@@ -44,4 +96,8 @@ flutter test
 flutter build web
 ```
 
-Os testes de API simulam o banco e não gravam registros no Supabase.
+Os testes de API usam simulações do banco e não gravam registros no
+Supabase. Alguns testes legados de filtros ainda fazem referência à API
+anterior de `PeriodoNotifier`; o teste de cor de anomalias também precisa
+ser reconciliado com a implementação atual. Uma alteração de formatação
+não modifica esses comportamentos para ocultar falhas.

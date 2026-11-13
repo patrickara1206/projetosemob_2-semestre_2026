@@ -27,29 +27,22 @@ void alternarTema() {
       : ThemeMode.dark;
 }
 
-ThemeData buildTheme({
-  Brightness brightness = Brightness.light,
-}) {
+ThemeData buildTheme({Brightness brightness = Brightness.light}) {
   final escuro = brightness == Brightness.dark;
 
-  final esquema = ColorScheme.fromSeed(
-    seedColor: AppColors.primary,
-    brightness: brightness,
-  ).copyWith(
-    surface: escuro ? const Color(0xFF1E293B) : Colors.white,
-    surfaceContainerHighest: escuro
-        ? const Color(0xFF293548)
-        : const Color(0xFFF1F5F9),
-    onSurface: escuro
-        ? const Color(0xFFE2E8F0)
-        : AppColors.text,
-    onSurfaceVariant: escuro
-        ? const Color(0xFFCBD5E1)
-        : AppColors.muted,
-    outlineVariant: escuro
-        ? const Color(0xFF475569)
-        : AppColors.border,
-  );
+  final esquema =
+      ColorScheme.fromSeed(
+        seedColor: AppColors.primary,
+        brightness: brightness,
+      ).copyWith(
+        surface: escuro ? const Color(0xFF1E293B) : Colors.white,
+        surfaceContainerHighest: escuro
+            ? const Color(0xFF293548)
+            : const Color(0xFFF1F5F9),
+        onSurface: escuro ? const Color(0xFFE2E8F0) : AppColors.text,
+        onSurfaceVariant: escuro ? const Color(0xFFCBD5E1) : AppColors.muted,
+        outlineVariant: escuro ? const Color(0xFF475569) : AppColors.border,
+      );
 
   return ThemeData(
     useMaterial3: true,
@@ -64,19 +57,13 @@ ThemeData buildTheme({
 }
 
 BoxDecoration cardDecoration([BuildContext? context]) {
-  final esquema = context == null
-      ? null
-      : Theme.of(context).colorScheme;
+  final esquema = context == null ? null : Theme.of(context).colorScheme;
 
   return BoxDecoration(
     color: esquema?.surface ?? AppColors.card,
     borderRadius: BorderRadius.circular(12),
     boxShadow: const [
-      BoxShadow(
-        color: Color(0x0F000000),
-        blurRadius: 8,
-        offset: Offset(0, 2),
-      ),
+      BoxShadow(color: Color(0x0F000000), blurRadius: 8, offset: Offset(0, 2)),
     ],
   );
 }

@@ -17,39 +17,24 @@ class ImportacaoService {
     );
 
     if (arquivo == null) {
-      throw Exception(
-        'Nenhum arquivo selecionado.',
-      );
+      throw Exception('Nenhum arquivo selecionado.');
     }
 
     final bytes = await arquivo.readAsBytes();
 
     final uri = Uri.parse(
       '${DashboardService.baseUrl}/importacao/$tipo',
-    ).replace(
-      queryParameters: {
-        'mes': mes,
-        'tipo_periodo': tipoPeriodo,
-      },
-    );
+    ).replace(queryParameters: {'mes': mes, 'tipo_periodo': tipoPeriodo});
 
-    final request = http.MultipartRequest(
-      'POST',
-      uri,
-    );
+    final request = http.MultipartRequest('POST', uri);
 
     request.files.add(
-      http.MultipartFile.fromBytes(
-        'arquivo',
-        bytes,
-        filename: arquivo.name,
-      ),
+      http.MultipartFile.fromBytes('arquivo', bytes, filename: arquivo.name),
     );
 
     final response = await request.send();
 
-    final corpo =
-        await response.stream.bytesToString();
+    final corpo = await response.stream.bytesToString();
 
     Map<String, dynamic>? json;
 
@@ -60,22 +45,15 @@ class ImportacaoService {
     }
 
     if (response.statusCode != 200) {
-      if (json != null &&
-          json['detail'] != null) {
-        throw Exception(
-          json['detail'].toString(),
-        );
+      if (json != null && json['detail'] != null) {
+        throw Exception(json['detail'].toString());
       }
 
-      throw Exception(
-        'Erro ao importar o arquivo.',
-      );
+      throw Exception('Erro ao importar o arquivo.');
     }
 
     if (json == null) {
-      throw Exception(
-        'Resposta inválida do servidor.',
-      );
+      throw Exception('Resposta inválida do servidor.');
     }
 
     return json;
@@ -91,39 +69,24 @@ class ImportacaoService {
     );
 
     if (arquivo == null) {
-      throw Exception(
-        'Nenhum arquivo ZIP selecionado.',
-      );
+      throw Exception('Nenhum arquivo ZIP selecionado.');
     }
 
     final bytes = await arquivo.readAsBytes();
 
     final uri = Uri.parse(
       '${DashboardService.baseUrl}/importacao/lote/zip',
-    ).replace(
-      queryParameters: {
-        'mes': mes,
-        'tipo_periodo': tipoPeriodo,
-      },
-    );
+    ).replace(queryParameters: {'mes': mes, 'tipo_periodo': tipoPeriodo});
 
-    final request = http.MultipartRequest(
-      'POST',
-      uri,
-    );
+    final request = http.MultipartRequest('POST', uri);
 
     request.files.add(
-      http.MultipartFile.fromBytes(
-        'arquivo',
-        bytes,
-        filename: arquivo.name,
-      ),
+      http.MultipartFile.fromBytes('arquivo', bytes, filename: arquivo.name),
     );
 
     final response = await request.send();
 
-    final corpo =
-        await response.stream.bytesToString();
+    final corpo = await response.stream.bytesToString();
 
     Map<String, dynamic>? json;
 
@@ -134,22 +97,15 @@ class ImportacaoService {
     }
 
     if (response.statusCode != 200) {
-      if (json != null &&
-          json['detail'] != null) {
-        throw Exception(
-          json['detail'].toString(),
-        );
+      if (json != null && json['detail'] != null) {
+        throw Exception(json['detail'].toString());
       }
 
-      throw Exception(
-        'Erro ao importar o arquivo ZIP.',
-      );
+      throw Exception('Erro ao importar o arquivo ZIP.');
     }
 
     if (json == null) {
-      throw Exception(
-        'Resposta inválida do servidor.',
-      );
+      throw Exception('Resposta inválida do servidor.');
     }
 
     return json;
