@@ -1,4 +1,3 @@
-
 class KmMes {
   final String rotulo;
   final double produtiva;
@@ -11,10 +10,10 @@ class KmMes {
   });
 
   factory KmMes.fromJson(Map<String, dynamic> j) => KmMes(
-        rotulo: j['rotulo']?.toString() ?? '--',
-        produtiva: (j['produtiva'] as num?)?.toDouble() ?? 0,
-        morta: (j['morta'] as num?)?.toDouble() ?? 0,
-      );
+    rotulo: j['rotulo']?.toString() ?? '--',
+    produtiva: (j['produtiva'] as num?)?.toDouble() ?? 0,
+    morta: (j['morta'] as num?)?.toDouble() ?? 0,
+  );
 }
 
 class ViagensHora {
@@ -29,10 +28,10 @@ class ViagensHora {
   });
 
   factory ViagensHora.fromJson(Map<String, dynamic> j) => ViagensHora(
-        rotulo: j['rotulo'] as String,
-        viagens: (j['viagens'] as num).toDouble(),
-        pico: j['pico'] as bool? ?? false,
-      );
+    rotulo: j['rotulo'] as String,
+    viagens: (j['viagens'] as num).toDouble(),
+    pico: j['pico'] as bool? ?? false,
+  );
 }
 
 class AnomaliaOp {
@@ -51,12 +50,12 @@ class AnomaliaOp {
   });
 
   factory AnomaliaOp.fromJson(Map<String, dynamic> j) => AnomaliaOp(
-        idRota: j['id_rota'] as String,
-        tipo: j['tipo'] as String,
-        veiculo: j['veiculo'] as String,
-        severidade: j['severidade'] as String? ?? 'media',
-        acao: j['acao'] as String? ?? 'investigar',
-      );
+    idRota: j['id_rota'] as String,
+    tipo: j['tipo'] as String,
+    veiculo: j['veiculo'] as String,
+    severidade: j['severidade'] as String? ?? 'media',
+    acao: j['acao'] as String? ?? 'investigar',
+  );
 }
 
 class RegistroOperacao {
@@ -151,11 +150,7 @@ class OperacaoOverview {
           .map((e) => AnomaliaOp.fromJson(e as Map<String, dynamic>))
           .toList(),
       registrosDiarios: ((j['registros_diarios'] as List?) ?? [])
-          .map(
-            (e) => RegistroOperacao.fromJson(
-              e as Map<String, dynamic>,
-            ),
-          )
+          .map((e) => RegistroOperacao.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }

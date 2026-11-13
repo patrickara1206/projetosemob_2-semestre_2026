@@ -46,8 +46,10 @@ String fmtMoney(num? v, {int digits = 2}) {
   if (v == null) return 'R\$ --';
   final neg = v < 0;
   final parts = v.abs().toStringAsFixed(digits).split('.');
-  final inteiro = parts[0]
-      .replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => '.');
+  final inteiro = parts[0].replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => '.',
+  );
   final dec = digits > 0 ? ',${parts[1]}' : '';
   return '${neg ? '-' : ''}R\$ $inteiro$dec';
 }

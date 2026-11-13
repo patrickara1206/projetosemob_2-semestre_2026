@@ -34,15 +34,19 @@ class RevenueSubsidyChart extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Evolução: Receita vs. Subsídio',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.navy)),
+                    Text(
+                      'Evolução: Receita vs. Subsídio',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.navy,
+                      ),
+                    ),
                     SizedBox(height: 2),
-                    Text('Demonstrativo comparativo dos últimos 6 meses',
-                        style:
-                            TextStyle(fontSize: 11, color: AppColors.muted)),
+                    Text(
+                      'Demonstrativo comparativo dos últimos 6 meses',
+                      style: TextStyle(fontSize: 11, color: AppColors.muted),
+                    ),
                   ],
                 ),
                 _Legend(),
@@ -53,8 +57,11 @@ class RevenueSubsidyChart extends StatelessWidget {
           Expanded(
             child: serie.isEmpty
                 ? const Center(
-                    child: Text('Sem dados para o período selecionado',
-                        style: TextStyle(color: AppColors.muted)))
+                    child: Text(
+                      'Sem dados para o período selecionado',
+                      style: TextStyle(color: AppColors.muted),
+                    ),
+                  )
                 : _chart(),
           ),
         ],
@@ -88,10 +95,12 @@ class RevenueSubsidyChart extends StatelessWidget {
               const FlLine(color: AppColors.border, strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -114,12 +123,14 @@ class RevenueSubsidyChart extends StatelessWidget {
                 final atual = serie[i].atual;
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(serie[i].rotulo,
-                      style: TextStyle(
-                          fontSize: 10,
-                          fontWeight:
-                              atual ? FontWeight.w800 : FontWeight.w400,
-                          color: atual ? AppColors.navy : AppColors.muted)),
+                  child: Text(
+                    serie[i].rotulo,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: atual ? FontWeight.w800 : FontWeight.w400,
+                      color: atual ? AppColors.navy : AppColors.muted,
+                    ),
+                  ),
                 );
               },
             ),
@@ -129,7 +140,8 @@ class RevenueSubsidyChart extends StatelessWidget {
           // Subsídio (tracejada, pontos vazados)
           LineChartBarData(
             spots: [
-              for (var i = 0; i < n; i++) FlSpot(i.toDouble(), serie[i].subsidio)
+              for (var i = 0; i < n; i++)
+                FlSpot(i.toDouble(), serie[i].subsidio),
             ],
             isCurved: false,
             color: _lightBlue,
@@ -148,7 +160,8 @@ class RevenueSubsidyChart extends StatelessWidget {
           // Receita (sólida)
           LineChartBarData(
             spots: [
-              for (var i = 0; i < n; i++) FlSpot(i.toDouble(), serie[i].receita)
+              for (var i = 0; i < n; i++)
+                FlSpot(i.toDouble(), serie[i].receita),
             ],
             isCurved: false,
             color: _blue,
@@ -175,32 +188,32 @@ class _Legend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget item(Widget mark, String t) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            mark,
-            const SizedBox(width: 6),
-            Text(t,
-                style:
-                    const TextStyle(fontSize: 10, color: Color(0xFF374151))),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        mark,
+        const SizedBox(width: 6),
+        Text(t, style: const TextStyle(fontSize: 10, color: Color(0xFF374151))),
+      ],
+    );
 
     return Wrap(
       spacing: 14,
       children: [
         item(
-            const Icon(Icons.circle, size: 9, color: Color(0xFF0B5FB0)),
-            'Receita Tarifária'),
+          const Icon(Icons.circle, size: 9, color: Color(0xFF0B5FB0)),
+          'Receita Tarifária',
+        ),
         item(
-            Container(
-              width: 9,
-              height: 9,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF5B9BE0), width: 1.5),
-              ),
+          Container(
+            width: 9,
+            height: 9,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF5B9BE0), width: 1.5),
             ),
-            'Subsídio Municipal'),
+          ),
+          'Subsídio Municipal',
+        ),
       ],
     );
   }

@@ -2,7 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'futuristic_chart_panel.dart';
 
-import '../core/theme.dart';
 import '../models/dashboard_overview.dart';
 
 class VolumeChart extends StatelessWidget {

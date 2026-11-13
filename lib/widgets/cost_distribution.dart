@@ -27,21 +27,29 @@ class CostDistributionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Distribuição de Custos',
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.navy)),
+          const Text(
+            'Distribuição de Custos',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: AppColors.navy,
+            ),
+          ),
           const SizedBox(height: 2),
-          const Text('Composição paramétrica Geptam',
-              style: TextStyle(fontSize: 11, color: AppColors.muted)),
+          const Text(
+            'Composição paramétrica Geptam',
+            style: TextStyle(fontSize: 11, color: AppColors.muted),
+          ),
           const SizedBox(height: 20),
           Expanded(
             child: itens.isEmpty
                 ? const Center(
-                    child: Text('Sem dados para o período selecionado',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.muted)))
+                    child: Text(
+                      'Sem dados para o período selecionado',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppColors.muted),
+                    ),
+                  )
                 : ListView(
                     physics: const ClampingScrollPhysics(),
                     children: [
@@ -58,14 +66,19 @@ class CostDistributionCard extends StatelessWidget {
           Row(
             children: [
               const Expanded(
-                child: Text('Custo Total Operacional',
-                    style: TextStyle(fontSize: 11, color: AppColors.muted)),
+                child: Text(
+                  'Custo Total Operacional',
+                  style: TextStyle(fontSize: 11, color: AppColors.muted),
+                ),
               ),
-              Text(total == null ? 'R\$ --' : _milhoes(total!),
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.navy)),
+              Text(
+                total == null ? 'R\$ --' : _milhoes(total!),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.navy,
+                ),
+              ),
             ],
           ),
         ],
@@ -78,8 +91,7 @@ class _Linha extends StatelessWidget {
   final CustoItem item;
   final Color cor;
   final String valorTxt;
-  const _Linha(
-      {required this.item, required this.cor, required this.valorTxt});
+  const _Linha({required this.item, required this.cor, required this.valorTxt});
 
   @override
   Widget build(BuildContext context) {
@@ -90,15 +102,19 @@ class _Linha extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(item.nome,
-                    style: const TextStyle(
-                        fontSize: 11, color: AppColors.text)),
+                child: Text(
+                  item.nome,
+                  style: const TextStyle(fontSize: 11, color: AppColors.text),
+                ),
               ),
-              Text('${fmtDec(item.percentual, digits: 0)}% ($valorTxt)',
-                  style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.navy)),
+              Text(
+                '${fmtDec(item.percentual, digits: 0)}% ($valorTxt)',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.navy,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 6),

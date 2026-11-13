@@ -11,10 +11,7 @@ class AcessibilidadeConfig {
     this.altoContraste = false,
   });
 
-  AcessibilidadeConfig copyWith({
-    double? escalaFonte,
-    bool? altoContraste,
-  }) =>
+  AcessibilidadeConfig copyWith({double? escalaFonte, bool? altoContraste}) =>
       AcessibilidadeConfig(
         escalaFonte: escalaFonte ?? this.escalaFonte,
         altoContraste: altoContraste ?? this.altoContraste,
@@ -40,8 +37,10 @@ Future<void> carregarAcessibilidade() async {
   try {
     final prefs = await SharedPreferences.getInstance();
     acessibilidadeNotifier.value = AcessibilidadeConfig(
-      escalaFonte:
-          (prefs.getDouble(_kEscala) ?? 1.0).clamp(_escalaMin, _escalaMax),
+      escalaFonte: (prefs.getDouble(_kEscala) ?? 1.0).clamp(
+        _escalaMin,
+        _escalaMax,
+      ),
       altoContraste: prefs.getBool(_kContraste) ?? false,
     );
 
@@ -217,11 +216,13 @@ class _PainelAcessibilidadeState extends State<_PainelAcessibilidade> {
                       SwitchListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Alto contraste',
-                            style: TextStyle(fontSize: 12)),
+                        title: const Text(
+                          'Alto contraste',
+                          style: TextStyle(fontSize: 12),
+                        ),
                         value: cfg.altoContraste,
-                        onChanged: (v) => acessibilidadeNotifier.value =
-                            cfg.copyWith(altoContraste: v),
+                        onChanged: (v) => acessibilidadeNotifier.value = cfg
+                            .copyWith(altoContraste: v),
                       ),
                       const SizedBox(height: 4),
                       Align(
@@ -230,9 +231,11 @@ class _PainelAcessibilidadeState extends State<_PainelAcessibilidade> {
                           onPressed: cfg.padrao
                               ? null
                               : () => acessibilidadeNotifier.value =
-                                  const AcessibilidadeConfig(),
-                          child: const Text('Restaurar padrão',
-                              style: TextStyle(fontSize: 12)),
+                                    const AcessibilidadeConfig(),
+                          child: const Text(
+                            'Restaurar padrão',
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ),
                       ),
                     ],

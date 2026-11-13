@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../core/exportacao.dart';
@@ -53,9 +52,7 @@ class _OverviewPageState extends State<OverviewPage> {
       future: _future,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (snap.hasError) {
@@ -71,10 +68,7 @@ class _OverviewPageState extends State<OverviewPage> {
                     size: 40,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    '${snap.error}',
-                    textAlign: TextAlign.center,
-                  ),
+                  Text('${snap.error}', textAlign: TextAlign.center),
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: _reload,
@@ -86,10 +80,7 @@ class _OverviewPageState extends State<OverviewPage> {
           );
         }
 
-        return _Content(
-          data: snap.data!,
-          onRefresh: _reload,
-        );
+        return _Content(data: snap.data!, onRefresh: _reload);
       },
     );
   }
@@ -99,10 +90,7 @@ class _Content extends StatelessWidget {
   final DashboardOverview data;
   final VoidCallback onRefresh;
 
-  const _Content({
-    required this.data,
-    required this.onRefresh,
-  });
+  const _Content({required this.data, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
@@ -116,10 +104,10 @@ class _Content extends StatelessWidget {
         final colunas = largura >= 1100
             ? 5
             : largura >= 700
-                ? 3
-                : largura >= 400
-                    ? 2
-                    : 1;
+            ? 3
+            : largura >= 400
+            ? 2
+            : 1;
 
         final larguraCartao =
             (largura - padding * 2 - gap * (colunas - 1)) / colunas;
@@ -159,16 +147,10 @@ class _Content extends StatelessWidget {
           ),
         ];
 
-        final grafico = VolumeChart(
-          serie: data.serie,
-        );
+        final grafico = VolumeChart(serie: data.serie);
 
         final lateral = Column(
-          children: [
-            IntelligenceCard(
-              data: data.inteligencia,
-            ),
-          ],
+          children: [IntelligenceCard(data: data.inteligencia)],
         );
 
         return SingleChildScrollView(
@@ -181,37 +163,22 @@ class _Content extends StatelessWidget {
                 subtitle: periodoNotifier.value == Periodo.total
                     ? 'Todos os dados disponíveis'
                     : '${periodoNotifier.value.label} • '
-                        '${periodoNotifier.mesReferencia}',
+                          '${periodoNotifier.mesReferencia}',
                 onRefresh: onRefresh,
                 onExport: () {
                   exportarRelatorio(
                     context,
                     'visao-geral-${periodoNotifier.mesReferencia}.csv',
                     [
-                      [
-                        'Indicador',
-                        'Valor',
-                      ],
-                      [
-                        'Quilometragem',
-                        data.quilometragem.valor,
-                      ],
-                      [
-                        'Viagens',
-                        data.viagens.valor,
-                      ],
-                      [
-                        'Passageiros pagantes',
-                        data.passageirosPagantes.valor,
-                      ],
+                      ['Indicador', 'Valor'],
+                      ['Quilometragem', data.quilometragem.valor],
+                      ['Viagens', data.viagens.valor],
+                      ['Passageiros pagantes', data.passageirosPagantes.valor],
                       [
                         'Passageiros não pagantes',
                         data.passageirosNaoPagantes.valor,
                       ],
-                      [
-                        'Indicador financeiro',
-                        data.financeiro.valor,
-                      ],
+                      ['Indicador financeiro', data.financeiro.valor],
                     ],
                   );
                 },
@@ -222,10 +189,7 @@ class _Content extends StatelessWidget {
                 runSpacing: gap,
                 children: [
                   for (final kpi in kpis)
-                    SizedBox(
-                      width: larguraCartao,
-                      child: kpi,
-                    ),
+                    SizedBox(width: larguraCartao, child: kpi),
                 ],
               ),
               const SizedBox(height: 20),
@@ -233,15 +197,9 @@ class _Content extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      flex: 3,
-                      child: grafico,
-                    ),
+                    Expanded(flex: 3, child: grafico),
                     const SizedBox(width: 20),
-                    Expanded(
-                      flex: 2,
-                      child: lateral,
-                    ),
+                    Expanded(flex: 2, child: lateral),
                   ],
                 )
               else ...[

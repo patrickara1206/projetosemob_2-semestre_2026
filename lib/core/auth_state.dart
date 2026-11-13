@@ -8,13 +8,10 @@ final authNotifier = ValueNotifier<bool>(false);
 Future<void> carregarEstadoLogin() async {
   final prefs = await SharedPreferences.getInstance();
 
-  authNotifier.value =
-      prefs.getBool(_authKey) ?? false;
+  authNotifier.value = prefs.getBool(_authKey) ?? false;
 }
 
-Future<void> definirUsuarioLogado(
-  bool logado,
-) async {
+Future<void> definirUsuarioLogado(bool logado) async {
   final prefs = await SharedPreferences.getInstance();
 
   if (logado) {

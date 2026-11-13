@@ -45,15 +45,19 @@ class RepassesTable extends StatelessWidget {
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Repasses por Linha Operacional',
-                          style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.navy)),
+                      Text(
+                        'Repasses por Linha Operacional',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.navy,
+                        ),
+                      ),
                       SizedBox(height: 2),
-                      Text('Demonstrativo consolidado de liquidação mensal',
-                          style:
-                              TextStyle(fontSize: 11, color: AppColors.muted)),
+                      Text(
+                        'Demonstrativo consolidado de liquidação mensal',
+                        style: TextStyle(fontSize: 11, color: AppColors.muted),
+                      ),
                     ],
                   ),
                   SizedBox(
@@ -65,14 +69,20 @@ class RepassesTable extends StatelessWidget {
                       decoration: InputDecoration(
                         hintText: 'Buscar linha ou operador...',
                         hintStyle: const TextStyle(
-                            fontSize: 12, color: AppColors.muted),
-                        prefixIcon: const Icon(Icons.search,
-                            size: 18, color: AppColors.muted),
+                          fontSize: 12,
+                          color: AppColors.muted,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          size: 18,
+                          color: AppColors.muted,
+                        ),
                         isDense: true,
                         filled: true,
                         fillColor: const Color(0xFFF3F4F6),
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide.none,
@@ -84,28 +94,32 @@ class RepassesTable extends StatelessWidget {
               ),
             ),
           ),
-          LayoutBuilder(builder: (context, box) {
-            final width = math.max(box.maxWidth, 820.0);
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: width,
-                child: Column(
-                  children: [
-                    const _Header(),
-                    if (linhas.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Text('Nenhum repasse no período',
-                            style: TextStyle(color: AppColors.muted)),
-                      )
-                    else
-                      for (final l in linhas) _DataRow(item: l),
-                  ],
+          LayoutBuilder(
+            builder: (context, box) {
+              final width = math.max(box.maxWidth, 820.0);
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: width,
+                  child: Column(
+                    children: [
+                      const _Header(),
+                      if (linhas.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Text(
+                            'Nenhum repasse no período',
+                            style: TextStyle(color: AppColors.muted),
+                          ),
+                        )
+                      else
+                        for (final l in linhas) _DataRow(item: l),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.all(20),
             child: SizedBox(
@@ -116,9 +130,13 @@ class RepassesTable extends StatelessWidget {
                 spacing: 16,
                 runSpacing: 10,
                 children: [
-                  Text('Mostrando ${linhas.length} linhas operacionais',
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.muted)),
+                  Text(
+                    'Mostrando ${linhas.length} linhas operacionais',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.muted,
+                    ),
+                  ),
                   _Paginacao(
                     pagina: pagina,
                     total: totalPaginas,
@@ -142,16 +160,19 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget cell(String t, int flex, Alignment a) => Expanded(
-          flex: flex,
-          child: Align(
-            alignment: a,
-            child: Text(t,
-                style: const TextStyle(
-                    color: Color(0xFF374151),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700)),
+      flex: flex,
+      child: Align(
+        alignment: a,
+        child: Text(
+          t,
+          style: const TextStyle(
+            color: Color(0xFF374151),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
           ),
-        );
+        ),
+      ),
+    );
 
     return Container(
       color: const Color(0xFFF1F3F6),
@@ -190,16 +211,23 @@ class _DataRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.linha,
-                    style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.navy)),
+                Text(
+                  item.linha,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.navy,
+                  ),
+                ),
                 if (item.operador.isNotEmpty) ...[
                   const SizedBox(height: 2),
-                  Text(item.operador,
-                      style: const TextStyle(
-                          fontSize: 10, color: AppColors.muted)),
+                  Text(
+                    item.operador,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.muted,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -208,18 +236,20 @@ class _DataRow extends StatelessWidget {
             flex: _flex[1],
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text(fmtInt(item.passageiros),
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.text)),
+              child: Text(
+                fmtInt(item.passageiros),
+                style: const TextStyle(fontSize: 12, color: AppColors.text),
+              ),
             ),
           ),
           Expanded(
             flex: _flex[2],
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text(fmtMoney(item.custoOperacional),
-                  style:
-                      const TextStyle(fontSize: 12, color: AppColors.text)),
+              child: Text(
+                fmtMoney(item.custoOperacional),
+                style: const TextStyle(fontSize: 12, color: AppColors.text),
+              ),
             ),
           ),
           Expanded(
@@ -227,23 +257,26 @@ class _DataRow extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerRight,
               child: Text(
-                  temGlosa
-                      ? '- ${fmtMoney(item.glosa)}'
-                      : fmtMoney(item.glosa),
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: temGlosa ? AppColors.red : AppColors.muted)),
+                temGlosa ? '- ${fmtMoney(item.glosa)}' : fmtMoney(item.glosa),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: temGlosa ? AppColors.red : AppColors.muted,
+                ),
+              ),
             ),
           ),
           Expanded(
             flex: _flex[4],
             child: Align(
               alignment: Alignment.centerRight,
-              child: Text(fmtMoney(item.valorLiquido),
-                  style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.navy)),
+              child: Text(
+                fmtMoney(item.valorLiquido),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.navy,
+                ),
+              ),
             ),
           ),
           Expanded(
@@ -291,9 +324,10 @@ class _StatusChip extends StatelessWidget {
         color: bg,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(label,
-          style: TextStyle(
-              fontSize: 10, fontWeight: FontWeight.w700, color: fg)),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: fg),
+      ),
     );
   }
 }
@@ -302,8 +336,11 @@ class _Paginacao extends StatelessWidget {
   final int pagina;
   final int total;
   final ValueChanged<int> onPagina;
-  const _Paginacao(
-      {required this.pagina, required this.total, required this.onPagina});
+  const _Paginacao({
+    required this.pagina,
+    required this.total,
+    required this.onPagina,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -319,11 +356,7 @@ class _Paginacao extends StatelessWidget {
           onTap: () => onPagina(pagina - 1),
         ),
         for (final n in numeros)
-          _Btn(
-            label: '$n',
-            active: n == pagina,
-            onTap: () => onPagina(n),
-          ),
+          _Btn(label: '$n', active: n == pagina, onTap: () => onPagina(n)),
         _Btn(
           label: 'Próximo',
           enabled: pagina < total,
@@ -357,13 +390,16 @@ class _Btn extends StatelessWidget {
           color: active ? AppColors.navy : const Color(0xFFF1F3F6),
           borderRadius: BorderRadius.circular(4),
         ),
-        child: Text(label,
-            style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: active
-                    ? Colors.white
-                    : (enabled ? AppColors.navy : AppColors.muted))),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: active
+                ? Colors.white
+                : (enabled ? AppColors.navy : AppColors.muted),
+          ),
+        ),
       ),
     );
   }

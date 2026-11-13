@@ -16,10 +16,7 @@ class PeriodoNotifier extends ValueNotifier<Periodo> {
 
   String mesReferencia = '2026-08';
 
-  void aplicarFiltro(
-    Periodo periodo, {
-    String? mes,
-  }) {
+  void aplicarFiltro(Periodo periodo, {String? mes}) {
     if (mes != null) {
       mesReferencia = mes;
     }
@@ -36,10 +33,7 @@ class PeriodoNotifier extends ValueNotifier<Periodo> {
   }
 
   void selecionarMes(String mes) {
-    aplicarFiltro(
-      value,
-      mes: mes,
-    );
+    aplicarFiltro(value, mes: mes);
   }
 
   void atualizar() {
@@ -48,15 +42,10 @@ class PeriodoNotifier extends ValueNotifier<Periodo> {
 
   Map<String, String> get parametros {
     if (value == Periodo.total) {
-      return {
-        'escopo': 'total',
-      };
+      return {'escopo': 'total'};
     }
 
-    return {
-      'escopo': value.api,
-      'mes': mesReferencia,
-    };
+    return {'escopo': value.api, 'mes': mesReferencia};
   }
 }
 
